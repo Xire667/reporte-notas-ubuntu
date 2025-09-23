@@ -1,0 +1,12 @@
+# Ignora el entorno virtual
+venv/
+
+# Archivos de Python compilados
+__pycache__/
+*.pyc
+
+# Configuración de entorno
+.env
+
+# Archivos de logs
+*.log

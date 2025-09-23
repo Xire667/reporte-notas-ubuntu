@@ -1,0 +1,335 @@
+:root {
+    --color-primary: #003366;
+    --color-secondary: #3498db;
+    --color-accent: #e74c3c;
+    --color-background: #efefef;
+    --color-text: #2c3e50;
+    --color-white: #ffffff;
+    --border-radius: 18px;
+    --transition: all 0.3s ease;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', 'Segoe UI', sans-serif;
+    line-height: 1.6;
+    background-color: var(--color-background);
+    color: var(--color-text);
+}
+
+/* Header y Navegación */
+.navbar {
+    background-color: var(--color-primary);
+    padding: .5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar__logo img {
+    width: 50px;
+    height: 50px;
+    transition: var(--transition);
+}
+
+.navbar__logo img:hover {
+    transform: scale(1.05);
+}
+
+.navbar__menu {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+}
+
+.navbar__menu a {
+    color: var(--color-white);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+}
+
+.navbar__menu a:hover {
+    background-color: var(--color-secondary);
+    color: var(--color-white);
+}
+
+/* Iconos en el menú */
+.navbar__menu a i {
+    margin-right: 8px;
+}
+
+/* Contenido Principal */
+.main-content {
+    max-width: 1200px;
+    margin: 1rem auto;
+    padding: 0 2rem;
+}
+
+.descripcion-reporte {
+    background-color: var(--color-white);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.descripcion-reporte::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background-color: var(--color-primary);
+}
+
+.descripcion-reporte h1 {
+    color: var(--color-primary);
+    margin-bottom: 1rem;
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+/* Filtros */
+.filtros-container {
+    background-color: var(--color-white);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+}
+
+.filtro-grupo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.filtro-grupo label {
+    font-weight: 500;
+    color: var(--color-primary);
+}
+
+.filtro-grupo i {
+    color: var(--color-secondary);
+    margin-right: 8px;
+}
+
+.buscador, .ciclos {
+    padding: 0.75rem 1.25rem;
+    border: 2px solid #e1e1e1;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.buscador:focus, .ciclos:focus {
+    border-color: var(--color-secondary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+.buscador {
+    width: 300px;
+}
+
+/* Tabla */
+.tabla-container {
+    background-color: var(--color-white);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+}
+
+.tabla-estudiantes {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 1rem 0;
+}
+
+.tabla-estudiantes th,
+.tabla-estudiantes td {
+    padding: 1.25rem;
+    text-align: left;
+}
+
+.tabla-estudiantes th {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+.tabla-estudiantes th i {
+    margin-right: 8px;
+}
+
+.tabla-estudiantes tr:nth-child(even) {
+    background-color: rgba(44, 62, 80, 0.02);
+}
+
+.tabla-estudiantes tr {
+    transition: var(--transition);
+}
+
+.tabla-estudiantes tr:hover {
+    background-color: rgba(52, 152, 219, 0.1);
+    transform: translateY(-2px);
+}
+
+.tabla-estudiantes th:first-child {
+    border-top-left-radius: 15px;
+}
+
+.tabla-estudiantes th:last-child {
+    border-top-right-radius: 15px;
+}
+
+
+
+
+/* Footer */
+.footer {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    padding: 2rem 0;
+    margin-top: 4rem;
+}
+
+.footer__content {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 0 2rem;
+}
+
+/* Botones de acción en la tabla */
+.btn-accion {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--color-primary);
+    transition: var(--transition);
+    border-radius: 50%;
+}
+
+.btn-accion:hover {
+    background-color: var(--color-secondary);
+    color: var(--color-white);
+    transform: translateY(-2px);
+}
+
+.btn-accion i {
+    font-size: 1.1rem;
+}
+
+/* Enlaces sociales en el footer */
+.social-links {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.social-links a {
+    color: var(--color-white);
+    font-size: 1.5rem;
+    transition: var(--transition);
+}
+
+.social-links a:hover {
+    color: var(--color-accent);
+    transform: translateY(-3px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        padding: 1rem;
+    }
+
+    .navbar__menu {
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+        text-align: center;
+        margin-top: 1rem;
+    }
+
+    .navbar__menu a {
+        display: block;
+        padding: 0.75rem;
+        background-color: rgba(44, 62, 80, 0.05);
+    }
+
+    .filtros-container {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 1.5rem;
+    }
+
+    .buscador {
+        width: 100%;
+    }
+
+    .descripcion-reporte h1 {
+        font-size: 2rem;
+    }
+
+    .social-links {
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .btn-accion {
+        padding: 6px;
+    }
+
+    .btn-accion i {
+        font-size: 1rem;
+    }
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.descripcion-reporte,
+.filtros-container,
+.tabla-container {
+    animation: fadeIn 0.6s ease-out;
+}
+

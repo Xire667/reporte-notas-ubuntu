@@ -1,0 +1,198 @@
+ {%extends 'global/base.html'%}
+
+ {%block title%}Inicio{%endblock%}
+
+ {%block sections%}
+<link rel="stylesheet" href="../../static/main/home/css/insti.css">
+<link rel="stylesheet" href="../../static/main/home/css/style.css">
+<section class="hero">
+    <div class="slider">
+        <img src="{{ url_for('static', filename='main/home/img/img1.jpeg') }}" class="slide active">
+        <img src="{{ url_for('static', filename='main/home/img/img2.jpeg') }}" class="slide">
+        <img src="{{ url_for('static', filename='main/home/img/img3.jpeg') }}" class="slide">
+        <img src="{{ url_for('static', filename='main/home/img/img4.jpeg') }}" class="slide">
+        <img src="{{ url_for('static', filename='main/home/img/img5.jpeg') }}" class="slide">
+        <img src="{{ url_for('static', filename='main/home/img/img6.jpeg') }}" class="slide">
+
+    </div>
+    <div class="hero-content">
+        <div class="hero-content-panel">
+            <h1 class="text_c">DESARROLLO DE SISTEMAS DE INFORMACIÓN</h1>
+            <p>Excelencia académica con visión tecnológica</p>
+            <a href="#bienvenida" class="btn"><span>Explora nuestra carrera</span></a>
+        </div>
+
+    </div>
+</section>
+
+
+
+
+<main>
+    <section class="bienvenida" id="bienvenida">
+        <h2>Bienvenido al Instituto Suiza</h2>
+        <p>Nos dedicamos a la formación de profesionales técnicos líderes en desarrollo tecnológico y sistemas de información.</p>
+    </section>
+
+    <section class="carreras" id="carreras">
+        <h2>Nuestras Especialidades</h2>
+        <div class="cards">
+            <div class="card">
+                <h3>💻 Programacion web y de escritorio</h3>
+                <p>Aprende a desarrollar páginas web modernas, aplicaciones de escritorio eficientes y soluciones digitales para múltiples plataformas.</p>
+                <button class="ver-mas-btn" data-panel="panel-web">Ver más</button>
+            </div>
+            <div class="card">
+                <h3>🌐 Administración de redes y servidor</h3>
+                <p>Domina la gestión de redes informáticas, configura servidores y asegura la conectividad y estabilidad de los sistemas empresariales.</p>
+                <button class="ver-mas-btn" data-panel="panel-redes">Ver más</button>
+            </div>
+            <div class="card">
+                <h3>🧊 Diseño Gráfico y 3D </h3>
+                <p>Desarrolla tu creatividad visual y domina herramientas profesionales para crear diseños impactantes y modelado tridimensional.</p>
+                <button class="ver-mas-btn" data-panel="panel-grafico">Ver más</button>
+            </div>
+            <div class="card">
+                <h3>🗄️ Base de datos</h3>
+                <p>Aprende a diseñar, gestionar y optimizar bases de datos para tomar decisiones inteligentes y seguras en entornos digitales.</p>
+                <button class="ver-mas-btn" data-panel="panel-datos">Ver más</button>
+            </div>
+            <div class="card">
+                <h3>🛠️ Arquitecturas de computadoras</h3>
+                <p>Comprende el funcionamiento interno del hardware, analiza la interacción entre sus componentes y optimiza el rendimiento de los sistemas computacionales.</p>
+                <button class="ver-mas-btn" data-panel="panel-computadoras">Ver más</button>
+            </div>
+            <div class="card">
+                <h3>🧾 Ofimática</h3>
+                <p>Domina herramientas digitales como Word, Excel y PowerPoint para optimizar tareas administrativas, informes y presentaciones profesionales.</p>
+                <button class="ver-mas-btn" data-panel="panel-ofimatica">Ver más</button>
+            </div>
+            <div class="card">
+                <h3>📱 Aplicaciones  móviles y empresariales</h3>
+                <p>Aprende a desarrollar apps funcionales y sistemas empresariales que optimicen procesos y mejoren la experiencia del usuario.</p>
+                <button class="ver-mas-btn" data-panel="panel-moviles">Ver más</button>
+            </div>
+            <div class="card">
+                <h3>🎬 Creaciones Audiovisuales</h3>
+                <p>Aprende a producir contenido visual y sonoro de impacto, utilizando técnicas modernas de edición, animación y narrativa digital.</p>
+                <button class="ver-mas-btn" data-panel="panel-creaciones">Ver más</button>
+            </div>
+        </div>
+    </section>
+</main>
+<!-- Panel flotante para Programación Web -->
+<div id="panel-web" class="panel-info-flotante">
+  <div class="panel-contenido">
+    <span class="cerrar-panel">&times;</span>
+    <h2>Programación Web y de Escritorio</h2>
+    <p>Aquí aprenderás HTML, CSS, JavaScript, Python, Flask, etc.</p>
+  </div>
+</div>
+
+<!-- Otro panel -->
+<div id="panel-redes" class="panel-info-flotante">
+  <div class="panel-contenido">
+    <span class="cerrar-panel">&times;</span>
+    <h2>Redes y Servidores</h2>
+    <p>Estudiarás configuración de routers, switches, protocolos y servidores Linux/Windows.</p>
+  </div>
+</div>
+
+<!-- Otro panel -->
+<div id="panel-grafico" class="panel-info-flotante">
+  <div class="panel-contenido">
+    <span class="cerrar-panel">&times;</span>
+    <h2>Redes y Servidores</h2>
+    <p>Estudiarás configuración de routers, switches, protocolos y servidores Linux/Windows.</p>
+  </div>
+</div>
+
+<!-- Otro panel -->
+<div id="panel-datos" class="panel-info-flotante">
+  <div class="panel-contenido">
+    <span class="cerrar-panel">&times;</span>
+    <h2>Redes y Servidores</h2>
+    <p>Estudiarás configuración de routers, switches, protocolos y servidores Linux/Windows.</p>
+  </div>
+</div>
+
+<!-- Otro panel -->
+<div id="panel-computadoras" class="panel-info-flotante">
+  <div class="panel-contenido">
+    <span class="cerrar-panel">&times;</span>
+    <h2>Redes y Servidores</h2>
+    <p>Estudiarás configuración de routers, switches, protocolos y servidores Linux/Windows.</p>
+  </div>
+</div>
+
+<!-- Otro panel -->
+<div id="panel-ofimatica" class="panel-info-flotante">
+  <div class="panel-contenido">
+    <span class="cerrar-panel">&times;</span>
+    <h2>Redes y Servidores</h2>
+    <p>Estudiarás configuración de routers, switches, protocolos y servidores Linux/Windows.</p>
+  </div>
+</div>
+
+<!-- Otro panel -->
+<div id="panel-moviles" class="panel-info-flotante">
+  <div class="panel-contenido">
+    <span class="cerrar-panel">&times;</span>
+    <h2>Redes y Servidores</h2>
+    <p>Estudiarás configuración de routers, switches, protocolos y servidores Linux/Windows.</p>
+  </div>
+</div>
+
+<!-- Otro panel -->
+<div id="panel-creaciones" class="panel-info-flotante">
+  <div class="panel-contenido">
+    <span class="cerrar-panel">&times;</span>
+    <h2>Redes y Servidores</h2>
+    <p>Estudiarás configuración de routers, switches, protocolos y servidores Linux/Windows.</p>
+  </div>
+</div>
+
+
+<script>
+    let slideIndex = 0;
+    const slides = document.querySelectorAll('.slider .slide');
+
+    function showNextSlide() {
+        slides[slideIndex].classList.remove('active');
+        slideIndex = (slideIndex + 1) % slides.length;
+        slides[slideIndex].classList.add('active');
+    }
+
+    setInterval(showNextSlide, 4000); // Cambia cada 4 segundos
+</script>
+
+
+
+<script>
+document.querySelectorAll('.ver-mas-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const id = btn.dataset.panel;
+        const panel = document.getElementById(id);
+        if (panel) panel.style.display = 'flex';
+    });
+});
+
+document.querySelectorAll('.cerrar-panel').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const panel = btn.closest('.panel-info-flotante');
+        panel.style.display = 'none';
+    });
+});
+
+window.addEventListener('click', (e) => {
+    if (e.target.classList.contains('panel-info-flotante')) {
+        e.target.style.display = 'none';
+    }
+});
+</script>
+
+{%endblock%}
+
+
+
+
