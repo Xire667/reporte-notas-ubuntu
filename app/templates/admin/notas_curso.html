@@ -1,0 +1,419 @@
+{% extends "global/base_sistema.html" %}
+
+{% block title %}Notas del Curso - Sistema de Notas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-book me-2"></i>Notas del Curso</h2>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('admin.ver_notas') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Volver a Notas
+                </a>
+                <a href="{{ url_for('admin.exportar_notas', curso_id=curso.id) }}" class="btn btn-outline-success">
+                    <i class="fas fa-download me-2"></i>Exportar CSV
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Información del Curso -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información del Curso</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <label class="info-label">Nombre del Curso:</label>
+                            <p class="info-value">{{ curso.nombre }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <label class="info-label">Código:</label>
+                            <p class="info-value">{{ curso.codigo }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <label class="info-label">Créditos:</label>
+                            <p class="info-value">{{ curso.creditos }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <label class="info-label">Número de Parciales:</label>
+                            <p class="info-value">{{ curso.numero_parciales }}</p>
+                        </div>
+                    </div>
+                    {% if curso.ciclo_academico %}
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <label class="info-label">Ciclo Académico:</label>
+                            <p class="info-value">{{ curso.ciclo_academico.nombre }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if curso.descripcion %}
+                    <div class="col-12">
+                        <div class="info-item">
+                            <label class="info-label">Descripción:</label>
+                            <p class="info-value">{{ curso.descripcion }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas del Curso -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ total_alumnos }}</div>
+                <div class="stat-label">Alumnos Matriculados</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ notas_publicadas }}</div>
+                <div class="stat-label">Notas Publicadas</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card stat-warning">
+            <div class="stat-icon">
+                <i class="fas fa-edit"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ notas_borrador }}</div>
+                <div class="stat-label">Notas en Borrador</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card stat-info">
+            <div class="stat-icon">
+                <i class="fas fa-calculator"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ "%.1f"|format(promedio_curso) }}</div>
+                <div class="stat-label">Promedio del Curso</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de Notas del Curso -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    Notas de los Estudiantes
+                    <span class="badge bg-primary ms-2">{{ notas|length }}</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if notas %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Estudiante</th>
+                                <th>Docente</th>
+                                <th>Parcial 1</th>
+                                <th>Parcial 2</th>
+                                <th>Parcial 3</th>
+                                {% if curso.numero_parciales >= 4 %}
+                                <th>Parcial 4</th>
+                                {% endif %}
+                                <th>Nota Final</th>
+                                <th>Estado</th>
+                                <th>Última Actualización</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for nota, alumno, docente in notas %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div
+                                            class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                            {{ alumno.nombre[0] }}{{ alumno.apellido[0] }}
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">{{ alumno.nombre }} {{ alumno.apellido }}</div>
+                                            <small class="text-muted">{{ alumno.dni }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="docente-info">
+                                        <div class="fw-bold">{{ docente.nombre }} {{ docente.apellido }}</div>
+                                        <small class="text-muted">{{ docente.email }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span
+                                        class="badge bg-{{ 'success' if nota.parcial1 >= 10.5 else 'warning' if nota.parcial1 >= 5 else 'danger' if nota.parcial1 > 0 else 'secondary' }}">
+                                        {{ nota.parcial1 if nota.parcial1 > 0 else '-' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span
+                                        class="badge bg-{{ 'success' if nota.parcial2 >= 10.5 else 'warning' if nota.parcial2 >= 5 else 'danger' if nota.parcial2 > 0 else 'secondary' }}">
+                                        {{ nota.parcial2 if nota.parcial2 > 0 else '-' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span
+                                        class="badge bg-{{ 'success' if nota.parcial3 >= 10.5 else 'warning' if nota.parcial3 >= 5 else 'danger' if nota.parcial3 > 0 else 'secondary' }}">
+                                        {{ nota.parcial3 if nota.parcial3 > 0 else '-' }}
+                                    </span>
+                                </td>
+                                {% if curso.numero_parciales >= 4 %}
+                                <td>
+                                    <span
+                                        class="badge bg-{{ 'success' if nota.parcial4 >= 10.5 else 'warning' if nota.parcial4 >= 5 else 'danger' if nota.parcial4 > 0 else 'secondary' }}">
+                                        {{ nota.parcial4 if nota.parcial4 > 0 else '-' }}
+                                    </span>
+                                </td>
+                                {% endif %}
+                                <td>
+                                    <span
+                                        class="badge bg-{{ 'success' if nota.nota_final >= 10.5 else 'warning' if nota.nota_final >= 5 else 'danger' if nota.nota_final > 0 else 'secondary' }}">
+                                        {{ nota.nota_final if nota.nota_final > 0 else '-' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if nota.estado == 'publicada' else 'warning' }}">
+                                        {{ nota.estado.title() }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ nota.fecha_actualizacion.strftime('%d/%m/%Y %H:%M') if
+                                        nota.fecha_actualizacion else 'N/A' }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('admin.ver_notas_alumno', alumno_id=alumno.id) }}"
+                                        class="btn btn-sm btn-outline-primary" title="Ver Estudiante">
+                                        <i class="fas fa-user"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No hay notas registradas</h5>
+                    <p class="text-muted">No se han registrado notas para este curso aún.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Comentarios y Notas Adicionales -->
+{% if notas %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Comentarios y Observaciones</h5>
+            </div>
+            <div class="card-body">
+                {% for nota, alumno, docente in notas %}
+                {% if nota.comentarios %}
+                <div class="comment-item mb-3">
+                    <div class="comment-header">
+                        <strong>{{ alumno.nombre }} {{ alumno.apellido }}</strong>
+                        <small class="text-muted ms-2">
+                            {{ nota.fecha_actualizacion.strftime('%d/%m/%Y %H:%M') if nota.fecha_actualizacion else
+                            'N/A' }}
+                        </small>
+                    </div>
+                    <div class="comment-content">
+                        <p class="mb-0">{{ nota.comentarios }}</p>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+                {% if not notas|selectattr('0.comentarios')|list %}
+                <div class="text-center text-muted">
+                    <i class="fas fa-comment-slash fa-2x mb-2"></i>
+                    <p>No hay comentarios registrados para este curso.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+    .avatar-sm {
+        width: 32px;
+        height: 32px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .info-item {
+        margin-bottom: 1rem;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.25rem;
+        display: block;
+    }
+
+    .info-value {
+        margin: 0;
+        color: #6c757d;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        border: none;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--bs-primary), var(--bs-primary));
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-primary::before {
+        background: linear-gradient(90deg, #007bff, #0056b3);
+    }
+
+    .stat-success::before {
+        background: linear-gradient(90deg, #28a745, #1e7e34);
+    }
+
+    .stat-warning::before {
+        background: linear-gradient(90deg, #ffc107, #e0a800);
+    }
+
+    .stat-info::before {
+        background: linear-gradient(90deg, #17a2b8, #138496);
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        margin-bottom: 1rem;
+    }
+
+    .stat-primary .stat-icon {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+    }
+
+    .stat-success .stat-icon {
+        background: linear-gradient(135deg, #28a745, #1e7e34);
+    }
+
+    .stat-warning .stat-icon {
+        background: linear-gradient(135deg, #ffc107, #e0a800);
+    }
+
+    .stat-info .stat-icon {
+        background: linear-gradient(135deg, #17a2b8, #138496);
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.25rem;
+    }
+
+    .docente-info .fw-bold {
+        font-size: 0.9rem;
+    }
+
+    .comment-item {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 10px;
+        border-left: 4px solid #007bff;
+    }
+
+    .comment-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .comment-content {
+        color: #495057;
+    }
+
+    .table th {
+        border-top: none;
+        font-weight: 600;
+    }
+
+    .badge {
+        font-size: 0.75rem;
+    }
+</style>
+{% endblock %}

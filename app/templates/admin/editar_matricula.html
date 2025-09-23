@@ -1,0 +1,314 @@
+{% extends "global/base_sistema.html" %}
+
+{% block title %}Editar Matrícula - Sistema de Notas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-edit me-2"></i>Editar Matrícula de Estudiante</h2>
+            <a href="{{ url_for('admin.alumnos_por_ciclo') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Volver a Alumnos por Ciclo
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-graduate me-2"></i>
+                    Información del Estudiante
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <label class="info-label">Nombre Completo:</label>
+                            <p class="info-value">{{ alumno.nombre }} {{ alumno.apellido }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <label class="info-label">DNI:</label>
+                            <p class="info-value">{{ alumno.dni }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <label class="info-label">Email:</label>
+                            <p class="info-value">{{ alumno.email }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <label class="info-label">Estado:</label>
+                            <span class="badge bg-{{ 'success' if alumno.activo else 'danger' }}">
+                                {{ 'Activo' if alumno.activo else 'Inactivo' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    Matrícula Actual
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if matricula_activa %}
+                <div class="matricula-info">
+                    <div class="matricula-ciclo">
+                        <i class="fas fa-calendar-alt text-primary me-2"></i>
+                        <strong>{{ matricula_activa.ciclo_academico.nombre }}</strong>
+                    </div>
+                    <div class="matricula-details">
+                        <small class="text-muted">
+                            Año {{ matricula_activa.ciclo_academico.año }} - Ciclo {{
+                            matricula_activa.ciclo_academico.ciclo }}
+                        </small>
+                    </div>
+                    <div class="matricula-fecha">
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>
+                            Matriculado: {{ matricula_activa.fecha_matricula.strftime('%d/%m/%Y') }}
+                        </small>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center text-muted">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                    <p>Sin matrícula activa</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-exchange-alt me-2"></i>
+                    Cambiar Matrícula
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="ciclo_id" class="form-label">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    Seleccionar Nuevo Ciclo Académico:
+                                </label>
+                                <select class="form-select" id="ciclo_id" name="ciclo_id" required>
+                                    <option value="">-- Seleccionar un ciclo --</option>
+                                    {% for ciclo in ciclos %}
+                                    <option value="{{ ciclo.id }}" {% if matricula_activa and
+                                        ciclo.id==matricula_activa.ciclo_academico_id %}disabled{% endif %}>
+                                        {{ ciclo.nombre }} (Año {{ ciclo.año }}, Ciclo {{ ciclo.ciclo }})
+                                        {% if matricula_activa and ciclo.id == matricula_activa.ciclo_academico_id %} -
+                                        Actual{% endif %}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">
+                                    Selecciona el ciclo académico al que deseas mover al estudiante.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="forzar_cambio"
+                                        name="forzar_cambio">
+                                    <label class="form-check-label" for="forzar_cambio">
+                                        <i class="fas fa-magic me-1"></i>
+                                        Matricular automáticamente en cursos del nuevo ciclo
+                                    </label>
+                                </div>
+                                <div class="form-text">
+                                    Si está marcado, el estudiante será matriculado automáticamente en todos los cursos
+                                    del nuevo ciclo.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Advertencia:</strong> Al cambiar la matrícula del estudiante:
+                        <ul class="mb-0 mt-2">
+                            <li>La matrícula actual será suspendida</li>
+                            <li>Se creará una nueva matrícula en el ciclo seleccionado</li>
+                            <li>Si selecciona "Matricular automáticamente", se inscribirá en todos los cursos del nuevo
+                                ciclo</li>
+                        </ul>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Actualizar Matrícula
+                        </button>
+                        <a href="{{ url_for('admin.alumnos_por_ciclo') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Información adicional del estudiante -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Información Adicional
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="stat-item">
+                            <div class="stat-icon bg-primary">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">{{ alumno.cursos_matriculados|length if
+                                    alumno.cursos_matriculados else 0 }}</div>
+                                <div class="stat-label">Cursos Matriculados</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-item">
+                            <div class="stat-icon bg-success">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">{{ alumno.notas_como_alumno|length if alumno.notas_como_alumno
+                                    else 0 }}</div>
+                                <div class="stat-label">Notas Registradas</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-item">
+                            <div class="stat-icon bg-info">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">{{ alumno.matriculas|length if alumno.matriculas else 0 }}
+                                </div>
+                                <div class="stat-label">Matrículas Totales</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .info-item {
+        margin-bottom: 1rem;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.25rem;
+        display: block;
+    }
+
+    .info-value {
+        margin: 0;
+        color: #6c757d;
+    }
+
+    .matricula-info {
+        text-align: center;
+    }
+
+    .matricula-ciclo {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .matricula-details {
+        margin-bottom: 0.5rem;
+    }
+
+    .matricula-fecha {
+        border-top: 1px solid #e9ecef;
+        padding-top: 0.5rem;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+        margin-right: 1rem;
+    }
+
+    .stat-content {
+        flex: 1;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .form-check-label {
+        font-weight: 500;
+    }
+
+    .alert ul {
+        padding-left: 1.5rem;
+    }
+
+    .alert li {
+        margin-bottom: 0.25rem;
+    }
+</style>
+{% endblock %}

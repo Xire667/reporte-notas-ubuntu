@@ -1,0 +1,75 @@
+{% extends "global/base_sistema.html" %}
+
+{% block title %}Dashboard Alumno{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-user-graduate me-2"></i>Bienvenido, {{ current_user.nombre }} {{ current_user.apellido }}
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <h4 class="mb-3">Mis Cursos</h4>
+    </div>
+</div>
+
+<div class="row">
+    {% if cursos %}
+        {% for curso in cursos %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-book me-2"></i>{{ curso.nombre }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        <strong>Código:</strong> {{ curso.codigo }}<br>
+                        <strong>Créditos:</strong> {{ curso.creditos }}<br>
+                        {% if curso.descripcion %}
+                            <strong>Descripción:</strong> {{ curso.descripcion[:100] }}{% if curso.descripcion|length > 100 %}...{% endif %}
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="card-footer">
+                    <div class="d-grid gap-2 d-md-flex">
+                        <a href="{{ url_for('alumno.ver_notas_curso', curso_id=curso.id) }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-chart-line me-1"></i>Ver Notas
+                        </a>
+                        <a href="{{ url_for('alumno.ver_cursos') }}" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-list me-1"></i>Ver Todos
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No tienes cursos matriculados</h5>
+                <p class="text-muted">Contacta al administrador para que te matricule en cursos.</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+            <a href="{{ url_for('alumno.ver_notas') }}" class="btn btn-primary">
+                <i class="fas fa-chart-line me-2"></i>Ver Todas mis Notas
+            </a>
+            <a href="{{ url_for('alumno.ver_cursos') }}" class="btn btn-outline-primary">
+                <i class="fas fa-list me-2"></i>Ver Todos mis Cursos
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

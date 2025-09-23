@@ -1,0 +1,192 @@
+{% extends "global/base_sistema.html" %}
+
+{% block title %}Matricular Alumnos en Ciclos - Sistema de Notas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-user-graduate me-2"></i>Matricular Alumnos en Ciclos Académicos</h2>
+            <a href="{{ url_for('admin.ciclos') }}" class="btn btn-outline-primary">
+                <i class="fas fa-graduation-cap me-2"></i>Ver Ciclos
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Matricular Alumno</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="alumno_id" class="form-label">Seleccionar Alumno <span class="text-danger">*</span></label>
+                        <select class="form-select" id="alumno_id" name="alumno_id" required onchange="verificarMatricula()">
+                            <option value="">Seleccionar alumno</option>
+                            {% for alumno in alumnos %}
+                            <option value="{{ alumno.id }}" 
+                                    {% if alumno_seleccionado and alumno.id|string == alumno_seleccionado %}selected{% endif %}
+                                    data-matricula="{{ 'activa' if alumno.matricula_activa else 'ninguna' }}"
+                                    data-ciclo-actual="{{ alumno.matricula_activa.ciclo_academico.nombre if alumno.matricula_activa else '' }}">
+                                {{ alumno.nombre }} {{ alumno.apellido }} ({{ alumno.dni }})
+                                {% if alumno.matricula_activa %} - Ya matriculado en {{ alumno.matricula_activa.ciclo_academico.nombre }}{% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div id="info-matricula" class="mt-2" style="display: none;">
+                            <div class="alert alert-warning" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Alumno ya matriculado:</strong> <span id="ciclo-actual"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="ciclo_id" class="form-label">Seleccionar Ciclo <span class="text-danger">*</span></label>
+                        <select class="form-select" id="ciclo_id" name="ciclo_id" required>
+                            <option value="">Seleccionar ciclo</option>
+                            {% for ciclo in ciclos %}
+                            <option value="{{ ciclo.id }}" 
+                                    {% if ciclo_seleccionado and ciclo.id|string == ciclo_seleccionado %}selected{% endif %}>
+                                {{ ciclo.nombre }} ({{ ciclo.cursos|length }} curso(s))
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div id="opcion-forzar" class="mb-3" style="display: none;">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="forzar_matricula" name="forzar_matricula">
+                            <label class="form-check-label" for="forzar_matricula">
+                                <strong>Forzar matrícula</strong> (Excepción: alumno con cursos jalados)
+                            </label>
+                        </div>
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Marque esta opción solo si el alumno necesita matricularse en otro ciclo debido a cursos jalados.
+                            La matrícula anterior será suspendida automáticamente.
+                        </small>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Nota:</strong> Al matricular un alumno en un ciclo, se le asignará automáticamente a todos los cursos de ese ciclo.
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100" id="btn-matricular">
+                        <i class="fas fa-user-plus me-2"></i>Matricular Alumno
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Matrículas Actuales</h5>
+            </div>
+            <div class="card-body">
+                {% if matriculas %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Alumno</th>
+                                    <th>Ciclo</th>
+                                    <th>Estado</th>
+                                    <th>Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for matricula, alumno, ciclo in matriculas %}
+                                <tr>
+                                    <td>
+                                        <small>{{ alumno.nombre }} {{ alumno.apellido }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ ciclo.nombre }}</span>
+                                    </td>
+                                    <td>
+                                        {% if matricula.estado == 'activa' %}
+                                            <span class="badge bg-success">Activa</span>
+                                        {% elif matricula.estado == 'completada' %}
+                                            <span class="badge bg-info">Completada</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Suspendida</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small>{{ matricula.fecha_matricula.strftime('%d/%m/%Y') }}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-user-graduate fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">No hay matrículas registradas</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Datos de matrículas para JavaScript
+const matriculasData = {
+    {% for matricula, alumno, ciclo in matriculas %}
+    {{ alumno.id }}: {
+        ciclo: "{{ ciclo.nombre }}",
+        estado: "{{ matricula.estado }}"
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+};
+
+function verificarMatricula() {
+    const selectAlumno = document.getElementById('alumno_id');
+    const infoMatricula = document.getElementById('info-matricula');
+    const opcionForzar = document.getElementById('opcion-forzar');
+    const btnMatricular = document.getElementById('btn-matricular');
+    const cicloActual = document.getElementById('ciclo-actual');
+    
+    const selectedOption = selectAlumno.options[selectAlumno.selectedIndex];
+    const tieneMatricula = selectedOption.getAttribute('data-matricula') === 'activa';
+    const cicloActualNombre = selectedOption.getAttribute('data-ciclo-actual');
+    
+    if (tieneMatricula && cicloActualNombre) {
+        // Mostrar información de matrícula activa
+        cicloActual.textContent = cicloActualNombre;
+        infoMatricula.style.display = 'block';
+        opcionForzar.style.display = 'block';
+        btnMatricular.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Forzar Matrícula (Excepción)';
+        btnMatricular.className = 'btn btn-warning w-100';
+    } else {
+        // Ocultar opciones de forzar
+        infoMatricula.style.display = 'none';
+        opcionForzar.style.display = 'none';
+        btnMatricular.innerHTML = '<i class="fas fa-user-plus me-2"></i>Matricular Alumno';
+        btnMatricular.className = 'btn btn-primary w-100';
+    }
+}
+
+// Verificar matrícula al cargar la página si hay valores preseleccionados
+document.addEventListener('DOMContentLoaded', function() {
+    verificarMatricula();
+    
+    // Mostrar opción de forzar si viene del servidor
+    {% if mostrar_forzar %}
+    document.getElementById('opcion-forzar').style.display = 'block';
+    document.getElementById('info-matricula').style.display = 'block';
+    document.getElementById('btn-matricular').innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Forzar Matrícula (Excepción)';
+    document.getElementById('btn-matricular').className = 'btn btn-warning w-100';
+    {% endif %}
+});
+</script>
+{% endblock %}

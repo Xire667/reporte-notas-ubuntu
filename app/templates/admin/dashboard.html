@@ -1,0 +1,921 @@
+{% extends "global/base_sistema.html" %}
+
+{% block title %}Dashboard Administrador - Sistema de Notas{% endblock %}
+
+{% block content %}
+<!-- Header del Dashboard Mejorado -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="dashboard-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="header-content">
+                    <h1 class="dashboard-title">
+                        <i class="fas fa-tachometer-alt me-3"></i>Panel de Administración
+                    </h1>
+                    <p class="dashboard-subtitle">
+                        Bienvenido, <strong>{{ current_user.nombre }} {{ current_user.apellido }}</strong>
+                    </p>
+                    <div class="dashboard-badges">
+                        <span class="badge bg-primary me-2">
+                            <i class="fas fa-user-shield me-1"></i>Administrador
+                        </span>
+                        <span class="badge bg-success">
+                            <i class="fas fa-circle me-1"></i>Sistema Activo
+                        </span>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <div class="text-end">
+                        <small class="text-muted d-block">Sistema de Gestión</small>
+                        <small class="text-primary fw-bold">Versión 1.0</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas Principales Mejoradas -->
+<div class="row mb-5">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stats-card stats-primary">
+            <div class="stats-icon">
+                <i class="fas fa-chalkboard-teacher"></i>
+            </div>
+            <div class="stats-content">
+                <div class="stats-number">{{ total_docentes }}</div>
+                <div class="stats-label">Docentes Activos</div>
+                <div class="stats-description">Total registrados en el sistema</div>
+            </div>
+            <div class="stats-trend">
+                <i class="fas fa-arrow-up text-success"></i>
+                <span class="text-success">+12%</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stats-card stats-success">
+            <div class="stats-icon">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <div class="stats-content">
+                <div class="stats-number">{{ alumnos_matriculados }}</div>
+                <div class="stats-label">Estudiantes Matriculados</div>
+                <div class="stats-description">En ciclos académicos activos</div>
+            </div>
+            <div class="stats-trend">
+                <i class="fas fa-arrow-up text-success"></i>
+                <span class="text-success">+8%</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stats-card stats-warning">
+            <div class="stats-icon">
+                <i class="fas fa-book"></i>
+            </div>
+            <div class="stats-content">
+                <div class="stats-number">{{ total_cursos }}</div>
+                <div class="stats-label">Cursos Disponibles</div>
+                <div class="stats-description">Total de cursos activos</div>
+            </div>
+            <div class="stats-trend">
+                <i class="fas fa-arrow-up text-success"></i>
+                <span class="text-success">+5%</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stats-card stats-info">
+            <div class="stats-icon">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <div class="stats-content">
+                <div class="stats-number">{{ total_notas }}</div>
+                <div class="stats-label">Notas Registradas</div>
+                <div class="stats-description">Total de calificaciones</div>
+            </div>
+            <div class="stats-trend">
+                <i class="fas fa-arrow-up text-success"></i>
+                <span class="text-success">+15%</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Acciones Rápidas Mejoradas -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="quick-actions-section">
+            <div class="section-header">
+                <h3 class="section-title">
+                    <i class="fas fa-bolt me-2"></i>Acciones Rápidas
+                </h3>
+                <p class="section-subtitle">Accede a las funciones más utilizadas del sistema</p>
+            </div>
+
+            <div class="quick-actions-grid">
+                <!-- Gestión de Usuarios -->
+                <div class="action-category">
+                    <h5 class="category-title">
+                        <i class="fas fa-users me-2"></i>Gestión de Usuarios
+                    </h5>
+                    <div class="action-buttons">
+                        <a href="{{ url_for('admin.registrar_docente') }}" class="action-btn btn-primary">
+                            <div class="action-icon">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="action-content">
+                                <div class="action-title">Registrar Docente</div>
+                                <div class="action-desc">Agregar nuevo docente al sistema</div>
+                            </div>
+                        </a>
+
+                        <a href="{{ url_for('admin.registrar_alumno') }}" class="action-btn btn-success">
+                            <div class="action-icon">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                            <div class="action-content">
+                                <div class="action-title">Registrar Estudiante</div>
+                                <div class="action-desc">Agregar nuevo estudiante</div>
+                            </div>
+                        </a>
+
+                        <a href="{{ url_for('admin.docentes') }}" class="action-btn btn-outline-primary">
+                            <div class="action-icon">
+                                <i class="fas fa-list"></i>
+                            </div>
+                            <div class="action-content">
+                                <div class="action-title">Ver Docentes</div>
+                                <div class="action-desc">Gestionar docentes existentes</div>
+                            </div>
+                        </a>
+
+                        <a href="{{ url_for('admin.alumnos') }}" class="action-btn btn-outline-success">
+                            <div class="action-icon">
+                                <i class="fas fa-list"></i>
+                            </div>
+                            <div class="action-content">
+                                <div class="action-title">Ver Estudiantes</div>
+                                <div class="action-desc">Gestionar estudiantes existentes</div>
+                            </div>
+                        </a>
+
+                        <a href="{{ url_for('admin.alumnos_por_ciclo') }}" class="action-btn btn-outline-info">
+                            <div class="action-icon">
+                                <i class="fas fa-filter"></i>
+                            </div>
+                            <div class="action-content">
+                                <div class="action-title">Estudiantes por Ciclo</div>
+                                <div class="action-desc">Ver estudiantes agrupados por ciclos</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Gestión Académica -->
+                <div class="action-category">
+                    <h5 class="category-title">
+                        <i class="fas fa-graduation-cap me-2"></i>Gestión Académica
+                    </h5>
+                    <div class="action-buttons">
+                        <a href="{{ url_for('admin.registrar_curso') }}" class="action-btn btn-warning">
+                            <div class="action-icon">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <div class="action-content">
+                                <div class="action-title">Registrar Curso</div>
+                                <div class="action-desc">Crear nuevo curso académico</div>
+                            </div>
+                        </a>
+
+                        <a href="{{ url_for('admin.registrar_ciclo') }}" class="action-btn btn-info">
+                            <div class="action-icon">
+                                <i class="fas fa-calendar-plus"></i>
+                            </div>
+                            <div class="action-content">
+                                <div class="action-title">Registrar Ciclo</div>
+                                <div class="action-desc">Crear nuevo ciclo académico</div>
+                            </div>
+                        </a>
+
+                        <a href="{{ url_for('admin.asignar_cursos') }}" class="action-btn btn-outline-warning">
+                            <div class="action-icon">
+                                <i class="fas fa-link"></i>
+                            </div>
+                            <div class="action-content">
+                                <div class="action-title">Asignar Cursos</div>
+                                <div class="action-desc">Asignar docentes a cursos</div>
+                            </div>
+                        </a>
+
+                        <a href="{{ url_for('admin.matricular_ciclo') }}" class="action-btn btn-outline-info">
+                            <div class="action-icon">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="action-content">
+                                <div class="action-title">Matricular Ciclo</div>
+                                <div class="action-desc">Matricular estudiantes en ciclos</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Herramientas del Sistema -->
+                <div class="action-category">
+                    <h5 class="category-title">
+                        <i class="fas fa-tools me-2"></i>Herramientas del Sistema
+                    </h5>
+                    <div class="action-buttons">
+                        <button onclick="sincronizarMatriculas()" class="action-btn btn-secondary">
+                            <div class="action-icon">
+                                <i class="fas fa-sync-alt"></i>
+                            </div>
+                            <div class="action-content">
+                                <div class="action-title">Sincronizar Matrículas</div>
+                                <div class="action-desc">Sincronizar ciclos con cursos</div>
+                            </div>
+                        </button>
+
+                        <a href="{{ url_for('admin.ciclos') }}" class="action-btn btn-outline-secondary">
+                            <div class="action-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <div class="action-content">
+                                <div class="action-title">Gestionar Ciclos</div>
+                                <div class="action-desc">Administrar ciclos académicos</div>
+                            </div>
+                        </a>
+
+                        <a href="{{ url_for('admin.cursos') }}" class="action-btn btn-outline-secondary">
+                            <div class="action-icon">
+                                <i class="fas fa-book-open"></i>
+                            </div>
+                            <div class="action-content">
+                                <div class="action-title">Gestionar Cursos</div>
+                                <div class="action-desc">Administrar cursos disponibles</div>
+                            </div>
+                        </a>
+
+                        <a href="{{ url_for('admin.ver_notas') }}" class="action-btn btn-outline-primary">
+                            <div class="action-icon">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <div class="action-content">
+                                <div class="action-title">Ver Notas</div>
+                                <div class="action-desc">Consultar notas de estudiantes</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resumen del Sistema -->
+<div class="row mb-5">
+    <div class="col-lg-8">
+        <div class="system-overview">
+            <div class="section-header">
+                <h3 class="section-title">
+                    <i class="fas fa-chart-pie me-2"></i>Resumen del Sistema
+                </h3>
+                <p class="section-subtitle">Vista general de la actividad académica</p>
+            </div>
+
+            <div class="overview-grid">
+                <div class="overview-item">
+                    <div class="overview-icon bg-primary">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <div class="overview-content">
+                        <div class="overview-number">{{ total_docentes }}</div>
+                        <div class="overview-label">Docentes Activos</div>
+                        <div class="overview-description">Profesores registrados en el sistema</div>
+                    </div>
+                </div>
+
+                <div class="overview-item">
+                    <div class="overview-icon bg-success">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div class="overview-content">
+                        <div class="overview-number">{{ alumnos_matriculados }}</div>
+                        <div class="overview-label">Estudiantes Matriculados</div>
+                        <div class="overview-description">En ciclos académicos activos</div>
+                    </div>
+                </div>
+
+                <div class="overview-item">
+                    <div class="overview-icon bg-warning">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="overview-content">
+                        <div class="overview-number">{{ total_cursos }}</div>
+                        <div class="overview-label">Cursos Disponibles</div>
+                        <div class="overview-description">Cursos académicos activos</div>
+                    </div>
+                </div>
+
+                <div class="overview-item">
+                    <div class="overview-icon bg-info">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <div class="overview-content">
+                        <div class="overview-number">{{ total_notas }}</div>
+                        <div class="overview-label">Notas Registradas</div>
+                        <div class="overview-description">Calificaciones en el sistema</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="quick-links">
+            <div class="section-header">
+                <h3 class="section-title">
+                    <i class="fas fa-external-link-alt me-2"></i>Enlaces Rápidos
+                </h3>
+            </div>
+
+            <div class="links-list">
+                <a href="{{ url_for('admin.docentes') }}" class="link-item">
+                    <div class="link-icon bg-primary">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="link-content">
+                        <div class="link-title">Gestionar Docentes</div>
+                        <div class="link-desc">Ver y administrar docentes</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+
+                <a href="{{ url_for('admin.alumnos') }}" class="link-item">
+                    <div class="link-icon bg-success">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div class="link-content">
+                        <div class="link-title">Gestionar Estudiantes</div>
+                        <div class="link-desc">Ver y administrar estudiantes</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+
+                <a href="{{ url_for('admin.alumnos_por_ciclo') }}" class="link-item">
+                    <div class="link-icon bg-info">
+                        <i class="fas fa-filter"></i>
+                    </div>
+                    <div class="link-content">
+                        <div class="link-title">Estudiantes por Ciclo</div>
+                        <div class="link-desc">Ver estudiantes agrupados por ciclos</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+
+                <a href="{{ url_for('admin.cursos') }}" class="link-item">
+                    <div class="link-icon bg-warning">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="link-content">
+                        <div class="link-title">Gestionar Cursos</div>
+                        <div class="link-desc">Ver y administrar cursos</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+
+                <a href="{{ url_for('admin.ciclos') }}" class="link-item">
+                    <div class="link-icon bg-info">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="link-content">
+                        <div class="link-title">Gestionar Ciclos</div>
+                        <div class="link-desc">Ver y administrar ciclos</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+
+                <a href="{{ url_for('admin.ver_notas') }}" class="link-item">
+                    <div class="link-icon bg-primary">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <div class="link-content">
+                        <div class="link-title">Ver Notas</div>
+                        <div class="link-desc">Consultar notas de estudiantes</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos del Dashboard Mejorado */
+    .dashboard-header {
+        background: linear-gradient(135deg, #1e3a8a 0%, #60a5fa 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+
+    .dashboard-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .dashboard-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 1rem;
+    }
+
+    .dashboard-badges .badge {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+    }
+
+    /* Tarjetas de Estadísticas */
+    .stats-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        border: none;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--bs-primary), var(--bs-primary));
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    .stats-primary::before {
+        background: linear-gradient(90deg, #007bff, #0056b3);
+    }
+
+    .stats-success::before {
+        background: linear-gradient(90deg, #28a745, #1e7e34);
+    }
+
+    .stats-warning::before {
+        background: linear-gradient(90deg, #ffc107, #e0a800);
+    }
+
+    .stats-info::before {
+        background: linear-gradient(90deg, #17a2b8, #138496);
+    }
+
+    .stats-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        margin-bottom: 1rem;
+    }
+
+    .stats-primary .stats-icon {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+    }
+
+    .stats-success .stats-icon {
+        background: linear-gradient(135deg, #28a745, #1e7e34);
+    }
+
+    .stats-warning .stats-icon {
+        background: linear-gradient(135deg, #ffc107, #e0a800);
+    }
+
+    .stats-info .stats-icon {
+        background: linear-gradient(135deg, #17a2b8, #138496);
+    }
+
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .stats-label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.25rem;
+    }
+
+    .stats-description {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+
+    .stats-trend {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    /* Sección de Acciones Rápidas */
+    .quick-actions-section {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        margin-bottom: 2rem;
+    }
+
+    .section-header {
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .section-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .section-subtitle {
+        color: #6c757d;
+        font-size: 1rem;
+    }
+
+    .quick-actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .action-category {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+    }
+
+    .category-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .action-buttons {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .action-btn {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border-radius: 10px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        background: white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        text-decoration: none;
+    }
+
+    .action-btn.btn-primary {
+        border-color: #007bff;
+        color: #007bff;
+    }
+
+    .action-btn.btn-success {
+        border-color: #28a745;
+        color: #28a745;
+    }
+
+    .action-btn.btn-warning {
+        border-color: #ffc107;
+        color: #ffc107;
+    }
+
+    .action-btn.btn-info {
+        border-color: #17a2b8;
+        color: #17a2b8;
+    }
+
+    .action-btn.btn-secondary {
+        border-color: #6c757d;
+        color: #6c757d;
+    }
+
+    .action-btn.btn-outline-primary {
+        border-color: #007bff;
+        color: #007bff;
+        background: rgba(0, 123, 255, 0.1);
+    }
+
+    .action-btn.btn-outline-success {
+        border-color: #28a745;
+        color: #28a745;
+        background: rgba(40, 167, 69, 0.1);
+    }
+
+    .action-btn.btn-outline-warning {
+        border-color: #ffc107;
+        color: #ffc107;
+        background: rgba(255, 193, 7, 0.1);
+    }
+
+    .action-btn.btn-outline-info {
+        border-color: #17a2b8;
+        color: #17a2b8;
+        background: rgba(23, 162, 184, 0.1);
+    }
+
+    .action-btn.btn-outline-secondary {
+        border-color: #6c757d;
+        color: #6c757d;
+        background: rgba(108, 117, 125, 0.1);
+    }
+
+    .action-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 1.2rem;
+    }
+
+    .action-btn.btn-primary .action-icon {
+        background: #007bff;
+        color: white;
+    }
+
+    .action-btn.btn-success .action-icon {
+        background: #28a745;
+        color: white;
+    }
+
+    .action-btn.btn-warning .action-icon {
+        background: #ffc107;
+        color: white;
+    }
+
+    .action-btn.btn-info .action-icon {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .action-btn.btn-secondary .action-icon {
+        background: #6c757d;
+        color: white;
+    }
+
+    .action-btn.btn-outline-primary .action-icon {
+        background: rgba(0, 123, 255, 0.2);
+        color: #007bff;
+    }
+
+    .action-btn.btn-outline-success .action-icon {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+    }
+
+    .action-btn.btn-outline-warning .action-icon {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+    }
+
+    .action-btn.btn-outline-info .action-icon {
+        background: rgba(23, 162, 184, 0.2);
+        color: #17a2b8;
+    }
+
+    .action-btn.btn-outline-secondary .action-icon {
+        background: rgba(108, 117, 125, 0.2);
+        color: #6c757d;
+    }
+
+    .action-title {
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .action-desc {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+
+    /* Resumen del Sistema */
+    .system-overview {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        height: 100%;
+    }
+
+    .overview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .overview-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .overview-item:hover {
+        background: #e9ecef;
+        transform: translateY(-2px);
+    }
+
+    .overview-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+        margin-right: 1rem;
+    }
+
+    .overview-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+
+    .overview-label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.25rem;
+    }
+
+    .overview-description {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+
+    /* Enlaces Rápidos */
+    .quick-links {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        height: 100%;
+    }
+
+    .links-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .link-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        text-decoration: none;
+        color: #495057;
+        transition: all 0.3s ease;
+    }
+
+    .link-item:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+        text-decoration: none;
+        color: #495057;
+    }
+
+    .link-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1rem;
+        margin-right: 1rem;
+    }
+
+    .link-title {
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .link-desc {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+
+    .link-item i.fa-chevron-right {
+        margin-left: auto;
+        color: #adb5bd;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .dashboard-title {
+            font-size: 2rem;
+        }
+
+        .quick-actions-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            grid-template-columns: 1fr;
+        }
+
+        .overview-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .overview-item {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .overview-icon {
+            margin-right: 0;
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+
+<script>
+    function sincronizarMatriculas() {
+        if (confirm('¿Estás seguro de que quieres sincronizar las matrículas? Esto creará las matrículas en cursos faltantes.')) {
+            fetch('/admin/sincronizar-matriculas', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ ' + data.message);
+                        location.reload();
+                    } else {
+                        alert('❌ Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('❌ Error al sincronizar las matrículas');
+                });
+        }
+    }
+</script>
+{% endblock %}

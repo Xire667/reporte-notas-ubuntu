@@ -1,0 +1,256 @@
+{% extends "global/base_sistema.html" %}
+
+{% block title %}Notas del Docente - Sistema de Notas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2><i class="fas fa-graduation-cap me-2"></i>Notas de {{ docente.nombre }} {{ docente.apellido }}</h2>
+                <p class="text-muted mb-0">DNI: {{ docente.dni }} | Email: {{ docente.email }}</p>
+            </div>
+            <div>
+                <a href="{{ url_for('admin.docentes') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Volver a Docentes
+                </a>
+                <a href="{{ url_for('admin.ver_cursos_docente', id=docente.id) }}" class="btn btn-primary">
+                    <i class="fas fa-book me-2"></i>Ver Cursos
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas de notas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h4>{{ total_notas }}</h4>
+                <p class="mb-0">Total Notas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h4>{{ notas_publicadas }}</h4>
+                <p class="mb-0">Publicadas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h4>{{ notas_borrador }}</h4>
+                <p class="mb-0">En Borrador</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h4>{{ "%.1f"|format(promedio_general) }}</h4>
+                <p class="mb-0">Promedio General</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list me-2"></i>Notas Registradas ({{ total_notas }})
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if notas %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Curso</th>
+                                <th>Alumno</th>
+                                <th>Parcial 1</th>
+                                <th>Parcial 2</th>
+                                <th>Parcial 3</th>
+                                <th>Parcial 4</th>
+                                <th>Nota Final</th>
+                                <th>Estado</th>
+                                <th>Fecha</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for nota_data in notas %}
+                            {% set nota = nota_data[0] %}
+                            {% set curso = nota_data[1] %}
+                            {% set alumno = nota_data[2] %}
+                            <tr>
+                                <td>
+                                    <strong>{{ curso.nombre }}</strong>
+                                    <br><small class="text-muted">{{ curso.codigo }}</small>
+                                </td>
+                                <td>
+                                    <strong>{{ alumno.nombre }} {{ alumno.apellido }}</strong>
+                                    <br><small class="text-muted">DNI: {{ alumno.dni }}</small>
+                                </td>
+                                <td>
+                                    {% if nota.parcial1 > 0 %}
+                                    <span class="badge bg-{% if nota.parcial1 >= 13 %}success{% elif nota.parcial1 >= 10 %}warning{% else %}danger{% endif %}">
+                                        {{ "%.1f"|format(nota.parcial1) }}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if nota.parcial2 > 0 %}
+                                    <span class="badge bg-{% if nota.parcial2 >= 13 %}success{% elif nota.parcial2 >= 10 %}warning{% else %}danger{% endif %}">
+                                        {{ "%.1f"|format(nota.parcial2) }}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if nota.parcial3 > 0 %}
+                                    <span class="badge bg-{% if nota.parcial3 >= 13 %}success{% elif nota.parcial3 >= 10 %}warning{% else %}danger{% endif %}">
+                                        {{ "%.1f"|format(nota.parcial3) }}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if nota.parcial4 > 0 %}
+                                    <span class="badge bg-{% if nota.parcial4 >= 13 %}success{% elif nota.parcial4 >= 10 %}warning{% else %}danger{% endif %}">
+                                        {{ "%.1f"|format(nota.parcial4) }}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if nota.nota_final > 0 %}
+                                    <span class="badge bg-{% if nota.nota_final >= 13 %}success{% elif nota.nota_final >= 10 %}warning{% else %}danger{% endif %} fs-6">
+                                        {{ "%.1f"|format(nota.nota_final) }}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if nota.estado == 'publicada' %}
+                                    <span class="badge bg-success">Publicada</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">Borrador</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ nota.fecha_actualizacion.strftime('%d/%m/%Y') if nota.fecha_actualizacion else 'N/A' }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('admin.ver_notas') }}?curso_id={{ curso.id }}&alumno_id={{ alumno.id }}" 
+                                           class="btn btn-sm btn-outline-primary" title="Editar nota">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{{ url_for('admin.ver_notas_alumno', alumno_id=alumno.id) }}" 
+                                           class="btn btn-sm btn-outline-info" title="Ver todas las notas del alumno">
+                                            <i class="fas fa-user-graduate"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No hay notas registradas</h5>
+                    <p class="text-muted">Este docente no ha registrado notas aún.</p>
+                    <a href="{{ url_for('admin.ver_notas') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Registrar Notas
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resumen por curso -->
+{% if notas %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Resumen por Curso
+                </h5>
+            </div>
+            <div class="card-body">
+                {% set cursos_dict = {} %}
+                {% for nota_data in notas %}
+                    {% set nota = nota_data[0] %}
+                    {% set curso = nota_data[1] %}
+                    {% if curso.id not in cursos_dict %}
+                        {% set _ = cursos_dict.update({curso.id: {'curso': curso, 'notas': [], 'promedio': 0}}) %}
+                    {% endif %}
+                    {% set _ = cursos_dict[curso.id]['notas'].append(nota) %}
+                {% endfor %}
+                
+                <div class="row">
+                    {% for curso_id, curso_data in cursos_dict.items() %}
+                    {% set curso = curso_data['curso'] %}
+                    {% set notas_curso = curso_data['notas'] %}
+                    {% set notas_finales = notas_curso|selectattr('nota_final', 'gt', 0)|map(attribute='nota_final')|list %}
+                    {% set promedio_curso = (notas_finales|sum / notas_finales|length) if notas_finales else 0 %}
+                    {% set notas_publicadas = notas_curso|selectattr('estado', 'eq', 'publicada')|list|length %}
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-primary">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="card-title mb-0">{{ curso.nombre }}</h6>
+                                <small>{{ curso.codigo }}</small>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-4">
+                                        <h6 class="text-primary">{{ notas_curso|length }}</h6>
+                                        <small class="text-muted">Total</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <h6 class="text-success">{{ notas_publicadas }}</h6>
+                                        <small class="text-muted">Publicadas</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <h6 class="text-info">{{ "%.1f"|format(promedio_curso) }}</h6>
+                                        <small class="text-muted">Promedio</small>
+                                    </div>
+                                </div>
+                                <div class="progress mt-2">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                         style="width: {{ (notas_publicadas / notas_curso|length * 100) if notas_curso|length > 0 else 0 }}%">
+                                        {{ "%.0f"|format((notas_publicadas / notas_curso|length * 100) if notas_curso|length > 0 else 0) }}%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

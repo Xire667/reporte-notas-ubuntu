@@ -1,0 +1,260 @@
+{% extends "global/base_sistema.html" %}
+
+{% block title %}Estadísticas del Docente - Sistema de Notas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2><i class="fas fa-chart-bar me-2"></i>Estadísticas de {{ docente.nombre }} {{ docente.apellido }}</h2>
+                <p class="text-muted mb-0">DNI: {{ docente.dni }} | Email: {{ docente.email }}</p>
+            </div>
+            <div>
+                <a href="{{ url_for('admin.docentes') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Volver a Docentes
+                </a>
+                <a href="{{ url_for('admin.ver_cursos_docente', id=docente.id) }}" class="btn btn-primary">
+                    <i class="fas fa-book me-2"></i>Ver Cursos
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas Generales -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ total_cursos }}</h4>
+                        <p class="card-text">Cursos Asignados</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-book fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ total_alumnos }}</h4>
+                        <p class="card-text">Total Alumnos</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ total_notas }}</h4>
+                        <p class="card-text">Notas Registradas</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-graduation-cap fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ "%.1f"|format(promedio_general) }}</h4>
+                        <p class="card-text">Promedio General</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas de Notas -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>Distribución de Notas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h3 class="text-success">{{ notas_publicadas }}</h3>
+                        <p class="text-muted">Publicadas</p>
+                    </div>
+                    <div class="col-6">
+                        <h3 class="text-warning">{{ total_notas - notas_publicadas }}</h3>
+                        <p class="text-muted">En Borrador</p>
+                    </div>
+                </div>
+                <div class="progress mt-3">
+                    <div class="progress-bar bg-success" role="progressbar" 
+                         style="width: {{ (notas_publicadas / total_notas * 100) if total_notas > 0 else 0 }}%">
+                        {{ "%.1f"|format((notas_publicadas / total_notas * 100) if total_notas > 0 else 0) }}%
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Información del Docente
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Estado:</strong><br>
+                        {% if docente.activo %}
+                        <span class="badge bg-success">Activo</span>
+                        {% else %}
+                        <span class="badge bg-danger">Inactivo</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-6">
+                        <strong>Fecha Registro:</strong><br>
+                        <small class="text-muted">{{ docente.fecha_creacion.strftime('%d/%m/%Y') if docente.fecha_creacion else 'N/A' }}</small>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-12">
+                        <strong>Eficiencia de Evaluación:</strong><br>
+                        {% if total_alumnos > 0 %}
+                        {% set eficiencia = (notas_publicadas / total_alumnos * 100) %}
+                        <div class="progress mt-2">
+                            <div class="progress-bar bg-{% if eficiencia >= 80 %}success{% elif eficiencia >= 60 %}warning{% else %}danger{% endif %}" 
+                                 role="progressbar" style="width: {{ eficiencia }}%">
+                                {{ "%.1f"|format(eficiencia) }}%
+                            </div>
+                        </div>
+                        <small class="text-muted">Notas publicadas vs Total de alumnos</small>
+                        {% else %}
+                        <span class="text-muted">Sin datos suficientes</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas por Curso -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list me-2"></i>Estadísticas por Curso
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if cursos_estadisticas %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Curso</th>
+                                <th>Código</th>
+                                <th>Alumnos</th>
+                                <th>Notas Total</th>
+                                <th>Notas Publicadas</th>
+                                <th>Promedio</th>
+                                <th>Progreso</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for curso_data in cursos_estadisticas %}
+                            {% set curso = curso_data.curso %}
+                            <tr>
+                                <td>
+                                    <strong>{{ curso.nombre }}</strong>
+                                    {% if curso.descripcion %}
+                                    <br><small class="text-muted">{{ curso.descripcion[:50] }}{% if curso.descripcion|length > 50 %}...{% endif %}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">{{ curso.codigo }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">{{ curso_data.alumnos }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-warning">{{ curso_data.notas_total }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ curso_data.notas_publicadas }}</span>
+                                </td>
+                                <td>
+                                    {% if curso_data.promedio > 0 %}
+                                    <span class="badge bg-{% if curso_data.promedio >= 13 %}success{% elif curso_data.promedio >= 10 %}warning{% else %}danger{% endif %}">
+                                        {{ "%.1f"|format(curso_data.promedio) }}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">Sin notas</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if curso_data.alumnos > 0 %}
+                                    {% set progreso = (curso_data.notas_publicadas / curso_data.alumnos * 100) %}
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-{% if progreso >= 80 %}success{% elif progreso >= 60 %}warning{% else %}danger{% endif %}" 
+                                             role="progressbar" style="width: {{ progreso }}%">
+                                            {{ "%.0f"|format(progreso) }}%
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <span class="text-muted">Sin alumnos</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('admin.ver_notas_curso', curso_id=curso.id) }}" 
+                                           class="btn btn-sm btn-outline-primary" title="Ver notas">
+                                            <i class="fas fa-graduation-cap"></i>
+                                        </a>
+                                        <a href="{{ url_for('admin.ver_notas') }}?curso_id={{ curso.id }}" 
+                                           class="btn btn-sm btn-outline-info" title="Gestionar notas">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No hay estadísticas disponibles</h5>
+                    <p class="text-muted">Este docente no tiene cursos asignados o no ha registrado notas.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

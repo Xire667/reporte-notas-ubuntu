@@ -1,0 +1,311 @@
+{% extends "global/base_sistema.html" %}
+
+{% block title %}Asignar Ciclos a Cursos - Sistema de Notas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-link me-2"></i>Asignar Ciclos a Cursos</h2>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Volver al Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Cursos sin ciclo asignado -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Cursos Sin Ciclo Asignado</h5>
+            </div>
+            <div class="card-body">
+                {% if cursos_sin_ciclo %}
+                <div class="row">
+                    {% for curso in cursos_sin_ciclo %}
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card border-warning">
+                            <div class="card-body">
+                                <h6 class="card-title">{{ curso.nombre }}</h6>
+                                <p class="card-text">
+                                    <small class="text-muted">
+                                        <strong>Código:</strong> {{ curso.codigo }}<br>
+                                        <strong>Créditos:</strong> {{ curso.creditos }}<br>
+                                        <strong>Estado:</strong>
+                                        {% if curso.activo %}
+                                        <span class="badge bg-success">Activo</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Inactivo</span>
+                                        {% endif %}
+                                    </small>
+                                </p>
+                                <form method="POST" class="d-inline">
+                                    <div class="input-group input-group-sm">
+                                        <select name="ciclo_id" class="form-select" required>
+                                            <option value="">Seleccionar ciclo</option>
+                                            {% for ciclo in ciclos %}
+                                            <option value="{{ ciclo.id }}">{{ ciclo.nombre }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <input type="hidden" name="curso_id" value="{{ curso.id }}">
+                                        <button type="submit" class="btn btn-warning">
+                                            <i class="fas fa-link"></i>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h5 class="text-success">¡Excelente!</h5>
+                    <p class="text-muted">Todos los cursos tienen un ciclo académico asignado.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cursos con ciclo asignado -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Cursos con Ciclo Asignado</h5>
+            </div>
+            <div class="card-body">
+                {% if cursos_con_ciclo %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Curso</th>
+                                <th>Código</th>
+                                <th>Créditos</th>
+                                <th>Ciclo Asignado</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for curso, ciclo in cursos_con_ciclo %}
+                            <tr>
+                                <td>
+                                    <strong>{{ curso.nombre }}</strong>
+                                    {% if curso.descripcion %}
+                                    <br><small class="text-muted">{{ curso.descripcion[:50] }}{% if
+                                        curso.descripcion|length > 50 %}...{% endif %}</small>
+                                    {% endif %}
+                                </td>
+                                <td><code>{{ curso.codigo }}</code></td>
+                                <td>{{ curso.creditos }}</td>
+                                <td>
+                                    {% if ciclo %}
+                                    <span class="badge bg-primary">{{ ciclo.nombre }}</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">Sin ciclo</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if curso.activo %}
+                                    <span class="badge bg-success">Activo</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Inactivo</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        {% if ciclo %}
+                                        <button type="button" class="btn btn-sm btn-outline-warning"
+                                            title="Cambiar Ciclo"
+                                            onclick="mostrarModalCambiarCiclo({{ curso.id }}, '{{ curso.nombre }}', {{ ciclo.id }}, '{{ ciclo.nombre }}')">
+                                            <i class="fas fa-exchange-alt"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" title="Quitar Ciclo"
+                                            onclick="quitarCiclo({{ curso.id }}, '{{ curso.nombre }}')">
+                                            <i class="fas fa-unlink"></i>
+                                        </button>
+                                        {% else %}
+                                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                            title="Asignar Ciclo"
+                                            onclick="mostrarModalAsignarCiclo({{ curso.id }}, '{{ curso.nombre }}')">
+                                            <i class="fas fa-link"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No hay cursos registrados</h5>
+                    <p class="text-muted">Registra algunos cursos para poder asignarles ciclos académicos.</p>
+                    <a href="{{ url_for('admin.registrar_curso') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Registrar Curso
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para cambiar ciclo -->
+<div class="modal fade" id="modalCambiarCiclo" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cambiar Ciclo del Curso</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Curso: <strong id="cursoNombreCambiar"></strong></p>
+                <p>Ciclo actual: <strong id="cicloActualCambiar"></strong></p>
+                <form id="formCambiarCiclo">
+                    <input type="hidden" id="cursoIdCambiar" name="curso_id">
+                    <div class="mb-3">
+                        <label for="nuevoCicloCambiar" class="form-label">Nuevo Ciclo</label>
+                        <select class="form-select" id="nuevoCicloCambiar" name="ciclo_id" required>
+                            <option value="">Seleccionar nuevo ciclo</option>
+                            {% for ciclo in ciclos %}
+                            <option value="{{ ciclo.id }}">{{ ciclo.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning" onclick="cambiarCiclo()">Cambiar Ciclo</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para asignar ciclo -->
+<div class="modal fade" id="modalAsignarCiclo" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Asignar Ciclo al Curso</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Curso: <strong id="cursoNombreAsignar"></strong></p>
+                <form id="formAsignarCiclo">
+                    <input type="hidden" id="cursoIdAsignar" name="curso_id">
+                    <div class="mb-3">
+                        <label for="cicloAsignar" class="form-label">Ciclo Académico</label>
+                        <select class="form-select" id="cicloAsignar" name="ciclo_id" required>
+                            <option value="">Seleccionar ciclo</option>
+                            {% for ciclo in ciclos %}
+                            <option value="{{ ciclo.id }}">{{ ciclo.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="asignarCiclo()">Asignar Ciclo</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function mostrarModalCambiarCiclo(cursoId, cursoNombre, cicloActualId, cicloActualNombre) {
+        document.getElementById('cursoIdCambiar').value = cursoId;
+        document.getElementById('cursoNombreCambiar').textContent = cursoNombre;
+        document.getElementById('cicloActualCambiar').textContent = cicloActualNombre;
+        document.getElementById('nuevoCicloCambiar').value = '';
+
+        new bootstrap.Modal(document.getElementById('modalCambiarCiclo')).show();
+    }
+
+    function mostrarModalAsignarCiclo(cursoId, cursoNombre) {
+        document.getElementById('cursoIdAsignar').value = cursoId;
+        document.getElementById('cursoNombreAsignar').textContent = cursoNombre;
+        document.getElementById('cicloAsignar').value = '';
+
+        new bootstrap.Modal(document.getElementById('modalAsignarCiclo')).show();
+    }
+
+    function cambiarCiclo() {
+        const formData = new FormData(document.getElementById('formCambiarCiclo'));
+        const cursoId = formData.get('curso_id');
+
+        fetch(`/admin/cursos/cambiar-ciclo/${cursoId}`, {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al cambiar el ciclo del curso');
+            });
+    }
+
+    function asignarCiclo() {
+        const formData = new FormData(document.getElementById('formAsignarCiclo'));
+        const cursoId = formData.get('curso_id');
+
+        fetch(`/admin/cursos/cambiar-ciclo/${cursoId}`, {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al asignar el ciclo al curso');
+            });
+    }
+
+    function quitarCiclo(cursoId, cursoNombre) {
+        if (confirm(`¿Estás seguro de que quieres quitar el ciclo del curso "${cursoNombre}"?`)) {
+            fetch(`/admin/cursos/quitar-ciclo/${cursoId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al quitar el ciclo del curso');
+                });
+        }
+    }
+</script>
+{% endblock %}

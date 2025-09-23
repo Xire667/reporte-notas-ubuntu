@@ -1,0 +1,248 @@
+{% extends "global/base_sistema.html" %}
+
+{% block title %}Nota del Alumno - {{ alumno.nombre }} {{ alumno.apellido }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="fas fa-user-graduate me-2"></i>Nota del Alumno: {{ alumno.nombre }} {{ alumno.apellido }}
+            </h2>
+            <a href="{{ url_for('docente.gestionar_notas', curso_id=curso.id) }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Volver a Notas
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Información del Alumno</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Nombre:</strong> {{ alumno.nombre }} {{ alumno.apellido }}</p>
+                        <p><strong>DNI:</strong> {{ alumno.dni }}</p>
+                        <p><strong>Email:</strong> {{ alumno.email }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Curso:</strong> {{ curso.nombre }}</p>
+                        <p><strong>Código:</strong> {{ curso.codigo }}</p>
+                        <p><strong>Créditos:</strong> {{ curso.creditos }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Calificaciones</h5>
+            </div>
+            <div class="card-body">
+                {% if nota %}
+                <form id="notaForm">
+                    <div class="row">
+                        {% for i in range(1, curso.numero_parciales + 1) %}
+                        <div class="col-md-4 mb-3">
+                            <label for="parcial{{ i }}" class="form-label">Parcial {{ i }}</label>
+                            <input type="number" class="form-control" id="parcial{{ i }}" name="parcial{{ i }}"
+                                value="{% if nota %}{% if i == 1 %}{{ nota.parcial1 if nota.parcial1 else '' }}{% elif i == 2 %}{{ nota.parcial2 if nota.parcial2 else '' }}{% elif i == 3 %}{{ nota.parcial3 if nota.parcial3 else '' }}{% elif i == 4 %}{{ nota.parcial4 if nota.parcial4 else '' }}{% endif %}{% endif %}"
+                                min="0" max="20" step="0.1" placeholder="0-20">
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nota_final" class="form-label">Nota Final</label>
+                            <input type="number" class="form-control" id="nota_final" name="nota_final"
+                                value="{{ nota.nota_final if nota.nota_final else 0 }}" min="0" max="20" step="0.1"
+                                readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="estado" class="form-label">Estado</label>
+                            <select class="form-select" id="estado" name="estado">
+                                <option value="borrador" {% if nota.estado=='borrador' %}selected{% endif %}>Borrador
+                                </option>
+                                <option value="publicada" {% if nota.estado=='publicada' %}selected{% endif %}>Publicada
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="comentarios" class="form-label">Comentarios</label>
+                        <textarea class="form-control" id="comentarios" name="comentarios"
+                            rows="3">{{ nota.comentarios if nota.comentarios else '' }}</textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('docente.gestionar_notas', curso_id=curso.id) }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Volver
+                        </a>
+                        <button type="button" class="btn btn-primary" onclick="guardarNota()">
+                            <i class="fas fa-save me-2"></i>Guardar Nota
+                        </button>
+                    </div>
+                </form>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                    <h5 class="text-muted">No hay nota registrada</h5>
+                    <p class="text-muted">Este alumno no tiene notas registradas para este curso.</p>
+                    <button type="button" class="btn btn-primary" onclick="crearNota()">
+                        <i class="fas fa-plus me-2"></i>Crear Nota
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function calcularNotaFinal() {
+        const numeroParciales = {{ curso.numero_parciales }};
+        const notaFinalElement = document.getElementById('nota_final');
+
+    if (!notaFinalElement) {
+        return;
+    }
+
+    const notas = [];
+    for (let i = 1; i <= numeroParciales; i++) {
+        const elemento = document.getElementById('parcial' + i);
+        if (elemento) {
+            const valor = parseFloat(elemento.value) || 0;
+            if (valor > 0) notas.push(valor);
+        }
+    }
+
+    let notaFinal = 0;
+    if (notas.length > 0) {
+        const suma = notas.reduce((a, b) => a + b, 0);
+        notaFinal = suma / notas.length;
+    }
+
+    notaFinalElement.value = notaFinal.toFixed(1);
+    }
+
+    function guardarNota() {
+        const numeroParciales = {{ curso.numero_parciales }};
+        const comentariosElement = document.getElementById('comentarios');
+        const estadoElement = document.getElementById('estado');
+
+    if (!comentariosElement) {
+        alert('Error: No se pueden encontrar los campos del formulario');
+        return;
+    }
+
+    // Recopilar y validar notas
+    const notas = [];
+    const formData = new FormData();
+
+    for (let i = 1; i <= numeroParciales; i++) {
+        const elemento = document.getElementById('parcial' + i);
+        if (elemento) {
+            const valor = elemento.value.trim();
+            notas.push(valor);
+            formData.append('parcial' + i, valor);
+        }
+    }
+
+    // Validar que al menos una nota tenga valor
+    const tieneNotas = notas.some(nota => nota && nota !== '');
+    if (!tieneNotas) {
+        alert('Debe ingresar al menos una nota.');
+        return;
+    }
+
+    // Validar rango de notas
+    for (let i = 0; i < notas.length; i++) {
+        if (notas[i] && (parseFloat(notas[i]) < 0 || parseFloat(notas[i]) > 20)) {
+            alert('Las notas deben estar entre 0 y 20.');
+            return;
+        }
+    }
+
+    formData.append('alumno_id', {{ alumno.id }});
+    formData.append('comentarios', comentariosElement.value);
+    formData.append('estado', estadoElement ? estadoElement.value : 'borrador');
+
+    // Mostrar indicador de carga
+    const botonGuardar = document.querySelector('button[onclick="guardarNota()"]');
+    const textoOriginal = botonGuardar.innerHTML;
+    botonGuardar.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Guardando...';
+    botonGuardar.disabled = true;
+
+    fetch('{{ url_for("docente.guardar_notas", curso_id=curso.id) }}', {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Mostrar mensaje de éxito
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success alert-dismissible fade show';
+                alert.innerHTML = `
+                        <i class="fas fa-check-circle me-2"></i>${data.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+
+                // Insertar el alert al inicio del contenido
+                const container = document.querySelector('.container-fluid');
+                if (container) {
+                    container.insertBefore(alert, container.firstChild);
+                }
+
+                // Auto-ocultar después de 3 segundos
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, 3000);
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al guardar la nota: ' + error.message);
+        })
+        .finally(() => {
+            // Restaurar botón
+            botonGuardar.innerHTML = textoOriginal;
+            botonGuardar.disabled = false;
+        });
+    }
+
+    function crearNota() {
+        // Redirigir a la página de gestión de notas
+        window.location.href = '{{ url_for("docente.gestionar_notas", curso_id=curso.id) }}';
+    }
+
+    // Calcular nota final automáticamente
+    document.addEventListener('DOMContentLoaded', function () {
+        const inputs = document.querySelectorAll('input[type="number"]');
+        inputs.forEach(input => {
+            input.addEventListener('input', calcularNotaFinal);
+        });
+    });
+</script>
+{% endblock %}

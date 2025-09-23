@@ -1,0 +1,89 @@
+{% extends "global/base_sistema.html" %}
+
+{% block title %}Registrar Ciclo Académico - Sistema de Notas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-plus me-2"></i>Registrar Ciclo Académico</h2>
+            <a href="{{ url_for('admin.ciclos') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Volver a Ciclos
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Información del Ciclo Académico</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nombre" class="form-label">Nombre del Ciclo <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" 
+                                   placeholder="Ej: Primer Año - Ciclo I" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="orden" class="form-label">Orden Secuencial <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="orden" name="orden" 
+                                   min="1" max="20" required>
+                            <div class="form-text">Orden en la secuencia académica (1, 2, 3, etc.)</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="año" class="form-label">Año Académico <span class="text-danger">*</span></label>
+                            <select class="form-select" id="año" name="año" required>
+                                <option value="">Seleccionar año</option>
+                                <option value="1">Primer Año</option>
+                                <option value="2">Segundo Año</option>
+                                <option value="3">Tercer Año</option>
+                                <option value="4">Cuarto Año</option>
+                                <option value="5">Quinto Año</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="ciclo" class="form-label">Ciclo <span class="text-danger">*</span></label>
+                            <select class="form-select" id="ciclo" name="ciclo" required>
+                                <option value="">Seleccionar ciclo</option>
+                                <option value="1">Ciclo I</option>
+                                <option value="2">Ciclo II</option>
+                                <option value="3">Ciclo III</option>
+                                <option value="4">Ciclo IV</option>
+                                <option value="5">Ciclo V</option>
+                                <option value="6">Ciclo VI</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="fecha_inicio" class="form-label">Fecha de Inicio</label>
+                            <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="fecha_fin" class="form-label">Fecha de Fin</label>
+                            <input type="date" class="form-control" id="fecha_fin" name="fecha_fin">
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.ciclos') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Registrar Ciclo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
