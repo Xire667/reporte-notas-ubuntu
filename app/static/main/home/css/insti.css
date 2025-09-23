@@ -4,11 +4,11 @@
     box-sizing: border-box;
 }
 
-:root{
-    --oscuro:#003366;
+:root {
+    --oscuro: #003366;
     /* --medio:#053474; */
-    --suave:#0071a4;
-    --claro:#6cb7ef;
+    --suave: #0071a4;
+    --claro: #6cb7ef;
 }
 
 
@@ -139,21 +139,27 @@ ul {
 
 /* Estilos para las imágenes SVG */
 .navegacion-principal .nav-icon {
-    width: 20px; /* Tamaño del ícono */
-    height: 20px; /* Tamaño del ícono */
-    vertical-align: middle; /* Alinea el ícono verticalmente con el texto */
-    margin-right: 8px; /* Espacio entre el ícono y el texto */
+    width: 20px;
+    /* Tamaño del ícono */
+    height: 20px;
+    /* Tamaño del ícono */
+    vertical-align: middle;
+    /* Alinea el ícono verticalmente con el texto */
+    margin-right: 8px;
+    /* Espacio entre el ícono y el texto */
     /* Para dar un color inicial a un SVG cargado con <img>, puedes usar filter.
        Este es un ejemplo para un ícono negro que quieres ver gris claro por defecto.
        Ajusta los valores de filter según el color original de tu SVG. */
     filter: invert(50%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(150%);
-    transition: filter 0.3s ease; /* Transición para el filtro */
+    transition: filter 0.3s ease;
+    /* Transición para el filtro */
 }
 
 
 /* Efecto al pasar el ratón sobre los elementos del menú */
 .navegacion-principal a:hover {
-    color: var(--color-primario); /* Cambia el color del texto del enlace */
+    color: var(--color-primario);
+    /* Cambia el color del texto del enlace */
 }
 
 /* Cambia el color del SVG (cargado con <img>) al pasar el ratón usando filter */
@@ -196,7 +202,8 @@ body {
     background: linear-gradient(to right, #004aad, #0099ff);
     color: white;
     width: 100%;
-    height: 450px; /* ocupa toda la pantalla */
+    height: 450px;
+    /* ocupa toda la pantalla */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -236,7 +243,7 @@ body {
 
 .hero-content h1,
 .hero-content p {
-    text-shadow: 2px 2px 5px rgba(0,0,0,0.8);
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.8);
 }
 
 
@@ -248,9 +255,11 @@ body {
     font-size: 2.5em;
     margin-bottom: 10px;
     align-items: center;
-    font-family:Impact, sans-serif;
-    -webkit-text-stroke: 0.6px rgb(0, 0, 0); /* contorno negro */
+    font-family: Impact, sans-serif;
+    -webkit-text-stroke: 0.6px rgb(0, 0, 0);
+    /* contorno negro */
 }
+
 /* Como esta fuente importada no se agregaba usamos lo siguiente */
 /* @font-face {
   font-family: 'Paladins Expanded';
@@ -269,7 +278,8 @@ body {
     font-size: 1.5em;
     margin-bottom: 20px;
     font-family: Impact;
-    -webkit-text-stroke: 0.8px black; /* contorno negro */
+    -webkit-text-stroke: 0.8px black;
+    /* contorno negro */
 }
 
 
@@ -278,11 +288,13 @@ body {
     background-color: #ffaa00;
 }
 
-           /* estilos para el menú y para que se quede estático */
+/* estilos para el menú y para que se quede estático */
 .navbar {
     display: flex;
-    position: sticky;    /*para que quede estático en la parte superior */
-    top: 0;       /*esto tambien es obligatorio*/
+    position: sticky;
+    /*para que quede estático en la parte superior */
+    top: 0;
+    /*esto tambien es obligatorio*/
 
     background-color: #003366;
     text-align: center;
@@ -316,11 +328,11 @@ body {
 /* para que la letra se quede de esa color al pasar el mause */
 .navbar a:hover {
     color: #ffcc00;
-    
+
     transform: scale(1.1);
 }
 
-.navbar .logo_g{
+.navbar .logo_g {
     display: flex;
     width: 80px;
     height: 80px;
@@ -332,31 +344,35 @@ body {
     filter: drop-shadow(0px 1px 5px #ffffff);
 }
 
-a .home_ico{
-    width: 30px;
-    height: 30px;
-}
-a .nota_ico{
-    width: 30px;
-    height: 30px;
-}
-a .asistencia_ico{
-    width: 30px;
-    height: 30px;
-}
-a .reporte_ico{
-    width: 30px;
-    height: 30px;
-}
-a .tramites_ico{
-    width: 30px;
-    height: 30px;
-}
-a .chat_ico{
+a .home_ico {
     width: 30px;
     height: 30px;
 }
 
+a .nota_ico {
+    width: 30px;
+    height: 30px;
+}
+
+a .asistencia_ico {
+    width: 30px;
+    height: 30px;
+}
+
+a .reporte_ico {
+    width: 30px;
+    height: 30px;
+}
+
+a .tramites_ico {
+    width: 30px;
+    height: 30px;
+}
+
+a .chat_ico {
+    width: 30px;
+    height: 30px;
+}
 
 
 
@@ -364,7 +380,8 @@ a .chat_ico{
 
 
 
-             /* otra seccion de Inicio */
+
+/* otra seccion de Inicio */
 .bienvenida {
     padding: 40px 20px;
     text-align: center;
@@ -378,7 +395,7 @@ a .chat_ico{
 
 
 
-             /* seccion para poner las Carreras */
+/* seccion para poner las Carreras */
 .carreras {
     padding: 40px 20px;
     background-color: #e6f0ff;
@@ -402,18 +419,20 @@ a .chat_ico{
     background-color: white;
     padding: 20px;
     border-radius: 15px;
-    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease;
 
     /* NUEVO: hace que el contenido se distribuya verticalmente */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    height: 100%; /* asegúrate de que todas las tarjetas tengan altura igual */
+    height: 100%;
+    /* asegúrate de que todas las tarjetas tengan altura igual */
 }
 
 .card p {
-    flex-grow: 1; /* hace que el párrafo crezca para empujar el botón hacia abajo */
+    flex-grow: 1;
+    /* hace que el párrafo crezca para empujar el botón hacia abajo */
 }
 
 
@@ -450,33 +469,35 @@ footer {
 
 /*solo Botón */
 .btn {
-  position: relative;
-  background-color: #00336600; /* fondo sólido transparente */
-  color: yellow;
-  padding: 3px 3px;
-  border-radius: 30px;
-  text-decoration: none;
-  font-weight: bold;
-  transition: 0.6s ease;
-  z-index: 1;
-  overflow: hidden; /* evita que el efecto sobresalga hacia dentro */
-  
+    position: relative;
+    background-color: #00336600;
+    /* fondo sólido transparente */
+    color: yellow;
+    padding: 3px 3px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.6s ease;
+    z-index: 1;
+    overflow: hidden;
+    /* evita que el efecto sobresalga hacia dentro */
+
 }
 
-.btn:hover{
+.btn:hover {
     transform: scale(1.05);
     background-color: rgb(255, 255, 255);
-    
+
 }
 
 .btn span {
     border: solid 2px rgb(0, 183, 255);
-  position: relative;
-  z-index: 2;
-  background-color: #003366;
-  padding: 10px 25px;
-  border-radius: 30px;
-  display: inline-block;
+    position: relative;
+    z-index: 2;
+    background-color: #003366;
+    padding: 10px 25px;
+    border-radius: 30px;
+    display: inline-block;
 }
 
 
@@ -487,17 +508,24 @@ footer {
 
 /* El nuevo div que será el panel de fondo para el contenido */
 .hero-content-panel {
-    width: 80%; /* Ancho del panel */
+    width: 80%;
+    /* Ancho del panel */
     height: 60%;
     margin-top: 140px;
-    max-width: 900px; /* Ancho máximo para pantallas grandes */
-    box-sizing: border-box; /* Incluye padding en el ancho/alto */
+    max-width: 900px;
+    /* Ancho máximo para pantallas grandes */
+    box-sizing: border-box;
+    /* Incluye padding en el ancho/alto */
 
     /* Estilos del panel de fondo */
-    background-color: rgba(255, 255, 255, 0.5); /* Fondo negro con 50% de opacidad */
-    border-radius: 15px; /* Esquinas redondeadas */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); /* Sombra para efecto de elevación */
-    text-align: center; /* Centra el texto y el botón dentro del panel */
+    background-color: rgba(255, 255, 255, 0.5);
+    /* Fondo negro con 50% de opacidad */
+    border-radius: 15px;
+    /* Esquinas redondeadas */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    /* Sombra para efecto de elevación */
+    text-align: center;
+    /* Centra el texto y el botón dentro del panel */
 
     /* Mantenemos flex para organizar el contenido (h1, p, a) verticalmente */
     display: flex;
@@ -505,6 +533,7 @@ footer {
     justify-content: center;
     align-items: center;
 }
+
 /* Contenedor efecto (detrás visualmente) */
 /* .btn::before,
 .btn::after {
@@ -549,12 +578,13 @@ footer {
 
 
 
-               /* para hacer el efecto donde las imágenes pasen de una a una en el inicio */
+/* para hacer el efecto donde las imágenes pasen de una a una en el inicio */
 
 
 .slider .slide.active {
     opacity: 1;
 }
+
 .slider {
     position: absolute;
     top: 0;
@@ -569,9 +599,11 @@ footer {
     position: absolute;
     width: 100%;
     height: 100%;
-    object-fit: cover; /*hace que la imagen no se distorcione*/
+    object-fit: cover;
+    /*hace que la imagen no se distorcione*/
     opacity: 0;
-    transition: opacity 1s ease-in-out;   /*Efecto que hace que al cambiar de ima imagen a otra, tenga un efecto de desaparición*/
+    transition: opacity 1s ease-in-out;
+    /*Efecto que hace que al cambiar de ima imagen a otra, tenga un efecto de desaparición*/
 }
 
 .slider .slide.active {
@@ -593,9 +625,11 @@ footer {
     display: none;
     position: fixed;
     z-index: 9999;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background-color: rgba(0,0,0,0.6);
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
     justify-content: center;
     align-items: center;
 }
@@ -606,13 +640,14 @@ footer {
     border-radius: 10px;
     max-width: 600px;
     text-align: center;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     position: relative;
 }
 
 .cerrar {
     position: absolute;
-    top: 10px; right: 15px;
+    top: 10px;
+    right: 15px;
     font-size: 28px;
     cursor: pointer;
     color: #333;
@@ -631,7 +666,8 @@ footer {
     /* 🔽 ESTOS SON CLAVE */
     display: inline-block;
     width: auto;
-    align-self: center; /* evita que se estire en flex container */
+    align-self: center;
+    /* evita que se estire en flex container */
 
 }
 
@@ -646,10 +682,12 @@ footer {
 .panel-info-flotante {
     display: none;
     position: fixed;
-    top: 0; left: 0;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7); /* fondo oscuro */
+    background-color: rgba(0, 0, 0, 0.7);
+    /* fondo oscuro */
     justify-content: center;
     align-items: center;
     z-index: 9999;
@@ -662,20 +700,225 @@ footer {
     width: 90%;
     max-width: 600px;
     position: relative;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     animation: fadeIn 0.3s ease;
 }
 
 .cerrar-panel {
     position: absolute;
-    top: 10px; right: 15px;
+    top: 10px;
+    right: 15px;
     font-size: 26px;
     color: #555;
     cursor: pointer;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
+/* Estilos para la nueva sección de acceso al sistema */
+.acceso-sistema {
+    padding: 60px 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    text-align: center;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.acceso-sistema h2 {
+    font-size: 2.5rem;
+    color: var(--color-primario);
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.acceso-sistema p {
+    font-size: 1.2rem;
+    color: var(--color-texto-claro);
+    margin-bottom: 3rem;
+}
+
+.acceso-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.acceso-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border: 3px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.acceso-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--color-primario), var(--color-accento));
+}
+
+.acceso-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.acceso-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.5rem;
+    background: linear-gradient(135deg, var(--color-primario), var(--color-primario-claro));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+    box-shadow: 0 5px 15px rgba(26, 75, 140, 0.3);
+}
+
+.acceso-card h3 {
+    font-size: 1.5rem;
+    color: var(--color-primario);
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.acceso-card p {
+    color: var(--color-texto-claro);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.acceso-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 12px 24px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.acceso-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.acceso-btn:hover::before {
+    left: 100%;
+}
+
+.admin-btn {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+}
+
+.admin-btn:hover {
+    background: linear-gradient(135deg, #c82333, #a71e2a);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+}
+
+.docente-btn {
+    background: linear-gradient(135deg, #28a745, #1e7e34);
+    color: white;
+}
+
+.docente-btn:hover {
+    background: linear-gradient(135deg, #1e7e34, #155724);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+}
+
+.alumno-btn {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+}
+
+.alumno-btn:hover {
+    background: linear-gradient(135deg, #0056b3, #004085);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+}
+
+/* Botones del hero mejorados */
+.hero-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, var(--color-accento), #ff8c42);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: linear-gradient(135deg, #ff8c42, #e55a2b);
+    transform: scale(1.05);
+}
+
+.btn-secondary span {
+    border: solid 2px rgba(255, 255, 255, 0.3);
+    background: rgba(255, 107, 53, 0.1);
+}
+
+/* Responsive para acceso-sistema */
+@media (max-width: 768px) {
+    .acceso-sistema h2 {
+        font-size: 2rem;
+    }
+
+    .acceso-sistema p {
+        font-size: 1rem;
+    }
+
+    .acceso-cards {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .btn,
+    .btn-secondary {
+        width: 100%;
+        max-width: 300px;
+    }
+}

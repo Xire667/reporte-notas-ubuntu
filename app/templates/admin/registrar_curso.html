@@ -1,0 +1,78 @@
+{% extends "global/base_sistema.html" %}
+
+{% block title %}Registrar Curso - Sistema de Notas{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4><i class="fas fa-plus me-2"></i>Registrar Nuevo Curso</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="codigo" class="form-label">Código del Curso *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-tag"></i></span>
+                                    <input type="text" class="form-control" id="codigo" name="codigo" required>
+                                </div>
+                                <div class="form-text">Ejemplo: MAT101, PROG201</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="creditos" class="form-label">Créditos *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-star"></i></span>
+                                    <input type="number" class="form-control" id="creditos" name="creditos" min="1"
+                                        max="10" value="3" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre del Curso *</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-book"></i></span>
+                            <input type="text" class="form-control" id="nombre" name="nombre" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="ciclo_academico_id" class="form-label">Ciclo Académico</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-graduation-cap"></i></span>
+                            <select class="form-select" id="ciclo_academico_id" name="ciclo_academico_id">
+                                <option value="">Sin ciclo específico</option>
+                                {% for ciclo in ciclos %}
+                                <option value="{{ ciclo.id }}">{{ ciclo.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-text">Asignar el curso a un ciclo académico específico</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="descripcion" name="descripcion" rows="3"
+                            placeholder="Describe el contenido y objetivos del curso..."></textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('admin.cursos') }}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-arrow-left me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Registrar Curso
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

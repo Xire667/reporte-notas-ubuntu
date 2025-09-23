@@ -1,0 +1,204 @@
+{% extends "global/base_sistema.html" %}
+
+{% block title %}Gestión de Docentes - Sistema de Notas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-chalkboard-teacher me-2"></i>Gestión de Docentes</h2>
+            <a href="{{ url_for('admin.registrar_docente') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Registrar Docente
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                {% if docentes %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>DNI</th>
+                                <th>Nombre Completo</th>
+                                <th>Email</th>
+                                <th>Estado</th>
+                                <th>Fecha Registro</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for docente_data in docentes %}
+                            {% set docente = docente_data.docente %}
+                            <tr>
+                                <td>{{ docente.dni }}</td>
+                                <td>{{ docente.nombre }} {{ docente.apellido }}</td>
+                                <td>{{ docente.email }}</td>
+                                <td>
+                                    {% if docente.activo %}
+                                    <span class="badge bg-success">Activo</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Inactivo</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ docente.fecha_creacion.strftime('%d/%m/%Y') if docente.fecha_creacion else 'N/A'
+                                    }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('admin.editar_docente', id=docente.id) }}"
+                                            class="btn btn-sm btn-outline-warning" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{{ url_for('admin.ver_cursos_docente', id=docente.id) }}"
+                                            class="btn btn-sm btn-outline-primary" title="Ver cursos">
+                                            <i class="fas fa-book"></i>
+                                        </a>
+                                        <a href="{{ url_for('admin.estadisticas_docente', id=docente.id) }}"
+                                            class="btn btn-sm btn-outline-info" title="Estadísticas">
+                                            <i class="fas fa-chart-bar"></i>
+                                        </a>
+                                        <a href="{{ url_for('admin.ver_alumnos_docente', id=docente.id) }}"
+                                            class="btn btn-sm btn-outline-success" title="Ver alumnos">
+                                            <i class="fas fa-users"></i>
+                                        </a>
+                                        <a href="{{ url_for('admin.ver_notas_docente', id=docente.id) }}"
+                                            class="btn btn-sm btn-outline-secondary" title="Ver notas">
+                                            <i class="fas fa-graduation-cap"></i>
+                                        </a>
+                                        <a href="{{ url_for('admin.asignar_cursos') }}"
+                                            class="btn btn-sm btn-outline-dark" title="Asignar cursos">
+                                            <i class="fas fa-link"></i>
+                                        </a>
+                                        <button type="button"
+                                            class="btn btn-sm btn-outline-{{ 'danger' if docente.activo else 'success' }}"
+                                            title="{{ 'Desactivar' if docente.activo else 'Activar' }}"
+                                            onclick="toggleActivo({{ docente.id }}, 'docente')">
+                                            <i class="fas fa-{{ 'ban' if docente.activo else 'check' }}"></i>
+                                        </button>
+                                        <button type="button"
+                                            class="btn btn-sm btn-outline-danger{{ ' disabled' if not docente_data.puede_eliminar else '' }}"
+                                            title="{% if docente_data.puede_eliminar %}Eliminar{% else %}No se puede eliminar - Tiene {{ docente_data.cursos_asignados + docente_data.notas_registradas }} relación(es){% endif %}"
+                                            {% if docente_data.puede_eliminar
+                                            %}onclick="eliminarDocente({{ docente.id }})" {% endif %}>
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-chalkboard-teacher fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No hay docentes registrados</h5>
+                    <p class="text-muted">Comienza registrando el primer docente del sistema.</p>
+                    <a href="{{ url_for('admin.registrar_docente') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Registrar Primer Docente
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Acción</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmButton">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleActivo(id, tipo) {
+        const action = tipo === 'docente' ? 'activar/desactivar' : 'activar/desactivar';
+        const message = `¿Estás seguro de que quieres ${action} este ${tipo}?`;
+
+        document.getElementById('confirmMessage').textContent = message;
+        document.getElementById('confirmButton').onclick = function () {
+            fetch(`/admin/${tipo}s/toggle-activo/${id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al procesar la solicitud');
+                });
+
+            bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+        };
+
+        new bootstrap.Modal(document.getElementById('confirmModal')).show();
+    }
+
+    function eliminarDocente(id) {
+        const message = '¿Estás seguro de que quieres eliminar este docente? Esta acción no se puede deshacer.';
+
+        document.getElementById('confirmMessage').textContent = message;
+        document.getElementById('confirmButton').onclick = function () {
+            fetch(`/admin/docentes/eliminar/${id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al procesar la solicitud');
+                });
+
+            bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+        };
+
+        new bootstrap.Modal(document.getElementById('confirmModal')).show();
+    }
+</script>
+
+<style>
+    .btn.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .btn.disabled:hover {
+        opacity: 0.5;
+    }
+</style>
+{% endblock %}

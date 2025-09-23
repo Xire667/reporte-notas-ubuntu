@@ -1,0 +1,160 @@
+{% extends "global/base_sistema.html" %}
+
+{% block title %}Alumnos del Docente - Sistema de Notas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2><i class="fas fa-users me-2"></i>Alumnos de {{ docente.nombre }} {{ docente.apellido }}</h2>
+                <p class="text-muted mb-0">DNI: {{ docente.dni }} | Email: {{ docente.email }}</p>
+            </div>
+            <div>
+                <a href="{{ url_for('admin.docentes') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Volver a Docentes
+                </a>
+                <a href="{{ url_for('admin.ver_cursos_docente', id=docente.id) }}" class="btn btn-primary">
+                    <i class="fas fa-book me-2"></i>Ver Cursos
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list me-2"></i>Alumnos Asignados ({{ alumnos|length }})
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if alumnos %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>DNI</th>
+                                <th>Nombre Completo</th>
+                                <th>Email</th>
+                                <th>Cursos</th>
+                                <th>Notas Registradas</th>
+                                <th>Promedio</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for alumno_data in alumnos %}
+                            {% set alumno = alumno_data.alumno %}
+                            <tr>
+                                <td>{{ alumno.dni }}</td>
+                                <td>
+                                    <strong>{{ alumno.nombre }} {{ alumno.apellido }}</strong>
+                                </td>
+                                <td>{{ alumno.email }}</td>
+                                <td>
+                                    {% for curso in alumno_data.cursos %}
+                                    <span class="badge bg-primary me-1">{{ curso }}</span>
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-warning">{{ alumno_data.notas_total }}</span>
+                                </td>
+                                <td>
+                                    {% if alumno_data.promedio > 0 %}
+                                    <span class="badge bg-{% if alumno_data.promedio >= 13 %}success{% elif alumno_data.promedio >= 10 %}warning{% else %}danger{% endif %}">
+                                        {{ "%.1f"|format(alumno_data.promedio) }}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">Sin notas</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if alumno.activo %}
+                                    <span class="badge bg-success">Activo</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Inactivo</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('admin.ver_notas_alumno', alumno_id=alumno.id) }}" 
+                                           class="btn btn-sm btn-outline-primary" title="Ver notas del alumno">
+                                            <i class="fas fa-graduation-cap"></i>
+                                        </a>
+                                        <a href="{{ url_for('admin.ver_notas') }}?alumno_id={{ alumno.id }}" 
+                                           class="btn btn-sm btn-outline-info" title="Gestionar notas">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{{ url_for('admin.editar_alumno', id=alumno.id) }}" 
+                                           class="btn btn-sm btn-outline-warning" title="Editar alumno">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No hay alumnos asignados</h5>
+                    <p class="text-muted">Este docente no tiene alumnos asignados en sus cursos.</p>
+                    <a href="{{ url_for('admin.ver_cursos_docente', id=docente.id) }}" class="btn btn-primary">
+                        <i class="fas fa-book me-2"></i>Ver Cursos
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resumen de estadísticas -->
+{% if alumnos %}
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h4>{{ alumnos|length }}</h4>
+                <p class="mb-0">Total Alumnos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h4>{{ alumnos|selectattr('promedio', 'gt', 0)|list|length }}</h4>
+                <p class="mb-0">Con Notas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h4>{{ alumnos|selectattr('promedio', 'eq', 0)|list|length }}</h4>
+                <p class="mb-0">Sin Notas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                {% set promedios = alumnos|selectattr('promedio', 'gt', 0)|map(attribute='promedio')|list %}
+                {% if promedios %}
+                <h4>{{ "%.1f"|format(promedios|sum / promedios|length) }}</h4>
+                {% else %}
+                <h4>0.0</h4>
+                {% endif %}
+                <p class="mb-0">Promedio General</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

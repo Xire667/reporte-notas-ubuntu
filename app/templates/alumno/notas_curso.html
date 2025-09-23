@@ -1,0 +1,172 @@
+{% extends "global/base_sistema.html" %}
+
+{% block title %}Notas del Curso - {{ curso.nombre }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="fas fa-chart-line me-2"></i>Notas del Curso: {{ curso.nombre }}
+            </h2>
+            <a href="{{ url_for('alumno.ver_notas') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Volver a Todas las Notas
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5><i class="fas fa-chart-line me-2"></i>Detalle de Notas</h5>
+            </div>
+            <div class="card-body">
+                {% if nota %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Parciales:</h6>
+                        <div class="mb-3">
+                            <label class="form-label">Parcial 1:</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" value="{{ nota.parcial1 or 0 }}" readonly>
+                                <span class="input-group-text">
+                                    {% if nota.parcial1 %}
+                                    <span
+                                        class="badge bg-{{ 'success' if nota.parcial1 >= 13 else 'warning' if nota.parcial1 >= 10 else 'danger' }}">
+                                        {{ "%.1f"|format(nota.parcial1) }}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">Sin calificar</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Parcial 2:</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" value="{{ nota.parcial2 or 0 }}" readonly>
+                                <span class="input-group-text">
+                                    {% if nota.parcial2 %}
+                                    <span
+                                        class="badge bg-{{ 'success' if nota.parcial2 >= 13 else 'warning' if nota.parcial2 >= 10 else 'danger' }}">
+                                        {{ "%.1f"|format(nota.parcial2) }}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">Sin calificar</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Parcial 3:</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" value="{{ nota.parcial3 or 0 }}" readonly>
+                                <span class="input-group-text">
+                                    {% if nota.parcial3 %}
+                                    <span
+                                        class="badge bg-{{ 'success' if nota.parcial3 >= 13 else 'warning' if nota.parcial3 >= 10 else 'danger' }}">
+                                        {{ "%.1f"|format(nota.parcial3) }}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">Sin calificar</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h6>Resumen:</h6>
+                        <div class="mb-3">
+                            <label class="form-label">Nota Final:</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control fs-4 fw-bold"
+                                    value="{{ nota.nota_final or 0 }}" readonly>
+                                <span class="input-group-text">
+                                    {% if nota.nota_final %}
+                                    <span
+                                        class="badge bg-{{ 'success' if nota.nota_final >= 13 else 'warning' if nota.nota_final >= 10 else 'danger' }} fs-6">
+                                        {{ "%.1f"|format(nota.nota_final) }}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">Sin calificar</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Estado:</label>
+                            <div>
+                                {% if nota.estado == 'publicada' %}
+                                <span class="badge bg-success fs-6">Publicada</span>
+                                {% else %}
+                                <span class="badge bg-warning fs-6">Borrador</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if nota.comentarios %}
+                        <div class="mb-3">
+                            <label class="form-label">Comentarios del Docente:</label>
+                            <div class="alert alert-info">
+                                {{ nota.comentarios }}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-chart-line fa-2x text-muted mb-3"></i>
+                    <h6 class="text-muted">No hay notas registradas</h6>
+                    <p class="text-muted">Las notas aparecerán aquí cuando el docente las publique.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5><i class="fas fa-info-circle me-2"></i>Información del Curso</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Código:</strong> {{ curso.codigo }}</p>
+                <p><strong>Nombre:</strong> {{ curso.nombre }}</p>
+                <p><strong>Créditos:</strong> {{ curso.creditos }}</p>
+                {% if curso.docentes %}
+                <p><strong>Docente:</strong>
+                    {% for docente in curso.docentes %}
+                    {{ docente.docente.nombre }} {{ docente.docente.apellido }}
+                    {% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                </p>
+                {% endif %}
+                {% if curso.descripcion %}
+                <p><strong>Descripción:</strong></p>
+                <p class="text-muted">{{ curso.descripcion }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header bg-warning text-dark">
+                <h5><i class="fas fa-exclamation-triangle me-2"></i>Leyenda</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-column gap-2">
+                    <span class="badge bg-success">13-20 (Aprobado)</span>
+                    <span class="badge bg-warning">10-12.9 (Regular)</span>
+                    <span class="badge bg-danger">0-9.9 (Desaprobado)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

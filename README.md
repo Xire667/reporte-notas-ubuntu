@@ -1,148 +1,234 @@
-DROP DATABASE IF EXISTS sistema_academico;
+# Sistema de Gestión de Notas - Instituto Suiza
+
+Sistema web desarrollado en Flask para la gestión académica del Instituto Superior Tecnológico Público Suiza. Permite la administración de usuarios, cursos, calificaciones y seguimiento estudiantil.
+
+## 🚀 Características Principales
+
+### Roles del Sistema
+
+#### 👨‍💼 Administrador
+- Registro y gestión de docentes
+- Registro y gestión de cursos
+- Asignación de cursos a docentes
+- Registro y matrícula de alumnos
+- Supervisión general del sistema
+
+#### 👨‍🏫 Docente
+- Subir y editar notas de alumnos
+- Visualizar lista de alumnos por curso
+- Gestión de calificaciones por parciales
+- Comentarios y observaciones
+
+#### 👨‍🎓 Alumno
+- Inicio de sesión con DNI y contraseña
+- Visualización de todas sus notas
+- Consulta de calificaciones por curso
+- Seguimiento del rendimiento académico
+
+## 🛠️ Tecnologías Utilizadas
+
+- **Backend**: Flask 3.1.1
+- **Base de Datos**: MySQL con SQLAlchemy
+- **Autenticación**: Flask-Login
+- **Frontend**: Bootstrap 5.3, HTML5, CSS3, JavaScript
+- **ORM**: SQLAlchemy 2.0.30
+- **Templates**: Jinja2
+
+## 📋 Requisitos del Sistema
+
+- Python 3.8+
+- MySQL 5.7+ o MariaDB 10.3+
+- XAMPP (recomendado para desarrollo)
+
+## 🔧 Instalación
+
+### 1. Clonar el repositorio
+```bash
+git clone <url-del-repositorio>
+cd reporte-notas-ubuntu
+```
+
+### 2. Crear entorno virtual
+```bash
+python -m venv venv
+
+# En Windows
+venv\Scripts\activate
+
+# En Linux/Mac
+source venv/bin/activate
+```
+
+### 3. Instalar dependencias
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Configurar la base de datos
+
+#### Opción A: Usando XAMPP
+1. Iniciar XAMPP
+2. Activar Apache y MySQL
+3. Abrir phpMyAdmin (http://localhost/phpmyadmin)
+4. Crear una nueva base de datos llamada `sistema_academico`
+5. Importar el archivo `README.md` (contiene el script SQL)
+
+#### Opción B: MySQL directo
+```sql
 CREATE DATABASE sistema_academico;
 USE sistema_academico;
+-- Ejecutar el script SQL del README.md
+```
 
--- Tabla de roles
-CREATE TABLE roles (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL,
-    descripcion TEXT
-);
+### 5. Configurar la aplicación
 
--- Tabla de carreras
-CREATE TABLE carreras (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    descripcion TEXT
-);
+Editar `app/__init__.py` y actualizar la configuración de la base de datos:
 
--- Tabla de usuarios
-CREATE TABLE usuarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    correo VARCHAR(100) UNIQUE NOT NULL,
-    contrasena VARCHAR(255) NOT NULL,
-    rol_id INT NOT NULL,
-    carrera_id INT,
-    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (rol_id) REFERENCES roles(id),
-    FOREIGN KEY (carrera_id) REFERENCES carreras(id)
-);
+```python
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://usuario:contraseña@localhost/sistema_academico'
+```
 
--- Tabla de asignaturas
-CREATE TABLE asignaturas (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    codigo VARCHAR(20) UNIQUE NOT NULL,
-    carrera_id INT NOT NULL,
-    creditos INT,
-    FOREIGN KEY (carrera_id) REFERENCES carreras(id)
-);
+### 6. Ejecutar la aplicación
+```bash
+python app.py
+```
 
--- Tabla de periodos académicos
-CREATE TABLE periodos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(50),
-    anio INT,
-    estado ENUM('activo', 'inactivo') DEFAULT 'activo'
-);
+La aplicación estará disponible en: `http://localhost:5000`
 
--- Tabla de grupos (una clase por asignatura por periodo)
-CREATE TABLE grupos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    asignatura_id INT NOT NULL,
-    docente_id INT NOT NULL,
-    periodo_id INT NOT NULL,
-    FOREIGN KEY (asignatura_id) REFERENCES asignaturas(id),
-    FOREIGN KEY (docente_id) REFERENCES usuarios(id),
-    FOREIGN KEY (periodo_id) REFERENCES periodos(id)
-);
+## 📁 Estructura del Proyecto
 
--- Tabla de horarios de clases
-CREATE TABLE horarios_clases (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    grupo_id INT NOT NULL,
-    dia_semana ENUM('lunes','martes','miércoles','jueves','viernes','sábado') NOT NULL,
-    hora_inicio TIME NOT NULL,
-    hora_fin TIME NOT NULL,
-    aula VARCHAR(50),
-    FOREIGN KEY (grupo_id) REFERENCES grupos(id)
-);
+```
+reporte-notas-ubuntu/
+├── app/
+│   ├── __init__.py              # Configuración principal de Flask
+│   ├── models.py                # Modelos de la base de datos
+│   ├── routes.py                # Registro de blueprints
+│   ├── modules/
+│   │   ├── auth/                # Autenticación y login
+│   │   ├── admin/               # Gestión administrativa
+│   │   ├── docente/             # Funcionalidades del docente
+│   │   ├── alumno/              # Funcionalidades del alumno
+│   │   └── main/                # Página principal
+│   ├── templates/               # Plantillas HTML
+│   │   ├── global/              # Plantillas base
+│   │   ├── auth/                # Login y registro
+│   │   ├── admin/               # Panel administrador
+│   │   ├── docente/             # Panel docente
+│   │   └── alumno/              # Panel alumno
+│   └── static/                  # Archivos estáticos
+│       └── main/
+│           └── styles/          # CSS personalizado
+├── app.py                       # Punto de entrada de la aplicación
+├── requirements.txt             # Dependencias de Python
+└── README.md                    # Este archivo
+```
 
--- Tabla de matrículas
-CREATE TABLE matriculas (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    estudiante_id INT NOT NULL,
-    grupo_id INT NOT NULL,
-    fecha_matricula DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (estudiante_id) REFERENCES usuarios(id),
-    FOREIGN KEY (grupo_id) REFERENCES grupos(id)
-);
+## 🗄️ Estructura de la Base de Datos
 
--- Tabla de calificaciones
-CREATE TABLE calificaciones (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    matricula_id INT NOT NULL,
-    parcial1 DECIMAL(5,2),
-    parcial2 DECIMAL(5,2),
-    final DECIMAL(5,2),
-    FOREIGN KEY (matricula_id) REFERENCES matriculas(id)
-);
+### Tablas Principales
 
--- Tabla de trámites
-CREATE TABLE tramites (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    descripcion TEXT,
-    creado_por INT,
-    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (creado_por) REFERENCES usuarios(id)
-);
+- **usuarios**: Información de usuarios (admin, docentes, alumnos)
+- **cursos**: Catálogo de cursos disponibles
+- **curso_docente**: Asignación de cursos a docentes
+- **curso_alumno**: Matrícula de alumnos en cursos
+- **notas**: Calificaciones de los alumnos
 
--- Solicitudes de trámites
-CREATE TABLE tramites_solicitudes (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    tramite_id INT NOT NULL,
-    usuario_id INT NOT NULL,
-    estado ENUM('pendiente', 'en_proceso', 'completado', 'rechazado') DEFAULT 'pendiente',
-    archivo_subido VARCHAR(255),
-    fecha_solicitud DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (tramite_id) REFERENCES tramites(id),
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
-);
+### Script de Creación
 
--- Tabla de archivos subidos
-CREATE TABLE archivos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre_original VARCHAR(255),
-    ruta_archivo VARCHAR(255),
-    subido_por INT,
-    descripcion TEXT,
-    fecha_subida DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (subido_por) REFERENCES usuarios(id)
-);
+El archivo `README.md` contiene el script SQL completo para crear todas las tablas necesarias.
 
--- Tabla de asistencias
-CREATE TABLE asistencias (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    estudiante_id INT NOT NULL,
-    grupo_id INT NOT NULL,
-    fecha DATE NOT NULL,
-    estado ENUM('presente', 'ausente', 'tarde') DEFAULT 'presente',
-    observaciones TEXT,
-    FOREIGN KEY (estudiante_id) REFERENCES usuarios(id),
-    FOREIGN KEY (grupo_id) REFERENCES grupos(id)
-);
+## 🔐 Configuración de Usuarios
 
--- Tabla de QR Tokens (para control de acceso a clases)
-CREATE TABLE qr_tokens (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id INT NOT NULL,
-    hash VARCHAR(255) NOT NULL,
-    expira DATETIME NOT NULL,
-    generado_en DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
-);
+### Crear Usuario Administrador
 
+1. Acceder a la aplicación
+2. Ir a "Registrarse"
+3. Seleccionar rol "Administrador"
+4. Completar los datos requeridos
 
-----------------------lo anterir para creacion de base de datos sitema_academico---------------------------------
+### Primer Uso
+
+1. **Administrador**: Crear docentes y cursos
+2. **Asignar cursos**: Vincular docentes con sus cursos
+3. **Registrar alumnos**: Crear cuentas de estudiantes
+4. **Matricular**: Asignar alumnos a cursos específicos
+
+## 🎯 Funcionalidades por Rol
+
+### Administrador
+- ✅ Dashboard con estadísticas generales
+- ✅ CRUD completo de docentes
+- ✅ CRUD completo de cursos
+- ✅ CRUD completo de alumnos
+- ✅ Asignación de cursos a docentes
+- ✅ Matrícula de alumnos en cursos
+
+### Docente
+- ✅ Vista de cursos asignados
+- ✅ Lista de alumnos por curso
+- ✅ Gestión de notas (3 parciales)
+- ✅ Cálculo automático de nota final
+- ✅ Comentarios y observaciones
+
+### Alumno
+- ✅ Dashboard personalizado
+- ✅ Visualización de todas las notas
+- ✅ Consulta por curso específico
+- ✅ Seguimiento del rendimiento
+
+## 🎨 Interfaz de Usuario
+
+- **Diseño responsive** que se adapta a móviles y tablets
+- **Bootstrap 5** para componentes modernos
+- **Iconos Font Awesome** para mejor UX
+- **Colores semánticos** para estados de notas
+- **Navegación intuitiva** por roles
+
+## 🔧 Personalización
+
+### Cambiar Configuración de Base de Datos
+
+Editar `app/__init__.py`:
+
+```python
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://usuario:contraseña@localhost/nombre_bd'
+```
+
+### Modificar Estilos
+
+Los estilos personalizados están en `app/static/main/styles/sistema.css`
+
+### Agregar Nuevas Funcionalidades
+
+1. Crear nuevo blueprint en `app/modules/`
+2. Registrar en `app/routes.py`
+3. Crear templates correspondientes
+
+## 🐛 Solución de Problemas
+
+### Error de Conexión a Base de Datos
+- Verificar que MySQL esté ejecutándose
+- Comprobar credenciales en `app/__init__.py`
+- Asegurar que la base de datos existe
+
+### Error de Importación
+- Verificar que todas las dependencias estén instaladas
+- Activar el entorno virtual correctamente
+
+### Problemas de Permisos
+- Verificar que el usuario tenga permisos en la base de datos
+- Comprobar la configuración de MySQL
+
+## 📞 Soporte
+
+Para soporte técnico o reportar problemas:
+- Crear un issue en el repositorio
+- Contactar al equipo de desarrollo
+
+## 📄 Licencia
+
+Este proyecto está desarrollado para el Instituto Superior Tecnológico Público Suiza.
+
+---
+
+**Desarrollado con ❤️ para la educación tecnológica**

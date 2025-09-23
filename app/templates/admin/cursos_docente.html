@@ -1,0 +1,183 @@
+{% extends "global/base_sistema.html" %}
+
+{% block title %}Cursos del Docente - Sistema de Notas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2><i class="fas fa-book me-2"></i>Cursos de {{ docente.nombre }} {{ docente.apellido }}</h2>
+                <p class="text-muted mb-0">DNI: {{ docente.dni }} | Email: {{ docente.email }}</p>
+            </div>
+            <div>
+                <a href="{{ url_for('admin.docentes') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Volver a Docentes
+                </a>
+                <a href="{{ url_for('admin.estadisticas_docente', id=docente.id) }}" class="btn btn-info">
+                    <i class="fas fa-chart-bar me-2"></i>Ver Estadísticas
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list me-2"></i>Cursos Asignados ({{ cursos|length }})
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if cursos %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Curso</th>
+                                <th>Código</th>
+                                <th>Ciclo Académico</th>
+                                <th>Alumnos</th>
+                                <th>Notas Registradas</th>
+                                <th>Notas Publicadas</th>
+                                <th>Promedio</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for curso_data in cursos %}
+                            {% set curso = curso_data.curso %}
+                            <tr>
+                                <td>
+                                    <strong>{{ curso.nombre }}</strong>
+                                    {% if curso.descripcion %}
+                                    <br><small class="text-muted">{{ curso.descripcion[:50] }}{% if curso.descripcion|length > 50 %}...{% endif %}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">{{ curso.codigo }}</span>
+                                </td>
+                                <td>
+                                    {% if curso_data.ciclo %}
+                                    <span class="badge bg-info">{{ curso_data.ciclo.nombre }}</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Sin ciclo</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">{{ curso_data.total_alumnos }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-warning">{{ curso_data.notas_registradas }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">{{ curso_data.notas_publicadas }}</span>
+                                </td>
+                                <td>
+                                    {% if curso_data.promedio_curso > 0 %}
+                                    <span class="badge bg-{% if curso_data.promedio_curso >= 13 %}success{% elif curso_data.promedio_curso >= 10 %}warning{% else %}danger{% endif %}">
+                                        {{ "%.1f"|format(curso_data.promedio_curso) }}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">Sin notas</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if curso.activo %}
+                                    <span class="badge bg-success">Activo</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Inactivo</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('admin.ver_notas_curso', curso_id=curso.id) }}" 
+                                           class="btn btn-sm btn-outline-primary" title="Ver notas del curso">
+                                            <i class="fas fa-graduation-cap"></i>
+                                        </a>
+                                        <a href="{{ url_for('admin.ver_notas') }}?curso_id={{ curso.id }}" 
+                                           class="btn btn-sm btn-outline-info" title="Gestionar notas">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-danger" 
+                                                title="Desasignar curso"
+                                                onclick="desasignarCurso({{ docente.id }}, {{ curso.id }}, '{{ curso.nombre }}')">
+                                            <i class="fas fa-unlink"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No hay cursos asignados</h5>
+                    <p class="text-muted">Este docente no tiene cursos asignados actualmente.</p>
+                    <a href="{{ url_for('admin.asignar_cursos') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Asignar Cursos
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Desasignación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmButton">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function desasignarCurso(docenteId, cursoId, nombreCurso) {
+        const message = `¿Estás seguro de que quieres desasignar el curso "${nombreCurso}" de este docente?`;
+        
+        document.getElementById('confirmMessage').textContent = message;
+        document.getElementById('confirmButton').onclick = function () {
+            fetch(`/admin/docentes/${docenteId}/desasignar-curso/${cursoId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al procesar la solicitud');
+                });
+
+            bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+        };
+
+        new bootstrap.Modal(document.getElementById('confirmModal')).show();
+    }
+</script>
+{% endblock %}

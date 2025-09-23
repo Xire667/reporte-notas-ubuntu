@@ -1,0 +1,133 @@
+{% extends "global/base_sistema.html" %}
+
+{% block title %}Editar Ciclo Académico - Sistema de Notas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-edit me-2"></i>Editar Ciclo Académico</h2>
+            <a href="{{ url_for('admin.ciclos') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Volver a Ciclos
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Información del Ciclo Académico</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nombre" class="form-label">Nombre del Ciclo <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" 
+                                   value="{{ ciclo.nombre }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="orden" class="form-label">Orden Secuencial <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="orden" name="orden" 
+                                   value="{{ ciclo.orden }}" min="1" max="20" required>
+                            <div class="form-text">Orden en la secuencia académica (1, 2, 3, etc.)</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="año" class="form-label">Año Académico <span class="text-danger">*</span></label>
+                            <select class="form-select" id="año" name="año" required>
+                                <option value="">Seleccionar año</option>
+                                <option value="1" {% if ciclo.año == 1 %}selected{% endif %}>Primer Año</option>
+                                <option value="2" {% if ciclo.año == 2 %}selected{% endif %}>Segundo Año</option>
+                                <option value="3" {% if ciclo.año == 3 %}selected{% endif %}>Tercer Año</option>
+                                <option value="4" {% if ciclo.año == 4 %}selected{% endif %}>Cuarto Año</option>
+                                <option value="5" {% if ciclo.año == 5 %}selected{% endif %}>Quinto Año</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="ciclo" class="form-label">Ciclo <span class="text-danger">*</span></label>
+                            <select class="form-select" id="ciclo" name="ciclo" required>
+                                <option value="">Seleccionar ciclo</option>
+                                <option value="1" {% if ciclo.ciclo == 1 %}selected{% endif %}>Ciclo I</option>
+                                <option value="2" {% if ciclo.ciclo == 2 %}selected{% endif %}>Ciclo II</option>
+                                <option value="3" {% if ciclo.ciclo == 3 %}selected{% endif %}>Ciclo III</option>
+                                <option value="4" {% if ciclo.ciclo == 4 %}selected{% endif %}>Ciclo IV</option>
+                                <option value="5" {% if ciclo.ciclo == 5 %}selected{% endif %}>Ciclo V</option>
+                                <option value="6" {% if ciclo.ciclo == 6 %}selected{% endif %}>Ciclo VI</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="fecha_inicio" class="form-label">Fecha de Inicio</label>
+                            <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" 
+                                   value="{{ ciclo.fecha_inicio.strftime('%Y-%m-%d') if ciclo.fecha_inicio else '' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="fecha_fin" class="form-label">Fecha de Fin</label>
+                            <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" 
+                                   value="{{ ciclo.fecha_fin.strftime('%Y-%m-%d') if ciclo.fecha_fin else '' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="activo" name="activo" 
+                                       {% if ciclo.activo %}checked{% endif %}>
+                                <label class="form-check-label" for="activo">
+                                    Ciclo Activo
+                                </label>
+                                <div class="form-text">Desmarcar para desactivar este ciclo académico</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.ciclos') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Información del Ciclo</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>ID:</strong> {{ ciclo.id }}</p>
+                        <p><strong>Estado:</strong> 
+                            {% if ciclo.activo %}
+                                <span class="badge bg-success">Activo</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactivo</span>
+                            {% endif %}
+                        </p>
+                        <p><strong>Fecha de Creación:</strong> {{ ciclo.fecha_creacion.strftime('%d/%m/%Y %H:%M') if ciclo.fecha_creacion else 'N/A' }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Cursos Asignados:</strong> {{ ciclo.cursos|length }} curso(s)</p>
+                        <p><strong>Alumnos Matriculados:</strong> {{ ciclo.matriculas|length }} alumno(s)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
