@@ -25,26 +25,6 @@
                 <ul class="navbar-nav me-auto">
                     {% if current_user.is_authenticated %}
                         {% if current_user.rol == 'admin' %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
-                                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('admin.docentes') }}">
-                                    <i class="fas fa-chalkboard-teacher me-1"></i>Docentes
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('admin.cursos') }}">
-                                    <i class="fas fa-book me-1"></i>Cursos
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('admin.alumnos') }}">
-                                    <i class="fas fa-user-graduate me-1"></i>Alumnos
-                                </a>
-                            </li>
                         {% elif current_user.rol == 'docente' %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('docente.dashboard') }}">
@@ -74,16 +54,11 @@
                 <ul class="navbar-nav">
                     {% if current_user.is_authenticated %}
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <a class="nav-link" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
                                 <i class="fas fa-user me-1"></i>
                                 {{ current_user.nombre }} {{ current_user.apellido }}
                                 <span class="badge bg-light text-dark ms-1">{{ current_user.rol.title() }}</span>
                             </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
-                                    <i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión
-                                </a></li>
-                            </ul>
                         </li>
                     {% else %}
                         <li class="nav-item">
@@ -100,7 +75,7 @@
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            <div class="container mt-3">
+            <div class="container mt-3" style="position: relative; z-index: 1055;">
                 {% for category, message in messages %}
                     <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
                         {{ message }}

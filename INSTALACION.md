@@ -8,22 +8,7 @@
 
 ## Instalación Rápida (Recomendado)
 
-### 🚀 Instalación Automática
-```bash
-# 1. Crear entorno virtual
-python -m venv venv
-
-# 2. Activar entorno virtual
-# Windows:
-venv\Scripts\activate
-# Linux/Mac:
-source venv/bin/activate
-
-# 3. Ejecutar instalación automática
-python install_complete.py
-```
-
-### 📋 Instalación Manual (Si la automática falla)
+### 📋 Instalación Manual
 
 #### 1️⃣ Preparar Base de Datos
 - Iniciar XAMPP o MySQL
@@ -34,17 +19,12 @@ python install_complete.py
 pip install -r requirements.txt
 ```
 
-#### 3️⃣ Probar Conexión
-```bash
-python simple_test.py
-```
-
-#### 4️⃣ Inicializar Sistema
+#### 3️⃣ Inicializar Sistema
 ```bash
 python init_db.py
 ```
 
-#### 5️⃣ Ejecutar Aplicación
+#### 4️⃣ Ejecutar Aplicación
 ```bash
 python app.py
 ```
@@ -95,10 +75,7 @@ python app.py
 
 ### Error: "AmbiguousForeignKeysError" al hacer login
 ```bash
-# Ejecutar diagnóstico
-python debug_login.py
-
-# Si el diagnóstico falla, reinstalar dependencias
+# Reinstalar dependencias
 pip uninstall -y Flask-SQLAlchemy SQLAlchemy mysql-connector-python
 pip install -r requirements.txt
 

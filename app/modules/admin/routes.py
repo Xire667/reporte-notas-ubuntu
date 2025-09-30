@@ -1143,7 +1143,7 @@ def exportar_notas():
     if estado != 'todas':
         query = query.filter(Nota.estado == estado)
     
-    notas = query.order_by(Curso.nombre, Usuario.nombre).all()
+    notas = query.order_by(Curso.nombre, Alumno.nombre).all()
     
     # Crear CSV
     output = io.StringIO()

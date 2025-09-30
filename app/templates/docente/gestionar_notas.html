@@ -212,6 +212,8 @@
     function mostrarAlerta(mensaje, tipo) {
         const alert = document.createElement('div');
         alert.className = `alert alert-${tipo} alert-dismissible fade show`;
+        alert.style.position = 'relative';
+        alert.style.zIndex = '1055';
         alert.innerHTML = `
         <i class="fas fa-${tipo === 'success' ? 'check-circle' : tipo === 'warning' ? 'exclamation-triangle' : 'times-circle'} me-2"></i>
         ${mensaje}

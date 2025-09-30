@@ -1,8 +1,8 @@
-{% extends "global/base_sistema.html" %}
+{% extends "admin/base_admin.html" %}
 
 {% block title %}Dashboard Administrador - Sistema de Notas{% endblock %}
 
-{% block content %}
+{% block admin_content %}
 <!-- Header del Dashboard Mejorado -->
 <div class="row mb-4">
     <div class="col-12">
@@ -17,23 +17,23 @@
                     </p>
                     <div class="dashboard-badges">
                         <span class="badge bg-primary me-2">
-                            <i class="fas fa-user-shield me-1"></i>Administrador
-                        </span>
-                        <span class="badge bg-success">
-                            <i class="fas fa-circle me-1"></i>Sistema Activo
-                        </span>
-                    </div>
-                </div>
-                <div class="header-actions">
-                    <div class="text-end">
-                        <small class="text-muted d-block">Sistema de Gestión</small>
-                        <small class="text-primary fw-bold">Versión 1.0</small>
+                                    <i class="fas fa-user-shield me-1"></i>Administrador
+                                </span>
+                                <span class="badge bg-success">
+                                    <i class="fas fa-circle me-1"></i>Sistema Activo
+                                </span>
+                            </div>
+                        </div>
+                        <div class="header-actions">
+                            <div class="text-end">
+                                <small class="text-muted d-block">Sistema de Gestión</small>
+                                <small class="text-primary fw-bold">Versión 1.0</small>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
 <!-- Estadísticas Principales Mejoradas -->
 <div class="row mb-5">
@@ -917,5 +917,59 @@
                 });
         }
     }
+
+    // JavaScript para el menú lateral
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const mainContent = document.getElementById('mainContent');
+
+        // Toggle sidebar
+        sidebarToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
+            sidebarToggle.classList.toggle('active');
+            
+            // En pantallas grandes, desplazar el contenido
+            if (window.innerWidth > 768) {
+                mainContent.classList.toggle('shifted');
+            }
+        });
+
+        // Cerrar sidebar al hacer clic en overlay
+        sidebarOverlay.addEventListener('click', function() {
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+            sidebarToggle.classList.remove('active');
+            mainContent.classList.remove('shifted');
+        });
+
+        // Cerrar sidebar en móviles al cambiar tamaño de ventana
+        window.addEventListener('resize', function() {
+            if (window.innerWidth <= 768) {
+                mainContent.classList.remove('shifted');
+            } else if (sidebar.classList.contains('active')) {
+                mainContent.classList.add('shifted');
+            }
+        });
+    });
+
+    // Función para toggle de submenús
+    function toggleSubmenu(menuId) {
+        const submenu = document.getElementById(menuId);
+        const isActive = submenu.classList.contains('active');
+        
+        // Cerrar todos los submenús
+        document.querySelectorAll('.submenu').forEach(menu => {
+            menu.classList.remove('active');
+        });
+        
+        // Abrir el submenú seleccionado si no estaba activo
+        if (!isActive) {
+            submenu.classList.add('active');
+        }
+    }
 </script>
+
 {% endblock %}

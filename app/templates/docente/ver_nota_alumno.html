@@ -200,6 +200,8 @@
                 // Mostrar mensaje de éxito
                 const alert = document.createElement('div');
                 alert.className = 'alert alert-success alert-dismissible fade show';
+                alert.style.position = 'relative';
+                alert.style.zIndex = '1055';
                 alert.innerHTML = `
                         <i class="fas fa-check-circle me-2"></i>${data.message}
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>

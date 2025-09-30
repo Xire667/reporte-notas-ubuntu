@@ -1,0 +1,121 @@
+{% extends "global/base_sistema.html" %}
+
+{% block content %}
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h4><i class="fas fa-user-shield me-2"></i>Admin Panel</h4>
+    </div>
+    <ul class="sidebar-menu">
+        <li class="menu-item">
+            <a href="{{ url_for('admin.dashboard') }}" class="menu-link">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+        <li class="menu-item has-submenu">
+            <a href="#" class="menu-link">
+                <i class="fas fa-users"></i>
+                <span>Gestión de Usuarios</span>
+                <i class="fas fa-chevron-down submenu-arrow"></i>
+            </a>
+            <ul class="submenu">
+                <li><a href="{{ url_for('admin.docentes') }}"><i class="fas fa-chalkboard-teacher"></i>Docentes</a></li>
+                <li><a href="{{ url_for('admin.alumnos') }}"><i class="fas fa-user-graduate"></i>Alumnos</a></li>
+                <li><a href="{{ url_for('admin.registrar_docente') }}"><i class="fas fa-plus"></i>Registrar Docente</a></li>
+                <li><a href="{{ url_for('admin.registrar_alumno') }}"><i class="fas fa-plus"></i>Registrar Alumno</a></li>
+            </ul>
+        </li>
+        <li class="menu-item has-submenu">
+            <a href="#" class="menu-link">
+                <i class="fas fa-book"></i>
+                <span>Gestión de Cursos</span>
+                <i class="fas fa-chevron-down submenu-arrow"></i>
+            </a>
+            <ul class="submenu">
+                <li><a href="{{ url_for('admin.cursos') }}"><i class="fas fa-list"></i>Ver Cursos</a></li>
+                <li><a href="{{ url_for('admin.registrar_curso') }}"><i class="fas fa-plus"></i>Registrar Curso</a></li>
+                <li><a href="{{ url_for('admin.asignar_cursos') }}"><i class="fas fa-link"></i>Asignar Cursos</a></li>
+            </ul>
+        </li>
+        <li class="menu-item has-submenu">
+            <a href="#" class="menu-link">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Gestión Académica</span>
+                <i class="fas fa-chevron-down submenu-arrow"></i>
+            </a>
+            <ul class="submenu">
+                <li><a href="{{ url_for('admin.ciclos') }}"><i class="fas fa-calendar"></i>Ciclos Académicos</a></li>
+                <li><a href="{{ url_for('admin.registrar_ciclo') }}"><i class="fas fa-plus"></i>Registrar Ciclo</a></li>
+                <li><a href="{{ url_for('admin.matricular_ciclo') }}"><i class="fas fa-user-plus"></i>Matricular Alumnos</a></li>
+            </ul>
+        </li>
+        <li class="menu-item has-submenu">
+            <a href="#" class="menu-link">
+                <i class="fas fa-clipboard-list"></i>
+                <span>Gestión de Notas</span>
+                <i class="fas fa-chevron-down submenu-arrow"></i>
+            </a>
+            <ul class="submenu">
+                <li><a href="{{ url_for('admin.ver_notas') }}"><i class="fas fa-list-alt"></i>Ver Notas</a></li>
+                <li><a href="{{ url_for('admin.exportar_notas') }}"><i class="fas fa-download"></i>Exportar Notas</a></li>
+            </ul>
+        </li>
+        <li class="menu-item">
+            <a href="{{ url_for('auth.logout') }}" class="menu-link">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Cerrar Sesión</span>
+            </a>
+        </li>
+    </ul>
+</div>
+
+<!-- Sidebar Overlay (eliminado ya que no es necesario) -->
+
+<!-- Main Content -->
+<div class="main-content" id="mainContent">
+    {% block admin_content %}
+    <!-- El contenido específico de cada página del admin va aquí -->
+    {% endblock %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle submenu toggles
+    const menuItems = document.querySelectorAll('.menu-item.has-submenu > .menu-link');
+    menuItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const menuItem = this.parentElement;
+            const submenu = menuItem.querySelector('.submenu');
+            const arrow = this.querySelector('.submenu-arrow');
+            
+            // Close other submenus
+            menuItems.forEach(otherItem => {
+                if (otherItem !== this) {
+                    const otherMenuItem = otherItem.parentElement;
+                    const otherSubmenu = otherMenuItem.querySelector('.submenu');
+                    const otherArrow = otherItem.querySelector('.submenu-arrow');
+                    
+                    otherMenuItem.classList.remove('active');
+                    if (otherSubmenu) otherSubmenu.style.maxHeight = '0';
+                    if (otherArrow) otherArrow.style.transform = 'rotate(0deg)';
+                }
+            });
+            
+            // Toggle current submenu
+            menuItem.classList.toggle('active');
+            if (menuItem.classList.contains('active')) {
+                submenu.style.maxHeight = submenu.scrollHeight + 'px';
+                arrow.style.transform = 'rotate(180deg)';
+            } else {
+                submenu.style.maxHeight = '0';
+                arrow.style.transform = 'rotate(0deg)';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
