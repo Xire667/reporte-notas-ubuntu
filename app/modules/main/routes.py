@@ -12,7 +12,7 @@ def index():
 @main_bp.route('/dashboard')
 def dashboard():
     if not current_user.is_authenticated:
-        return redirect(url_for('auth.login'))
+        return redirect(url_for('auth.role_selection'))
     
     # Redirigir según el rol del usuario
     if current_user.rol == 'admin':
@@ -22,4 +22,4 @@ def dashboard():
     elif current_user.rol == 'alumno':
         return redirect(url_for('alumno.dashboard'))
     
-    return redirect(url_for('auth.login'))
+    return redirect(url_for('auth.role_selection'))
