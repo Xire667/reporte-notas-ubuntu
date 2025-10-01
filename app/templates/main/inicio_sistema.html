@@ -3,23 +3,110 @@
 {% block title %}Sistema de Gestión de Notas - Instituto Suiza{% endblock %}
 
 {% block content %}
+<style>
+:root {
+    --azul-marino-claro: #3b82f6;
+    --azul-marino-medio: #2563eb;
+    --azul-marino-oscuro: #1d4ed8;
+    --azul-suave: #60a5fa;
+    --gris-claro: #f8fafc;
+    --texto-oscuro: #1e293b;
+}
+
+.hero-section {
+    background: linear-gradient(135deg, var(--azul-marino-claro) 0%, var(--azul-marino-medio) 50%, var(--azul-marino-oscuro) 100%);
+    color: white;
+    padding: 1.5rem 2rem;
+    border-radius: 50px;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: float 8s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 300;
+    margin-bottom: 1rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    letter-spacing: 4px;
+}
+
+.hero-subtitle {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    opacity: 0.95;
+    letter-spacing: -0.1px;
+}
+
+.hero-description {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.btn-hero {
+    background: rgba(255,255,255,0.2);
+    border: 2px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.btn-hero:hover {
+    background: rgba(255,255,255,0.3);
+    border-color: rgba(255,255,255,0.5);
+    color: white;
+    transform: translateY(-2px);
+}
+</style>
+
 <div class="row">
     <div class="col-12">
-        <div class="jumbotron bg-primary text-white rounded p-5 mb-5">
-            <div class="container-fluid">
-                <h1 class="display-4">
-                    <i class="fas fa-graduation-cap me-3"></i>
+        <div class="hero-section">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <!-- <i class="fas fa-graduation-cap me-3"></i> -->
                     Sistema de Gestión de Notas
                 </h1>
-                <p class="lead">
-                    Instituto Superior Tecnológico Público Suiza
+                <p class="hero-subtitle">
+                    DESARROLLO DE SISTEMAS DE INFORMACION - I.E.S.T.P. SUIZA
                 </p>
-                <hr class="my-4" style="border-color: rgba(255,255,255,0.3);">
-                <p class="mb-4">
+                <div class="hero-divider my-4">
+                    <div style="width: 550px; height: 2px; background: rgba(255,255,255,0.5); margin: 0 auto;"></div>
+                </div>
+                <p class="hero-description">
                     Plataforma integral para la gestión académica, calificaciones y seguimiento estudiantil.
                 </p>
                 {% if not current_user.is_authenticated %}
-                <a class="btn btn-light btn-lg" href="{{ url_for('auth.role_selection') }}" role="button">
+                <a class="btn btn-hero btn-lg" href="{{ url_for('auth.role_selection') }}" role="button">
                     <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
                 </a>
                 {% endif %}
@@ -28,86 +115,169 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 text-center">
-            <div class="card-body">
-                <i class="fas fa-chalkboard-teacher fa-3x text-primary mb-3"></i>
-                <h5 class="card-title">Para Docentes</h5>
-                <p class="card-text">
-                    Gestiona las calificaciones de tus estudiantes,
-                    sube notas y mantén un seguimiento detallado del rendimiento académico.
+<div class="row g-4 mb-5">
+    <div class="col-lg-4 col-md-6">
+        <div class="card role-card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <div class="role-icon mb-4">
+                    <i class="fas fa-chalkboard-teacher fa-4x text-primary"></i>
+                </div>
+                <h5 class="card-title fw-bold mb-3" style="color: var(--azul-marino-oscuro);">Para Docentes</h5>
+                <p class="card-text text-muted mb-4">
+                    Gestiona las calificaciones de tus estudiantes, sube notas y mantén un seguimiento detallado del rendimiento académico.
                 </p>
-                <ul class="list-unstyled">
-                    <li><i class="fas fa-check text-success me-2"></i>Subir y editar notas</li>
-                    <li><i class="fas fa-check text-success me-2"></i>Ver lista de alumnos</li>
-                    <li><i class="fas fa-check text-success me-2"></i>Gestión por cursos</li>
-                </ul>
+                <div class="features-list mb-4">
+                    <div class="feature-item d-flex align-items-center mb-2">
+                        <i class="fas fa-check-circle text-success me-3"></i>
+                        <span>Subir y editar notas</span>
+                    </div>
+                    <div class="feature-item d-flex align-items-center mb-2">
+                        <i class="fas fa-check-circle text-success me-3"></i>
+                        <span>Ver lista de alumnos</span>
+                    </div>
+                    <div class="feature-item d-flex align-items-center">
+                        <i class="fas fa-check-circle text-success me-3"></i>
+                        <span>Gestión por cursos</span>
+                    </div>
+                </div>
+                <div class="mt-auto">
+                    <div class="role-badge">
+                        <!-- <span class="badge bg-primary px-3 py-2">Acceso Docente</span> -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 text-center">
-            <div class="card-body">
-                <i class="fas fa-user-graduate fa-3x text-success mb-3"></i>
-                <h5 class="card-title">Para Estudiantes</h5>
-                <p class="card-text">
-                    Accede a tus calificaciones de manera rápida y segura,
-                    consulta tu rendimiento académico en tiempo real.
+    <div class="col-lg-4 col-md-6">
+        <div class="card role-card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <div class="role-icon mb-4">
+                    <i class="fas fa-user-graduate fa-4x text-success"></i>
+                </div>
+                <h5 class="card-title fw-bold mb-3" style="color: var(--azul-marino-oscuro);">Para Estudiantes</h5>
+                <p class="card-text text-muted mb-4">
+                    Accede a tus calificaciones de manera rápida y segura, consulta tu rendimiento académico en tiempo real.
                 </p>
-                <ul class="list-unstyled">
-                    <li><i class="fas fa-check text-success me-2"></i>Ver todas tus notas</li>
-                    <li><i class="fas fa-check text-success me-2"></i>Consulta por curso</li>
-                    <li><i class="fas fa-check text-success me-2"></i>Acceso con DNI</li>
-                </ul>
+                <div class="features-list mb-4">
+                    <div class="feature-item d-flex align-items-center mb-2">
+                        <i class="fas fa-check-circle text-success me-3"></i>
+                        <span>Ver todas tus notas</span>
+                    </div>
+                    <div class="feature-item d-flex align-items-center mb-2">
+                        <i class="fas fa-check-circle text-success me-3"></i>
+                        <span>Consulta por curso</span>
+                    </div>
+                    <div class="feature-item d-flex align-items-center">
+                        <i class="fas fa-check-circle text-success me-3"></i>
+                        <span>Acceso con DNI</span>
+                    </div>
+                </div>
+                <div class="mt-auto">
+                    <div class="role-badge">
+                        <!-- <span class="badge bg-success px-3 py-2">Acceso Estudiante</span> -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 text-center">
-            <div class="card-body">
-                <i class="fas fa-cogs fa-3x text-info mb-3"></i>
-                <h5 class="card-title">Para Administradores</h5>
-                <p class="card-text">
-                    Administra el sistema completo: registra usuarios,
-                    gestiona cursos y supervisa el rendimiento académico.
+    <div class="col-lg-4 col-md-12">
+        <div class="card role-card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <div class="role-icon mb-4">
+                    <i class="fas fa-cogs fa-4x text-info"></i>
+                </div>
+                <h5 class="card-title fw-bold mb-3" style="color: var(--azul-marino-oscuro);">Para Administradores</h5>
+                <p class="card-text text-muted mb-4">
+                    Administra el sistema completo: registra usuarios, gestiona cursos y supervisa el rendimiento académico.
                 </p>
-                <ul class="list-unstyled">
-                    <li><i class="fas fa-check text-success me-2"></i>Gestión de usuarios</li>
-                    <li><i class="fas fa-check text-success me-2"></i>Administración de cursos</li>
-                    <li><i class="fas fa-check text-success me-2"></i>Asignación de docentes</li>
-                </ul>
+                <div class="features-list mb-4">
+                    <div class="feature-item d-flex align-items-center mb-2">
+                        <i class="fas fa-check-circle text-success me-3"></i>
+                        <span>Gestión de usuarios</span>
+                    </div>
+                    <div class="feature-item d-flex align-items-center mb-2">
+                        <i class="fas fa-check-circle text-success me-3"></i>
+                        <span>Administración de cursos</span>
+                    </div>
+                    <div class="feature-item d-flex align-items-center">
+                        <i class="fas fa-check-circle text-success me-3"></i>
+                        <span>Asignación de docentes</span>
+                    </div>
+                </div>
+                <div class="mt-auto">
+                    <div class="role-badge">
+                        <!-- <span class="badge bg-info px-3 py-2">Acceso Admin</span> -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row mt-5">
+<!-- <div class="row mt-5">
     <div class="col-12">
-        <div class="card">
-            <div class="card-header bg-light">
-                <h4 class="mb-0">
-                    <i class="fas fa-info-circle me-2"></i>Características del Sistema
+        <div class="card features-card border-0 shadow-lg">
+            <div class="card-header bg-gradient text-white text-center py-4" style="background: linear-gradient(135deg, var(--azul-marino-claro), var(--azul-marino-medio));">
+                <h4 class="mb-0 fw-bold">
+                    <i class="fas fa-star me-3"></i>Características del Sistema
                 </h4>
+                <p class="mb-0 mt-2 opacity-75">Tecnología avanzada para la educación moderna</p>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-shield-alt text-primary me-2"></i>Seguridad</h6>
-                        <p class="text-muted">Sistema de autenticación seguro con roles diferenciados y protección de
-                            datos.</p>
-
-                        <h6><i class="fas fa-mobile-alt text-primary me-2"></i>Acceso Móvil</h6>
-                        <p class="text-muted">Interfaz responsive que se adapta a dispositivos móviles y tablets.</p>
+            <div class="card-body p-5">
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="feature-box p-4 rounded-3 h-100" style="background: linear-gradient(135deg, #f8fafc, #e2e8f0);">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="feature-icon me-3">
+                                    <i class="fas fa-shield-alt fa-2x" style="color: var(--azul-marino-claro);"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-2" style="color: var(--azul-marino-oscuro);">Seguridad Avanzada</h6>
+                                    <p class="text-muted mb-0">Sistema de autenticación seguro con roles diferenciados, encriptación de datos y protección contra accesos no autorizados.</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-chart-line text-primary me-2"></i>Reportes</h6>
-                        <p class="text-muted">Generación de reportes detallados del rendimiento académico.</p>
-
-                        <h6><i class="fas fa-clock text-primary me-2"></i>Tiempo Real</h6>
-                        <p class="text-muted">Actualizaciones en tiempo real de calificaciones y cambios.</p>
+                    <div class="col-lg-6">
+                        <div class="feature-box p-4 rounded-3 h-100" style="background: linear-gradient(135deg, #f0f9ff, #dbeafe);">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="feature-icon me-3">
+                                    <i class="fas fa-mobile-alt fa-2x" style="color: var(--azul-marino-claro);"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-2" style="color: var(--azul-marino-oscuro);">Acceso Multiplataforma</h6>
+                                    <p class="text-muted mb-0">Interfaz responsive que se adapta perfectamente a dispositivos móviles, tablets y computadoras de escritorio.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="feature-box p-4 rounded-3 h-100" style="background: linear-gradient(135deg, #f0fdf4, #dcfce7);">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="feature-icon me-3">
+                                    <i class="fas fa-chart-line fa-2x" style="color: var(--azul-marino-claro);"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-2" style="color: var(--azul-marino-oscuro);">Reportes Inteligentes</h6>
+                                    <p class="text-muted mb-0">Generación automática de reportes detallados con análisis del rendimiento académico y estadísticas avanzadas.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="feature-box p-4 rounded-3 h-100" style="background: linear-gradient(135deg, #fefce8, #fef3c7);">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="feature-icon me-3">
+                                    <i class="fas fa-clock fa-2x" style="color: var(--azul-marino-claro);"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-2" style="color: var(--azul-marino-oscuro);">Tiempo Real</h6>
+                                    <p class="text-muted mb-0">Actualizaciones instantáneas de calificaciones, notificaciones automáticas y sincronización en tiempo real.</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -132,5 +302,5 @@
         </div>
     </div>
 </div>
-{% endif %}
+{% endif %} -->
 {% endblock %}

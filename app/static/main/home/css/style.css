@@ -1,16 +1,16 @@
 /* Variables de diseño */
 :root {
-    --color-primario: #1a4b8c;
-    --color-primario-oscuro: #0d3a6e;
-    --color-primario-claro: #2a6ec6;
-    --color-secundario: #f8f9fa;
-    --color-accento: #ff6b35;
-    --color-texto: #333;
-    --color-texto-claro: #6c757d;
+    --color-primario: #2563eb;
+    --color-primario-oscuro: #1d4ed8;
+    --color-primario-claro: #3b82f6;
+    --color-secundario: #f8fafc;
+    --color-accento: #f59e0b;
+    --color-texto: #1e293b;
+    --color-texto-claro: #64748b;
     --color-blanco: #ffffff;
-    --color-gris-claro: #e9ecef;
-    --radio-borde: 8px;
-    --sombra-caja: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --color-gris-claro: #e2e8f0;
+    --radio-borde: 12px;
+    --sombra-caja: 0 4px 16px rgba(37, 99, 235, 0.1);
     --transicion: all 0.3s ease;
 }
 
