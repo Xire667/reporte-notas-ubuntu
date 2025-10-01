@@ -1,7 +1,7 @@
 /* Estilos para el Sistema de Gestión de Notas */
 
 :root {
-    --primary-color: #1a04aa;
+    --primary-color: #00034e;
     --secondary-color: #6c757d;
     --success-color: #198754;
     --danger-color: #dc3545;
@@ -101,7 +101,7 @@ body {
     left: 0; /* Cambiado de -280px a 0 para que esté siempre visible */
     width: 280px;
     height: 100vh;
-    background: linear-gradient(135deg, #1a04aa 0%, #2c5aa0 100%);
+    background-color: var(--primary-color);
     transition: left 0.3s ease;
     z-index: 1050;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
