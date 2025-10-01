@@ -1,45 +1,341 @@
-{% extends "global/base_sistema.html" %}
+{% extends "global/base_sistema.html" %} {% block title %}Login Administrador -
+Sistema de Gestión de Notas{% endblock %} {% block content %}
 
-{% block title %}Login Administrador - Sistema de Notas{% endblock %}
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(() => {
+      document.querySelectorAll(".alert:not(.no-close)").forEach(el => {
+        el.style.transition = "opacity 0.5s ease";
+        el.style.opacity = "0";
+        setTimeout(() => el.remove(), 500);
+      });
+    }, 5000);
+  });
+</script>
 
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4">
-        <div class="card shadow">
-            <div class="card-header bg-danger text-white text-center">
-                <h4><i class="fas fa-user-shield me-2"></i>Acceso Administrador</h4>
-            </div>
-            <div class="card-body">
-                <form method="POST">
-                    <div class="mb-3">
-                        <label for="dni" class="form-label">DNI</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-id-card"></i></span>
-                            <input type="text" class="form-control" id="dni" name="dni" required>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Contraseña</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                            <input type="password" class="form-control" id="password" name="password" required>
-                        </div>
-                    </div>
-                    
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-danger">
-                            <i class="fas fa-sign-in-alt me-2"></i>Acceder como Admin
-                        </button>
-                    </div>
-                </form>
-            </div>
-            <div class="card-footer text-center">
-                <small class="text-muted">
-                    <a href="{{ url_for('main.index') }}">← Volver al inicio</a>
-                </small>
-            </div>
+
+<style>
+  body {
+    /* background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); */
+    min-height: 90vh;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  .login-container {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* padding: 10px; */
+    /* border: 1px solid black; */
+  }
+
+  .login-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+    max-width: 700px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 540px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .welcome-section {
+    background: linear-gradient(
+        135deg,
+        rgba(30, 58, 138, 0.85),
+        rgba(59, 130, 246, 0.85)
+      );
+    color: white;
+    padding: 60px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+
+  .welcome-section::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 70%
+    );
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-20px) rotate(180deg);
+    }
+  }
+
+  .welcome-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  .welcome-icon {
+    width: 120px;
+    height: 120px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+    backdrop-filter: blur(10px);
+  }
+  .welcome-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 50%;
+  }
+
+  .welcome-title {
+    font-size: 2.2rem;
+    font-weight: 300;
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+  }
+
+  .welcome-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    line-height: 1.6;
+    font-weight: 300;
+    text-align: justify;
+  }
+
+  .form-section {
+    padding: 30px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .form-title {
+    color: #1e3a8a;
+    font-size: 1.8rem;
+    font-weight: 500;
+    margin-bottom: 5px;
+    text-align: center;
+  }
+
+  .form-subtitle {
+    color: #64748bdc;
+    text-align: center;
+    margin-bottom: 40px;
+    font-size: 0.93rem;
+  }
+
+  .form-group {
+    margin-bottom: 25px;
+  }
+
+  .form-label {
+    display: block;
+    color: #374151;
+    font-weight: 500;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 10px 20px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #f9fafb;
+    box-sizing: border-box;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: #1e3a8a;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+  }
+
+  .login-btn {
+    width: 100%;
+    background: #1e3a8a;
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 15px rgba(30, 58, 138, 0.2);
+  }
+
+  .login-btn:hover {
+    background: #1e40af;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 25px rgba(30, 58, 138, 0.3);
+  }
+
+  .back-link {
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  .back-link a {
+    color: #64748b;
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.3s ease;
+  }
+
+  .back-link a:hover {
+    color: #1e3a8a;
+    text-decoration: none;
+  }
+
+  .alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+  }
+
+  .alert-error {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+  }
+
+  @media (max-width: 768px) {
+    .login-card {
+      grid-template-columns: 1fr;
+      max-width: 400px;
+    }
+
+    .welcome-section {
+      padding: 40px 30px;
+      text-align: center;
+    }
+
+    .welcome-title {
+      font-size: 1.8rem;
+    }
+
+    .form-section {
+      padding: 40px 30px;
+    }
+
+    .form-title {
+      font-size: 1.5rem;
+    }
+  }
+</style>
+
+<div class="login-container">
+  <div class="login-card">
+    <div class="welcome-section">
+      <div class="welcome-content">
+        <div class="welcome-icon">
+          <img src="/static/main/assets/img/admin-panel-bg.jpg" alt="Admin Icon" />
         </div>
+        <h2 class="welcome-title">Panel de Administración</h2>
+        <p class="welcome-subtitle">
+          Accede al sistema de gestión académica con privilegios de
+          administrador. Controla usuarios, cursos y supervisa el rendimiento
+          del sistema.
+        </p>
+      </div>
     </div>
+
+    <div class="form-section">
+      <h1 class="form-title">Iniciar Sesión</h1>
+      <p class="form-subtitle">Ingresa tus credenciales de administrador</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %}
+      <div
+        class="alert alert-{{ 'error' if category == 'error' else category }}"
+      >
+        {{ message }}
+      </div>
+      {% endfor %} {% endif %} {% endwith %}
+      <!-- dni solo acepta numero y maximo 8 digitos -->
+      <form method="POST">
+        <div class="form-group">
+          <label for="dni" class="form-label">DNI</label>
+          <input
+            type="text"
+            id="dni"
+            name="dni"
+            class="form-input"
+            placeholder="Ingresa tu DNI"
+            required
+            title="Ingresa 8 dígitos numéricos"
+            maxlength="8"
+            pattern="\d{8}"
+            oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="form-label">Contraseña</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="form-input"
+            placeholder="Ingresa tu contraseña"
+            required
+          />
+        </div>
+
+        <button type="submit" class="login-btn">
+          <i class="fas fa-sign-in-alt"></i>
+          Ingresar
+        </button>
+      </form>
+
+      <div class="back-link">
+        <a href="{{ url_for('auth.role_selection') }}">
+          <i class="fas fa-arrow-left"></i>
+          Cambiar rol
+        </a>
+      </div>
+    </div>
+  </div>
+  <!-- creamos texto para las credenciales mientras que esten en desarrollo la app -->
+  <div class="alert alert-info no-close" style="border-radius: 10px">
+    <strong>Credenciales de Prueba:</strong>
+    <br />
+    DNI: 12345678
+    <br />
+    Contraseña: admin123
+  </div>
+  <!-- --------------------------------------------------------- -->
 </div>
 {% endblock %}
