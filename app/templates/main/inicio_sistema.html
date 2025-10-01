@@ -19,7 +19,7 @@
                     Plataforma integral para la gestión académica, calificaciones y seguimiento estudiantil.
                 </p>
                 {% if not current_user.is_authenticated %}
-                <a class="btn btn-light btn-lg" href="{{ url_for('auth.login') }}" role="button">
+                <a class="btn btn-light btn-lg" href="{{ url_for('auth.role_selection') }}" role="button">
                     <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
                 </a>
                 {% endif %}
