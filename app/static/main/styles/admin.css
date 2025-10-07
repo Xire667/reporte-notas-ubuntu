@@ -6,7 +6,9 @@
     background: linear-gradient(135deg, #0a2271, #134093) !important;
 }
 
-.text-muted{
-    color: white !important;
+.text-muted, .texto-simple{
     font-weight: bold;
+}
+.texto-simple{
+    color: white !important;
 }
