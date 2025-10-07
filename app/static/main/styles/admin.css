@@ -1,5 +1,8 @@
 .navbar{
     background-color: #00034e !important;
+    position: sticky;
+    top: 0;
+    z-index: 3000;
 }
 
 .dashboard-header{

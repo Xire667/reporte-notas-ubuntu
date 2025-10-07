@@ -1227,9 +1227,13 @@ def registrar_ciclo():
         nombre = request.form.get('nombre')
         año = int(request.form.get('año'))
         ciclo = int(request.form.get('ciclo'))
-        orden = int(request.form.get('orden'))
         fecha_inicio = request.form.get('fecha_inicio')
         fecha_fin = request.form.get('fecha_fin')
+        ultimo_ciclo = CicloAcademico.query.order_by(CicloAcademico.orden.desc()).first()
+        if ultimo_ciclo:
+            orden = ultimo_ciclo.orden + 1
+        else:
+            orden = 1
         
         # Verificar que no exista un ciclo con el mismo orden
         if CicloAcademico.query.filter_by(orden=orden).first():
@@ -1344,10 +1348,14 @@ def editar_ciclo(id):
         ciclo.nombre = request.form.get('nombre')
         ciclo.año = int(request.form.get('año'))
         ciclo.ciclo = int(request.form.get('ciclo'))
-        ciclo.orden = int(request.form.get('orden'))
         ciclo.fecha_inicio = request.form.get('fecha_inicio') if request.form.get('fecha_inicio') else None
         ciclo.fecha_fin = request.form.get('fecha_fin') if request.form.get('fecha_fin') else None
         ciclo.activo = 'activo' in request.form
+        ultimo_ciclo = CicloAcademico.query.order_by(CicloAcademico.orden.desc()).first()
+        if ultimo_ciclo:
+            orden = ultimo_ciclo.orden + 1
+        else:
+            orden = 1
         
         # Verificar que no exista otro ciclo con el mismo orden
         if CicloAcademico.query.filter(CicloAcademico.orden == ciclo.orden, CicloAcademico.id != id).first():
@@ -1363,7 +1371,6 @@ def editar_ciclo(id):
             flash('Error al actualizar el ciclo académico.', 'error')
     
     return render_template('admin/editar_ciclo.html', ciclo=ciclo)
-
 @admin_bp.route('/ciclos/toggle-activo/<int:id>', methods=['POST'])
 @login_required
 @admin_required

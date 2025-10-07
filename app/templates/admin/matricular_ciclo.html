@@ -23,19 +23,32 @@
             <div class="card-body">
                 <form method="POST">
                     <div class="mb-3">
-                        <label for="alumno_id" class="form-label">Seleccionar Alumno <span class="text-danger">*</span></label>
-                        <select class="form-select" id="alumno_id" name="alumno_id" required onchange="verificarMatricula()">
-                            <option value="">Seleccionar alumno</option>
-                            {% for alumno in alumnos %}
-                            <option value="{{ alumno.id }}" 
-                                    {% if alumno_seleccionado and alumno.id|string == alumno_seleccionado %}selected{% endif %}
-                                    data-matricula="{{ 'activa' if alumno.matricula_activa else 'ninguna' }}"
-                                    data-ciclo-actual="{{ alumno.matricula_activa.ciclo_academico.nombre if alumno.matricula_activa else '' }}">
-                                {{ alumno.nombre }} {{ alumno.apellido }} ({{ alumno.dni }})
-                                {% if alumno.matricula_activa %} - Ya matriculado en {{ alumno.matricula_activa.ciclo_academico.nombre }}{% endif %}
-                            </option>
-                            {% endfor %}
-                        </select>
+                        <label for="busqueda_dni" class="form-label">Buscar Alumno por DNI <span class="text-danger">*</span></label>
+                        <input class="form-control mb-2" id="busqueda_dni" type="text" placeholder="Escribe el DNI del alumno..." onkeyup="buscarAlumnoPorDNI()" required>
+                        
+                        <!-- Campo oculto para enviar el ID del alumno -->
+                        <input type="hidden" id="alumno_id" name="alumno_id" required>
+                        
+                        <!-- Información del alumno encontrado -->
+                        <div id="alumno_encontrado" class="card mt-2" style="display: none;">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1" id="alumno_nombre"></h6>
+                                        <small class="text-muted">DNI: <span id="alumno_dni_mostrar"></span></small>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="limpiarSeleccion()">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Mensaje cuando no se encuentra el alumno -->
+                        <div id="alumno_no_encontrado" class="alert alert-warning mt-2" style="display: none;">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            No se encontró ningún alumno con ese DNI.
+                        </div>
                         <div id="info-matricula" class="mt-2" style="display: none;">
                             <div class="alert alert-warning" role="alert">
                                 <i class="fas fa-exclamation-triangle me-2"></i>
@@ -139,6 +152,19 @@
 </div>
 
 <script>
+// Datos de alumnos para JavaScript
+const alumnosData = {
+    {% for alumno in alumnos %}
+    "{{ alumno.dni }}": {
+        id: {{ alumno.id }},
+        nombre: "{{ alumno.nombre }} {{ alumno.apellido }}",
+        dni: "{{ alumno.dni }}",
+        matricula: "{{ 'activa' if alumno.matricula_activa else 'ninguna' }}",
+        cicloActual: "{{ alumno.matricula_activa.ciclo_academico.nombre if alumno.matricula_activa else '' }}"
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+};
+
 // Datos de matrículas para JavaScript
 const matriculasData = {
     {% for matricula, alumno, ciclo in matriculas %}
@@ -149,20 +175,58 @@ const matriculasData = {
     {% endfor %}
 };
 
-function verificarMatricula() {
-    const selectAlumno = document.getElementById('alumno_id');
+function buscarAlumnoPorDNI() {
+    const dni = document.getElementById('busqueda_dni').value.trim();
+    const alumnoEncontrado = document.getElementById('alumno_encontrado');
+    const alumnoNoEncontrado = document.getElementById('alumno_no_encontrado');
+    const alumnoIdInput = document.getElementById('alumno_id');
+    
+    // Limpiar estados anteriores
+    alumnoEncontrado.style.display = 'none';
+    alumnoNoEncontrado.style.display = 'none';
+    alumnoIdInput.value = '';
+    
+    if (dni.length >= 3) { // Buscar cuando tenga al menos 3 caracteres
+        const alumno = alumnosData[dni];
+        
+        if (alumno) {
+            // Mostrar información del alumno encontrado
+            document.getElementById('alumno_nombre').textContent = alumno.nombre;
+            document.getElementById('alumno_dni_mostrar').textContent = alumno.dni;
+            alumnoIdInput.value = alumno.id;
+            alumnoEncontrado.style.display = 'block';
+            
+            // Verificar matrícula
+            verificarMatricula(alumno);
+        } else {
+            // Mostrar mensaje de no encontrado
+            alumnoNoEncontrado.style.display = 'block';
+        }
+    }
+}
+
+function limpiarSeleccion() {
+    document.getElementById('busqueda_dni').value = '';
+    document.getElementById('alumno_encontrado').style.display = 'none';
+    document.getElementById('alumno_no_encontrado').style.display = 'none';
+    document.getElementById('alumno_id').value = '';
+    document.getElementById('info-matricula').style.display = 'none';
+    document.getElementById('opcion-forzar').style.display = 'none';
+    
+    const btnMatricular = document.getElementById('btn-matricular');
+    btnMatricular.innerHTML = '<i class="fas fa-user-plus me-2"></i>Matricular Alumno';
+    btnMatricular.className = 'btn btn-primary w-100';
+}
+
+function verificarMatricula(alumno) {
     const infoMatricula = document.getElementById('info-matricula');
     const opcionForzar = document.getElementById('opcion-forzar');
     const btnMatricular = document.getElementById('btn-matricular');
     const cicloActual = document.getElementById('ciclo-actual');
     
-    const selectedOption = selectAlumno.options[selectAlumno.selectedIndex];
-    const tieneMatricula = selectedOption.getAttribute('data-matricula') === 'activa';
-    const cicloActualNombre = selectedOption.getAttribute('data-ciclo-actual');
-    
-    if (tieneMatricula && cicloActualNombre) {
+    if (alumno.matricula === 'activa' && alumno.cicloActual) {
         // Mostrar información de matrícula activa
-        cicloActual.textContent = cicloActualNombre;
+        cicloActual.textContent = alumno.cicloActual;
         infoMatricula.style.display = 'block';
         opcionForzar.style.display = 'block';
         btnMatricular.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Forzar Matrícula (Excepción)';
@@ -176,10 +240,12 @@ function verificarMatricula() {
     }
 }
 
+function filtrarAlumnosPorDNI() {
+    // Esta función ya no se usa, pero la mantenemos por compatibilidad
+}
+
 // Verificar matrícula al cargar la página si hay valores preseleccionados
 document.addEventListener('DOMContentLoaded', function() {
-    verificarMatricula();
-    
     // Mostrar opción de forzar si viene del servidor
     {% if mostrar_forzar %}
     document.getElementById('opcion-forzar').style.display = 'block';

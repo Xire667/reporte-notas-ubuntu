@@ -17,10 +17,13 @@ body {
 }
 
 /* Navbar personalizada */
+
 .navbar-brand {
     font-weight: bold;
     font-size: 1.5rem;
 }
+
+
 
 .navbar-nav .nav-link {
     font-weight: 500;
@@ -103,7 +106,7 @@ body {
     height: 100vh;
     background-color: var(--primary-color);
     transition: left 0.3s ease;
-    z-index: 1050;
+    z-index: 4050;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -227,7 +230,6 @@ body {
 .main-content {
     transition: margin-left 0.3s ease;
     min-height: 100vh;
-    padding-top: 80px;
     margin-left: 280px; /* Siempre con margen izquierdo para el sidebar */
 }
 
