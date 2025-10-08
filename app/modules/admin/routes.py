@@ -1,7 +1,7 @@
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from app import db
-from app.models import Usuario, Curso, CursoDocente, CursoAlumno, CicloAcademico, MatriculaAlumno, Nota
+from app.models import Usuario, Curso, CursoDocente, CursoAlumno, CicloAcademico, MatriculaAlumno, Nota, NotaActividades, NotaPracticas, NotaParcial
 from . import admin_bp
 
 def admin_required(f):
@@ -510,7 +510,7 @@ def ver_cursos_docente(id):
         notas_publicadas = Nota.query.filter_by(curso_id=curso.id, docente_id=id, estado='publicada').count()
         
         # Calcular promedio del curso
-        notas_finales = [nota.nota_final for nota in Nota.query.filter_by(curso_id=curso.id, docente_id=id).all() if nota.nota_final > 0]
+        notas_finales = [nota.promedio_final for nota in Nota.query.filter_by(curso_id=curso.id, docente_id=id).all() if nota.promedio_final and nota.promedio_final > 0]
         promedio_curso = sum(notas_finales) / len(notas_finales) if notas_finales else 0
         
         cursos_data.append({
@@ -574,7 +574,7 @@ def estadisticas_docente(id):
         })
     
     # Calcular promedio general
-    todas_las_notas = [nota.nota_final for nota in Nota.query.filter_by(docente_id=id).all() if nota.nota_final > 0]
+    todas_las_notas = [nota.promedio_final for nota in Nota.query.filter_by(docente_id=id).all() if nota.promedio_final and nota.promedio_final > 0]
     promedio_general = sum(todas_las_notas) / len(todas_las_notas) if todas_las_notas else 0
     
     return render_template('admin/estadisticas_docente.html',
@@ -623,7 +623,7 @@ def ver_alumnos_docente(id):
                 promedio_alumno = 0
                 
                 # Calcular promedio del alumno con este docente
-                notas_finales = [nota.nota_final for nota in Nota.query.filter_by(alumno_id=alumno.id, docente_id=id).all() if nota.nota_final > 0]
+                notas_finales = [nota.promedio_final for nota in Nota.query.filter_by(alumno_id=alumno.id, docente_id=id).all() if nota.promedio_final and nota.promedio_final > 0]
                 if notas_finales:
                     promedio_alumno = sum(notas_finales) / len(notas_finales)
                 
@@ -672,7 +672,7 @@ def ver_notas_docente(id):
     notas_borrador = len([n for n in notas if n[0].estado == 'borrador'])
     
     # Calcular promedio general
-    notas_finales = [nota[0].nota_final for nota in notas if nota[0].nota_final > 0]
+    notas_finales = [nota[0].promedio_final for nota in notas if nota[0].promedio_final and nota[0].promedio_final > 0]
     promedio_general = sum(notas_finales) / len(notas_finales) if notas_finales else 0
     
     return render_template('admin/notas_docente.html',
@@ -1066,7 +1066,7 @@ def ver_notas_curso(curso_id):
     notas_borrador = Nota.query.filter_by(curso_id=curso_id, estado='borrador').count()
     
     # Calcular promedios
-    notas_finales = [nota[0].nota_final for nota in notas if nota[0].nota_final > 0]
+    notas_finales = [nota[0].promedio_final for nota in notas if nota[0].promedio_final and nota[0].promedio_final > 0]
     promedio_curso = sum(notas_finales) / len(notas_finales) if notas_finales else 0
     
     return render_template('admin/notas_curso.html',
@@ -1103,7 +1103,7 @@ def ver_notas_alumno(alumno_id):
     ).first()
     
     # Calcular estadísticas del alumno
-    notas_finales = [nota[0].nota_final for nota in notas if nota[0].nota_final > 0]
+    notas_finales = [nota[0].promedio_final for nota in notas if nota[0].promedio_final and nota[0].promedio_final > 0]
     promedio_general = sum(notas_finales) / len(notas_finales) if notas_finales else 0
     
     return render_template('admin/notas_alumno.html',
@@ -1152,23 +1152,27 @@ def exportar_notas():
     # Escribir encabezados
     writer.writerow([
         'Curso', 'Código Curso', 'Alumno', 'DNI Alumno', 'Docente',
-        'Parcial 1', 'Parcial 2', 'Parcial 3', 'Parcial 4',
-        'Nota Final', 'Estado', 'Fecha Actualización', 'Comentarios'
+        'Promedio Actividades', 'Promedio Prácticas', 'Promedio Parciales',
+        'Promedio Final', 'Estado', 'Fecha Actualización', 'Comentarios'
     ])
     
     # Escribir datos
     for nota, curso, alumno, docente in notas:
+        # Obtener promedios de las tablas relacionadas
+        promedio_actividades = nota.nota_actividades.calcular_promedio_actividades() if nota.nota_actividades else 0
+        promedio_practicas = nota.nota_practicas.calcular_promedio_practicas() if nota.nota_practicas else 0
+        promedio_parciales = nota.nota_parcial.calcular_promedio_parciales() if nota.nota_parcial else 0
+        
         writer.writerow([
             curso.nombre,
             curso.codigo,
             f"{alumno.nombre} {alumno.apellido}",
             alumno.dni,
             f"{docente.nombre} {docente.apellido}",
-            nota.parcial1,
-            nota.parcial2,
-            nota.parcial3,
-            nota.parcial4,
-            nota.nota_final,
+            promedio_actividades,
+            promedio_practicas,
+            promedio_parciales,
+            nota.promedio_final,
             nota.estado,
             nota.fecha_actualizacion.strftime('%d/%m/%Y %H:%M') if nota.fecha_actualizacion else '',
             nota.comentarios or ''

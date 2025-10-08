@@ -5,7 +5,7 @@ Ejecutar este script para crear las tablas y datos iniciales
 """
 
 from app import create_app, db
-from app.models import Usuario, Curso, CursoDocente, CursoAlumno, Nota
+from app.models import Usuario, Curso, CursoDocente, CursoAlumno, Nota, NotaActividades, NotaPracticas, NotaParcial
 
 def init_database():
     """Inicializa la base de datos con tablas y datos de ejemplo"""
@@ -112,16 +112,61 @@ def init_database():
         # Crear algunas notas de ejemplo
         print("Creando notas de ejemplo...")
         for curso in cursos:
+            # Crear notas de actividades (8 notas individuales)
+            nota_actividades = NotaActividades(
+                curso_id=curso.id,
+                alumno_id=alumno.id,
+                docente_id=docente.id,
+                actividad1=18.5,
+                actividad2=17.0,
+                actividad3=19.5,
+                actividad4=16.5,
+                actividad5=18.0,
+                actividad6=17.5,
+                actividad7=19.0,
+                actividad8=18.5
+            )
+            nota_actividades.calcular_promedio_actividades()
+            db.session.add(nota_actividades)
+            
+            # Crear notas de prácticas (4 notas individuales)
+            nota_practicas = NotaPracticas(
+                curso_id=curso.id,
+                alumno_id=alumno.id,
+                docente_id=docente.id,
+                practica1=16.5,
+                practica2=18.0,
+                practica3=17.5,
+                practica4=19.0
+            )
+            nota_practicas.calcular_promedio_practicas()
+            db.session.add(nota_practicas)
+            
+            # Crear notas de parciales (2 notas individuales)
+            nota_parcial = NotaParcial(
+                curso_id=curso.id,
+                alumno_id=alumno.id,
+                docente_id=docente.id,
+                parcial1=17.5,
+                parcial2=18.5
+            )
+            nota_parcial.calcular_promedio_parciales()
+            db.session.add(nota_parcial)
+            
+            # Guardar las notas individuales primero
+            db.session.commit()
+            
+            # Crear nota principal con referencias a las notas individuales
             nota = Nota(
                 curso_id=curso.id,
                 alumno_id=alumno.id,
                 docente_id=docente.id,
-                parcial1=15.5,
-                parcial2=18.0,
-                parcial3=16.5,
+                nota_actividades_id=nota_actividades.id,
+                nota_practicas_id=nota_practicas.id,
+                nota_parcial_id=nota_parcial.id,
                 estado='publicada'
             )
-            nota.calcular_nota_final()
+            nota.calcular_promedio_final()
             db.session.add(nota)
         
         db.session.commit()

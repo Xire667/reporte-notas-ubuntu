@@ -27,12 +27,28 @@
                             <tr>
                                 <th>Alumno</th>
                                 <th>DNI</th>
-                                {% for i in range(1, curso.numero_parciales + 1) %}
-                                <th>Parcial {{ i }}</th>
-                                {% endfor %}
-                                <th>Nota Final</th>
+                                <th colspan="8">Actividades (8)</th>
+                                <th colspan="4">Prácticas (4)</th>
+                                <th colspan="2">Parciales (2)</th>
+                                <th>Promedio Final</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
+                            </tr>
+                            <tr class="table-secondary">
+                                <th></th>
+                                <th></th>
+                                {% for i in range(1, 9) %}
+                                <th>A{{ i }}</th>
+                                {% endfor %}
+                                {% for i in range(1, 5) %}
+                                <th>P{{ i }}</th>
+                                {% endfor %}
+                                {% for i in range(1, 3) %}
+                                <th>Par{{ i }}</th>
+                                {% endfor %}
+                                <th></th>
+                                <th></th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -40,17 +56,40 @@
                             <tr>
                                 <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
                                 <td>{{ alumno.dni }}</td>
-                                {% for i in range(1, curso.numero_parciales + 1) %}
+                                
+                                <!-- Actividades (8) -->
+                                {% for i in range(1, 9) %}
                                 <td>
                                     <input type="number" class="form-control form-control-sm"
-                                        id="parcial{{ i }}_{{ alumno.id }}"
-                                        value="{% if nota %}{% if i == 1 %}{{ nota.parcial1 if nota.parcial1 else '' }}{% elif i == 2 %}{{ nota.parcial2 if nota.parcial2 else '' }}{% elif i == 3 %}{{ nota.parcial3 if nota.parcial3 else '' }}{% elif i == 4 %}{{ nota.parcial4 if nota.parcial4 else '' }}{% endif %}{% endif %}"
+                                        id="actividad{{ i }}_{{ alumno.id }}"
+                                        value="{% if nota and nota.nota_actividades %}{{ nota.nota_actividades['actividad' + i|string] if nota.nota_actividades['actividad' + i|string] else '' }}{% endif %}"
                                         min="0" max="20" step="0.1" placeholder="0-20">
                                 </td>
                                 {% endfor %}
+                                
+                                <!-- Prácticas (4) -->
+                                {% for i in range(1, 5) %}
                                 <td>
-                                    <span class="badge bg-info" id="nota_final_{{ alumno.id }}">
-                                        {{ "%.1f"|format(nota.nota_final) if nota and nota.nota_final else "0.0" }}
+                                    <input type="number" class="form-control form-control-sm"
+                                        id="practica{{ i }}_{{ alumno.id }}"
+                                        value="{% if nota and nota.nota_practicas %}{{ nota.nota_practicas['practica' + i|string] if nota.nota_practicas['practica' + i|string] else '' }}{% endif %}"
+                                        min="0" max="20" step="0.1" placeholder="0-20">
+                                </td>
+                                {% endfor %}
+                                
+                                <!-- Parciales (2) -->
+                                {% for i in range(1, 3) %}
+                                <td>
+                                    <input type="number" class="form-control form-control-sm"
+                                        id="parcial{{ i }}_{{ alumno.id }}"
+                                        value="{% if nota and nota.nota_parcial %}{{ nota.nota_parcial['parcial' + i|string] if nota.nota_parcial['parcial' + i|string] else '' }}{% endif %}"
+                                        min="0" max="20" step="0.1" placeholder="0-20">
+                                </td>
+                                {% endfor %}
+                                
+                                <td>
+                                    <span class="badge bg-info" id="promedio_final_{{ alumno.id }}">
+                                        {{ "%.1f"|format(nota.promedio_final) if nota and nota.promedio_final else "0.0" }}
                                     </span>
                                 </td>
                                 <td>
@@ -97,78 +136,93 @@
 {% block scripts %}
 <script>
     function guardarNotas(alumnoId) {
-        const numeroParciales = {{ curso.numero_parciales }};
-        const notas = [];
         const formData = new FormData();
+        const todasLasNotas = [];
 
-    // Recopilar todas las notas
-    for (let i = 1; i <= numeroParciales; i++) {
-        const elemento = document.getElementById('parcial' + i + '_' + alumnoId);
-        const valor = elemento ? elemento.value : '';
-        notas.push(valor);
-        formData.append('parcial' + i, valor);
-    }
+        // Recopilar actividades (8)
+        for (let i = 1; i <= 8; i++) {
+            const elemento = document.getElementById('actividad' + i + '_' + alumnoId);
+            const valor = elemento ? elemento.value : '';
+            todasLasNotas.push(valor);
+            formData.append('actividad' + i, valor);
+        }
 
-    // Validar que al menos una nota tenga valor
-    const tieneNotas = notas.some(nota => nota && nota.trim() !== '');
-    if (!tieneNotas) {
-        mostrarAlerta('Debe ingresar al menos una nota.', 'warning');
-        return;
-    }
+        // Recopilar prácticas (4)
+        for (let i = 1; i <= 4; i++) {
+            const elemento = document.getElementById('practica' + i + '_' + alumnoId);
+            const valor = elemento ? elemento.value : '';
+            todasLasNotas.push(valor);
+            formData.append('practica' + i, valor);
+        }
 
-    // Validar rango de notas
-    for (let i = 0; i < notas.length; i++) {
-        if (notas[i] && (parseFloat(notas[i]) < 0 || parseFloat(notas[i]) > 20)) {
-            mostrarAlerta('Las notas deben estar entre 0 y 20.', 'warning');
+        // Recopilar parciales (2)
+        for (let i = 1; i <= 2; i++) {
+            const elemento = document.getElementById('parcial' + i + '_' + alumnoId);
+            const valor = elemento ? elemento.value : '';
+            todasLasNotas.push(valor);
+            formData.append('parcial' + i, valor);
+        }
+
+        // Validar que al menos una nota tenga valor
+        const tieneNotas = todasLasNotas.some(nota => nota && nota.trim() !== '');
+        if (!tieneNotas) {
+            mostrarAlerta('Debe ingresar al menos una nota.', 'warning');
             return;
         }
-    }
 
-    formData.append('alumno_id', alumnoId);
-    formData.append('estado', 'borrador'); // Por defecto en borrador
-
-    // Mostrar indicador de carga
-    const boton = document.querySelector(`button[onclick="guardarNotas(${alumnoId})"]`);
-    const iconoOriginal = boton.innerHTML;
-    boton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    boton.disabled = true;
-
-    fetch('{{ url_for("docente.guardar_notas", curso_id=curso.id) }}', {
-        method: 'POST',
-        body: formData
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+        // Validar rango de notas
+        for (let i = 0; i < todasLasNotas.length; i++) {
+            if (todasLasNotas[i] && (parseFloat(todasLasNotas[i]) < 0 || parseFloat(todasLasNotas[i]) > 20)) {
+                mostrarAlerta('Las notas deben estar entre 0 y 20.', 'warning');
+                return;
             }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                // Actualizar nota final
-                document.getElementById('nota_final_' + alumnoId).textContent = data.nota_final.toFixed(1);
+        }
 
-                // Actualizar estado si existe
-                const estadoElement = document.querySelector(`span[id*="estado_${alumnoId}"]`);
-                if (estadoElement) {
-                    estadoElement.textContent = data.estado === 'publicada' ? 'Publicada' : 'Borrador';
-                    estadoElement.className = data.estado === 'publicada' ? 'badge bg-success' : 'badge bg-warning';
+        formData.append('alumno_id', alumnoId);
+        formData.append('estado', 'borrador'); // Por defecto en borrador
+
+        // Mostrar indicador de carga
+        const boton = document.querySelector(`button[onclick="guardarNotas(${alumnoId})"]`);
+        const iconoOriginal = boton.innerHTML;
+        boton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        boton.disabled = true;
+
+        fetch('{{ url_for("docente.guardar_notas", curso_id=curso.id) }}', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Actualizar promedio final
+                    document.getElementById('promedio_final_' + alumnoId).textContent = data.promedio_final.toFixed(1);
 
-                mostrarAlerta(data.message, 'success');
-            } else {
-                mostrarAlerta('Error: ' + data.message, 'danger');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            mostrarAlerta('Error al guardar las notas: ' + error.message, 'danger');
-        })
-        .finally(() => {
-            // Restaurar botón
-            boton.innerHTML = iconoOriginal;
-            boton.disabled = false;
-        });
+                    // Actualizar estado si existe
+                    const estadoElement = document.querySelector(`span[id*="estado_${alumnoId}"]`);
+                    if (estadoElement) {
+                        estadoElement.textContent = data.estado === 'publicada' ? 'Publicada' : 'Borrador';
+                        estadoElement.className = data.estado === 'publicada' ? 'badge bg-success' : 'badge bg-warning';
+                    }
+
+                    mostrarAlerta(data.message, 'success');
+                } else {
+                    mostrarAlerta('Error: ' + data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarAlerta('Error al guardar las notas: ' + error.message, 'danger');
+            })
+            .finally(() => {
+                // Restaurar botón
+                boton.innerHTML = iconoOriginal;
+                boton.disabled = false;
+            });
     }
 
     function cambiarEstado(alumnoId, estadoActual) {

@@ -1,7 +1,7 @@
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from app import db
-from app.models import Usuario, Curso, CursoDocente, CursoAlumno, Nota
+from app.models import Usuario, Curso, CursoDocente, CursoAlumno, Nota, NotaActividades, NotaPracticas, NotaParcial
 from . import docente_bp
 
 def docente_required(f):
@@ -55,26 +55,8 @@ def ver_alumnos_curso(curso_id):
 @login_required
 @docente_required
 def gestionar_notas(curso_id):
-    # Verificar que el docente tenga asignado este curso
-    curso_docente = CursoDocente.query.filter_by(
-        curso_id=curso_id, 
-        docente_id=current_user.id
-    ).first()
-    
-    if not curso_docente:
-        flash('No tienes acceso a este curso.', 'error')
-        return redirect(url_for('docente.dashboard'))
-    
-    # Obtener alumnos y sus notas
-    alumnos_notas = db.session.query(Usuario, Nota).outerjoin(Nota, 
-        db.and_(Nota.alumno_id == Usuario.id, Nota.curso_id == curso_id)
-    ).join(CursoAlumno).filter(CursoAlumno.curso_id == curso_id).all()
-    
-    curso = Curso.query.get(curso_id)
-    
-    return render_template('docente/gestionar_notas.html', 
-                         alumnos_notas=alumnos_notas, 
-                         curso=curso)
+    """Redirige a la vista de alumnos del curso para seleccionar el alumno específico"""
+    return redirect(url_for('docente.ver_alumnos_curso', curso_id=curso_id))
 
 @docente_bp.route('/cursos/<int:curso_id>/notas/guardar', methods=['POST'])
 @login_required
@@ -95,15 +77,10 @@ def guardar_notas(curso_id):
         comentarios = request.form.get('comentarios', '')
         estado = request.form.get('estado', 'borrador')
         
-        # Obtener el curso para saber cuántos parciales tiene
+        # Obtener el curso
         curso = Curso.query.get(curso_id)
         if not curso:
             return jsonify({'success': False, 'message': 'Curso no encontrado.'})
-        
-        # Recopilar notas dinámicamente
-        notas_parciales = {}
-        for i in range(1, curso.numero_parciales + 1):
-            notas_parciales[f'parcial{i}'] = request.form.get(f'parcial{i}')
         
         # Validar que se proporcione el alumno_id
         if not alumno_id:
@@ -118,26 +95,100 @@ def guardar_notas(curso_id):
         if not matricula:
             return jsonify({'success': False, 'message': 'El alumno no está matriculado en este curso.'})
         
-        # Convertir y validar notas
-        try:
-            notas_validadas = {}
-            for i in range(1, curso.numero_parciales + 1):
-                valor = notas_parciales[f'parcial{i}']
-                notas_validadas[f'parcial{i}'] = float(valor) if valor and valor.strip() != '' else None
-        except ValueError:
-            return jsonify({'success': False, 'message': 'Error en el formato de las notas. Verifica que sean números válidos.'})
+        # Recopilar y validar notas de actividades (8 actividades)
+        actividades = {}
+        for i in range(1, 9):
+            valor = request.form.get(f'actividad{i}')
+            try:
+                actividades[f'actividad{i}'] = float(valor) if valor and valor.strip() != '' else 0.0
+            except ValueError:
+                return jsonify({'success': False, 'message': f'Error en el formato de la actividad {i}. Debe ser un número válido.'})
         
-        # Validar que al menos una nota tenga valor
-        tiene_notas = any(nota is not None for nota in notas_validadas.values())
-        if not tiene_notas:
-            return jsonify({'success': False, 'message': 'Debe ingresar al menos una nota.'})
+        # Recopilar y validar notas de prácticas (4 prácticas)
+        practicas = {}
+        for i in range(1, 5):
+            valor = request.form.get(f'practica{i}')
+            try:
+                practicas[f'practica{i}'] = float(valor) if valor and valor.strip() != '' else 0.0
+            except ValueError:
+                return jsonify({'success': False, 'message': f'Error en el formato de la práctica {i}. Debe ser un número válido.'})
+        
+        # Recopilar y validar notas de parciales (2 parciales)
+        parciales = {}
+        for i in range(1, 3):
+            valor = request.form.get(f'parcial{i}')
+            try:
+                parciales[f'parcial{i}'] = float(valor) if valor and valor.strip() != '' else 0.0
+            except ValueError:
+                return jsonify({'success': False, 'message': f'Error en el formato del parcial {i}. Debe ser un número válido.'})
         
         # Validar rango de notas (0-20)
-        for nota_val in notas_validadas.values():
-            if nota_val is not None and (nota_val < 0 or nota_val > 20):
+        todas_las_notas = list(actividades.values()) + list(practicas.values()) + list(parciales.values())
+        for nota_val in todas_las_notas:
+            if nota_val < 0 or nota_val > 20:
                 return jsonify({'success': False, 'message': 'Las notas deben estar entre 0 y 20.'})
         
-        # Buscar o crear la nota
+        # Buscar o crear NotaActividades
+        nota_actividades = NotaActividades.query.filter_by(
+            curso_id=curso_id, 
+            alumno_id=alumno_id
+        ).first()
+        
+        if not nota_actividades:
+            nota_actividades = NotaActividades(
+                curso_id=curso_id,
+                alumno_id=alumno_id,
+                docente_id=current_user.id
+            )
+            db.session.add(nota_actividades)
+        
+        # Actualizar actividades
+        for key, value in actividades.items():
+            setattr(nota_actividades, key, value)
+        nota_actividades.calcular_promedio_actividades()
+        
+        # Buscar o crear NotaPracticas
+        nota_practicas = NotaPracticas.query.filter_by(
+            curso_id=curso_id, 
+            alumno_id=alumno_id
+        ).first()
+        
+        if not nota_practicas:
+            nota_practicas = NotaPracticas(
+                curso_id=curso_id,
+                alumno_id=alumno_id,
+                docente_id=current_user.id
+            )
+            db.session.add(nota_practicas)
+        
+        # Actualizar prácticas
+        for key, value in practicas.items():
+            setattr(nota_practicas, key, value)
+        nota_practicas.calcular_promedio_practicas()
+        
+        # Buscar o crear NotaParcial
+        nota_parcial = NotaParcial.query.filter_by(
+            curso_id=curso_id, 
+            alumno_id=alumno_id
+        ).first()
+        
+        if not nota_parcial:
+            nota_parcial = NotaParcial(
+                curso_id=curso_id,
+                alumno_id=alumno_id,
+                docente_id=current_user.id
+            )
+            db.session.add(nota_parcial)
+        
+        # Actualizar parciales
+        for key, value in parciales.items():
+            setattr(nota_parcial, key, value)
+        nota_parcial.calcular_promedio_parciales()
+        
+        # Guardar las notas individuales primero
+        db.session.commit()
+        
+        # Buscar o crear la nota principal
         nota = Nota.query.filter_by(
             curso_id=curso_id, 
             alumno_id=alumno_id
@@ -147,38 +198,40 @@ def guardar_notas(curso_id):
             nota = Nota(
                 curso_id=curso_id,
                 alumno_id=alumno_id,
-                docente_id=current_user.id
+                docente_id=current_user.id,
+                nota_actividades_id=nota_actividades.id,
+                nota_practicas_id=nota_practicas.id,
+                nota_parcial_id=nota_parcial.id
             )
             db.session.add(nota)
-        
-        # Actualizar notas dinámicamente
-        for i in range(1, curso.numero_parciales + 1):
-            valor = notas_validadas[f'parcial{i}']
-            setattr(nota, f'parcial{i}', valor if valor is not None else 0.0)
-        
-        # Si el curso tiene menos de 4 parciales, poner los restantes en 0
-        for i in range(curso.numero_parciales + 1, 5):  # máximo 4 parciales en el modelo
-            setattr(nota, f'parcial{i}', 0.0)
+        else:
+            # Actualizar referencias si ya existe
+            nota.nota_actividades_id = nota_actividades.id
+            nota.nota_practicas_id = nota_practicas.id
+            nota.nota_parcial_id = nota_parcial.id
         
         nota.comentarios = comentarios
         nota.estado = estado
         
-        # Calcular nota final
-        nota.calcular_nota_final()
+        # Calcular promedio final
+        nota.calcular_promedio_final()
         
         db.session.commit()
         
         return jsonify({
             'success': True, 
             'message': 'Notas guardadas correctamente.',
-            'nota_final': nota.nota_final,
+            'promedio_final': nota.promedio_final,
+            'promedio_actividades': nota_actividades.promedio_actividades,
+            'promedio_practicas': nota_practicas.promedio_practicas,
+            'promedio_parciales': nota_parcial.promedio_parciales,
             'estado': nota.estado
         })
         
     except Exception as e:
         db.session.rollback()
         print(f"Error al guardar notas: {e}")  # Para debugging
-        return jsonify({'success': False, 'message': f'Error al guardar las notas: {str(e)}'})
+        return jsonify({'success': False, 'message': f'Error interno del servidor: {str(e)}'})
 
 @docente_bp.route('/cursos/<int:curso_id>/notas/<int:alumno_id>')
 @login_required
@@ -202,10 +255,29 @@ def ver_nota_alumno(curso_id, alumno_id):
         alumno_id=alumno_id
     ).first()
     
+    # Obtener las notas detalladas
+    nota_actividades = NotaActividades.query.filter_by(
+        curso_id=curso_id, 
+        alumno_id=alumno_id
+    ).first()
+    
+    nota_practicas = NotaPracticas.query.filter_by(
+        curso_id=curso_id, 
+        alumno_id=alumno_id
+    ).first()
+    
+    nota_parcial = NotaParcial.query.filter_by(
+        curso_id=curso_id, 
+        alumno_id=alumno_id
+    ).first()
+    
     return render_template('docente/ver_nota_alumno.html', 
                          alumno=alumno, 
                          curso=curso, 
-                         nota=nota)
+                         nota=nota,
+                         nota_actividades=nota_actividades,
+                         nota_practicas=nota_practicas,
+                         nota_parcial=nota_parcial)
 
 @docente_bp.route('/cursos/<int:curso_id>/notas/<int:alumno_id>/cambiar-estado', methods=['POST'])
 @login_required
