@@ -63,32 +63,61 @@
                                 <td>{{ alumno.fecha_creacion.strftime('%d/%m/%Y') if alumno.fecha_creacion else 'N/A' }}
                                 </td>
                                 <td>
-                                    <div class="btn-group" role="group">
-                                        <a href="{{ url_for('admin.editar_alumno', id=alumno.id) }}"
-                                            class="btn btn-sm btn-outline-warning" title="Editar">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a href="{{ url_for('admin.editar_matricula_alumno', alumno_id=alumno.id) }}"
-                                            class="btn btn-sm btn-outline-primary" title="Editar Matrícula">
-                                            <i class="fas fa-exchange-alt"></i>
-                                        </a>
-                                        <a href="{{ url_for('admin.matricular_ciclo') }}"
-                                            class="btn btn-sm btn-outline-info" title="Matricular en Ciclo">
-                                            <i class="fas fa-graduation-cap"></i>
-                                        </a>
-                                        <button type="button"
-                                            class="btn btn-sm btn-outline-{{ 'danger' if alumno.activo else 'success' }}"
-                                            title="{{ 'Desactivar' if alumno.activo else 'Activar' }}"
-                                            onclick="toggleActivo({{ alumno.id }}, 'alumno')">
-                                            <i class="fas fa-{{ 'ban' if alumno.activo else 'check' }}"></i>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" 
+                                                id="dropdownMenuButton{{ alumno.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-cog me-1"></i>Acciones
                                         </button>
-                                        <button type="button"
-                                            class="btn btn-sm btn-outline-danger{{ ' disabled' if not alumno_data.puede_eliminar else '' }}"
-                                            title="{% if alumno_data.puede_eliminar %}Eliminar{% else %}No se puede eliminar - Tiene {{ alumno_data.cursos_matriculados + alumno_data.matriculas_ciclos + alumno_data.notas_registradas }} relación(es){% endif %}"
-                                            {% if alumno_data.puede_eliminar %}onclick="eliminarAlumno({{ alumno.id }})"
-                                            {% endif %}>
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ alumno.id }}">
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('admin.editar_alumno', id=alumno.id) }}">
+                                                    <i class="fas fa-edit me-2"></i>Editar
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('admin.ver_notas_alumno', alumno_id=alumno.id) }}">
+                                                    <i class="fas fa-graduation-cap me-2"></i>Ver notas
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('admin.editar_matricula_alumno', alumno_id=alumno.id) }}">
+                                                    <i class="fas fa-exchange-alt me-2"></i>Editar matrícula
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('admin.matricular_ciclo') }}">
+                                                    <i class="fas fa-graduation-cap me-2"></i>Matricular en ciclo
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="#" onclick="suspenderMatricula({{ alumno.id }})">
+                                                    <i class="fas fa-pause me-2"></i>Suspender matrícula
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a class="dropdown-item text-{{ 'danger' if alumno.activo else 'success' }}" 
+                                                   href="#" onclick="toggleActivo({{ alumno.id }}, 'alumno')">
+                                                    <i class="fas fa-{{ 'ban' if alumno.activo else 'check' }} me-2"></i>
+                                                    {{ 'Desactivar' if alumno.activo else 'Activar' }}
+                                                </a>
+                                            </li>
+                                            {% if alumno_data.puede_eliminar %}
+                                            <li>
+                                                <a class="dropdown-item text-danger" href="#" onclick="eliminarAlumno({{ alumno.id }})">
+                                                    <i class="fas fa-trash me-2"></i>Eliminar
+                                                </a>
+                                            </li>
+                                            {% else %}
+                                            <li>
+                                                <span class="dropdown-item-text text-muted">
+                                                    <i class="fas fa-info-circle me-2"></i>
+                                                    No se puede eliminar<br>
+                                                    <small>Tiene {{ alumno_data.cursos_matriculados + alumno_data.matriculas_ciclos + alumno_data.notas_registradas }} relación(es)</small>
+                                                </span>
+                                            </li>
+                                            {% endif %}
+                                        </ul>
                                     </div>
                                 </td>
                             </tr>

@@ -48,44 +48,72 @@
                                 <td>{{ docente.fecha_creacion.strftime('%d/%m/%Y') if docente.fecha_creacion else 'N/A'
                                     }}</td>
                                 <td>
-                                    <div class="btn-group" role="group">
-                                        <a href="{{ url_for('admin.editar_docente', id=docente.id) }}"
-                                            class="btn btn-sm btn-outline-warning" title="Editar">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a href="{{ url_for('admin.ver_cursos_docente', id=docente.id) }}"
-                                            class="btn btn-sm btn-outline-primary" title="Ver cursos">
-                                            <i class="fas fa-book"></i>
-                                        </a>
-                                        <a href="{{ url_for('admin.estadisticas_docente', id=docente.id) }}"
-                                            class="btn btn-sm btn-outline-info" title="Estadísticas">
-                                            <i class="fas fa-chart-bar"></i>
-                                        </a>
-                                        <a href="{{ url_for('admin.ver_alumnos_docente', id=docente.id) }}"
-                                            class="btn btn-sm btn-outline-success" title="Ver alumnos">
-                                            <i class="fas fa-users"></i>
-                                        </a>
-                                        <a href="{{ url_for('admin.ver_notas_docente', id=docente.id) }}"
-                                            class="btn btn-sm btn-outline-secondary" title="Ver notas">
-                                            <i class="fas fa-graduation-cap"></i>
-                                        </a>
-                                        <a href="{{ url_for('admin.asignar_cursos') }}"
-                                            class="btn btn-sm btn-outline-dark" title="Asignar cursos">
-                                            <i class="fas fa-link"></i>
-                                        </a>
-                                        <button type="button"
-                                            class="btn btn-sm btn-outline-{{ 'danger' if docente.activo else 'success' }}"
-                                            title="{{ 'Desactivar' if docente.activo else 'Activar' }}"
-                                            onclick="toggleActivo({{ docente.id }}, 'docente')">
-                                            <i class="fas fa-{{ 'ban' if docente.activo else 'check' }}"></i>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" 
+                                                id="dropdownMenuButton{{ docente.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-cog me-1"></i>Acciones
                                         </button>
-                                        <button type="button"
-                                            class="btn btn-sm btn-outline-danger{{ ' disabled' if not docente_data.puede_eliminar else '' }}"
-                                            title="{% if docente_data.puede_eliminar %}Eliminar{% else %}No se puede eliminar - Tiene {{ docente_data.cursos_asignados + docente_data.notas_registradas }} relación(es){% endif %}"
-                                            {% if docente_data.puede_eliminar
-                                            %}onclick="eliminarDocente({{ docente.id }})" {% endif %}>
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ docente.id }}">
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('admin.editar_docente', id=docente.id) }}">
+                                                    <i class="fas fa-edit me-2"></i>Editar
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('admin.ver_cursos_docente', id=docente.id) }}">
+                                                    <i class="fas fa-book me-2"></i>Ver cursos
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('admin.estadisticas_docente', id=docente.id) }}">
+                                                    <i class="fas fa-chart-bar me-2"></i>Estadísticas
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('admin.ver_alumnos_docente', id=docente.id) }}">
+                                                    <i class="fas fa-users me-2"></i>Ver alumnos
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('admin.ver_notas_docente', id=docente.id) }}">
+                                                    <i class="fas fa-graduation-cap me-2"></i>Ver notas
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('admin.asignar_cursos') }}">
+                                                    <i class="fas fa-link me-2"></i>Asignar cursos
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('admin.desasignar_curso_docente', id=docente.id, curso_id=0) }}" 
+                                                   onclick="return confirm('¿Está seguro de desasignar cursos de este docente?')">
+                                                    <i class="fas fa-unlink me-2"></i>Desasignar cursos
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a class="dropdown-item text-{{ 'danger' if docente.activo else 'success' }}" 
+                                                   href="#" onclick="toggleActivo({{ docente.id }}, 'docente')">
+                                                    <i class="fas fa-{{ 'ban' if docente.activo else 'check' }} me-2"></i>
+                                                    {{ 'Desactivar' if docente.activo else 'Activar' }}
+                                                </a>
+                                            </li>
+                                            {% if docente_data.puede_eliminar %}
+                                            <li>
+                                                <a class="dropdown-item text-danger" href="#" onclick="eliminarDocente({{ docente.id }})">
+                                                    <i class="fas fa-trash me-2"></i>Eliminar
+                                                </a>
+                                            </li>
+                                            {% else %}
+                                            <li>
+                                                <span class="dropdown-item-text text-muted">
+                                                    <i class="fas fa-info-circle me-2"></i>
+                                                    No se puede eliminar<br>
+                                                    <small>Tiene {{ docente_data.cursos_asignados + docente_data.notas_registradas }} relación(es)</small>
+                                                </span>
+                                            </li>
+                                            {% endif %}
+                                        </ul>
                                     </div>
                                 </td>
                             </tr>

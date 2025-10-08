@@ -60,31 +60,62 @@
                                 <td>{{ curso.fecha_creacion.strftime('%d/%m/%Y') if curso.fecha_creacion else 'N/A' }}
                                 </td>
                                 <td>
-                                    <div class="btn-group" role="group">
-                                        <a href="{{ url_for('admin.editar_curso', id=curso.id) }}"
-                                            class="btn btn-sm btn-outline-warning" title="Editar">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a href="{{ url_for('admin.asignar_cursos') }}"
-                                            class="btn btn-sm btn-outline-info" title="Asignar docentes">
-                                            <i class="fas fa-link"></i>
-                                        </a>
-                                        <a href="{{ url_for('admin.asignar_ciclo_cursos') }}"
-                                            class="btn btn-sm btn-outline-secondary" title="Asignar ciclo">
-                                            <i class="fas fa-calendar-alt"></i>
-                                        </a>
-                                        <button type="button" 
-                                            class="btn btn-sm btn-outline-{{ 'danger' if curso.activo else 'success' }}{{ ' disabled' if not curso_data.puede_desactivar else '' }}"
-                                            title="{% if curso_data.puede_desactivar %}{{ 'Desactivar' if curso.activo else 'Activar' }}{% else %}No se puede {{ 'desactivar' if curso.activo else 'activar' }} - Tiene {{ curso_data.docentes_asignados + curso_data.alumnos_matriculados + curso_data.notas_registradas }} relación(es){% endif %}"
-                                            {% if curso_data.puede_desactivar %}onclick="toggleActivo({{ curso.id }}, 'curso')"{% endif %}>
-                                            <i class="fas fa-{{ 'ban' if curso.activo else 'check' }}"></i>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" 
+                                                data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-cog"></i>
                                         </button>
-                                        <button type="button" 
-                                            class="btn btn-sm btn-outline-danger{{ ' disabled' if not curso_data.puede_eliminar else '' }}" 
-                                            title="{% if curso_data.puede_eliminar %}Eliminar{% else %}No se puede eliminar - Tiene {{ curso_data.docentes_asignados + curso_data.alumnos_matriculados + curso_data.notas_registradas }} relación(es){% endif %}"
-                                            {% if curso_data.puede_eliminar %}onclick="eliminarCurso({{ curso.id }})"{% endif %}>
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('admin.editar_curso', id=curso.id) }}">
+                                                    <i class="fas fa-edit me-2"></i>Editar
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('admin.ver_notas_curso', curso_id=curso.id) }}">
+                                                    <i class="fas fa-graduation-cap me-2"></i>Ver notas
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('admin.asignar_cursos') }}">
+                                                    <i class="fas fa-link me-2"></i>Asignar docentes
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('admin.asignar_ciclo_cursos') }}">
+                                                    <i class="fas fa-calendar-alt me-2"></i>Asignar ciclo
+                                                </a>
+                                            </li>
+                                            {% if curso.ciclo_academico %}
+                                            <li>
+                                                <button class="dropdown-item" onclick="quitarCicloCurso({{ curso.id }}, '{{ curso.nombre }}')">
+                                                    <i class="fas fa-calendar-times me-2"></i>Quitar ciclo
+                                                </button>
+                                            </li>
+                                            {% endif %}
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <button class="dropdown-item{% if not curso_data.puede_desactivar %} disabled{% endif %}" 
+                                                        {% if curso_data.puede_desactivar %}onclick="toggleActivo({{ curso.id }}, 'curso')"{% endif %}
+                                                        title="{% if curso_data.puede_desactivar %}{{ 'Desactivar' if curso.activo else 'Activar' }}{% else %}No se puede {{ 'desactivar' if curso.activo else 'activar' }} - Tiene {{ curso_data.docentes_asignados + curso_data.alumnos_matriculados + curso_data.notas_registradas }} relación(es){% endif %}">
+                                                    <i class="fas fa-{{ 'ban' if curso.activo else 'check' }} me-2"></i>{{ 'Desactivar' if curso.activo else 'Activar' }}
+                                                </button>
+                                            </li>
+                                            {% if curso_data.puede_eliminar %}
+                                            <li>
+                                                <button class="dropdown-item text-danger" onclick="eliminarCurso({{ curso.id }})">
+                                                    <i class="fas fa-trash me-2"></i>Eliminar
+                                                </button>
+                                            </li>
+                                            {% else %}
+                                            <li>
+                                                <span class="dropdown-item-text text-muted small" 
+                                                      title="No se puede eliminar - Tiene {{ curso_data.docentes_asignados + curso_data.alumnos_matriculados + curso_data.notas_registradas }} relación(es)">
+                                                    <i class="fas fa-info-circle me-2"></i>No se puede eliminar
+                                                </span>
+                                            </li>
+                                            {% endif %}
+                                        </ul>
                                     </div>
                                 </td>
                             </tr>
@@ -164,6 +195,36 @@
         document.getElementById('confirmMessage').textContent = message;
         document.getElementById('confirmButton').onclick = function () {
             fetch(`/admin/cursos/eliminar/${id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al procesar la solicitud');
+                });
+
+            bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+        };
+
+        new bootstrap.Modal(document.getElementById('confirmModal')).show();
+    }
+
+    function quitarCicloCurso(cursoId, cursoNombre) {
+        const message = `¿Estás seguro de que quieres quitar el ciclo del curso "${cursoNombre}"?`;
+
+        document.getElementById('confirmMessage').textContent = message;
+        document.getElementById('confirmButton').onclick = function () {
+            fetch(`/admin/cursos/quitar-ciclo/${cursoId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

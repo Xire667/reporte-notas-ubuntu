@@ -417,6 +417,10 @@ footer {
     pointer-events: none;
 }
 
+.table-responsive{
+    height: 600px;
+}
+
 /* Custom scrollbar */
 .table-responsive::-webkit-scrollbar {
     height: 8px;

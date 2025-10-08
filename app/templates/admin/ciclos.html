@@ -63,29 +63,49 @@
                                         curso(s)</span>
                                 </td>
                                 <td>
-                                    <div class="btn-group" role="group">
-                                        <a href="{{ url_for('admin.matricular_ciclo') }}"
-                                            class="btn btn-sm btn-outline-info" title="Matricular Alumnos">
-                                            <i class="fas fa-user-plus"></i>
-                                        </a>
-                                        <a href="{{ url_for('admin.editar_ciclo', id=ciclo.ciclo.id) }}"
-                                            class="btn btn-sm btn-outline-warning" title="Editar">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" title="Duplicar"
-                                            onclick="duplicarCiclo({{ ciclo.ciclo.id }})">
-                                            <i class="fas fa-copy"></i>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" 
+                                                data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+                                            <i class="fas fa-cog"></i>
                                         </button>
-                                        <button type="button"
-                                            class="btn btn-sm btn-outline-{{ 'danger' if ciclo.ciclo.activo else 'success' }}"
-                                            title="{{ 'Desactivar' if ciclo.ciclo.activo else 'Activar' }}"
-                                            onclick="toggleActivo({{ ciclo.ciclo.id }}, 'ciclo')">
-                                            <i class="fas fa-{{ 'ban' if ciclo.ciclo.activo else 'check' }}"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar"
-                                            onclick="eliminarCiclo({{ ciclo.ciclo.id }})">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('admin.editar_ciclo', id=ciclo.ciclo.id) }}">
+                                                    <i class="fas fa-edit me-2"></i>Editar
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('admin.matricular_ciclo') }}">
+                                                    <i class="fas fa-user-plus me-2"></i>Matricular alumnos
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <button class="dropdown-item" onclick="duplicarCiclo({{ ciclo.ciclo.id }})">
+                                                    <i class="fas fa-copy me-2"></i>Duplicar
+                                                </button>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <button class="dropdown-item text-{{ 'danger' if ciclo.ciclo.activo else 'success' }}" 
+                                                        onclick="toggleActivo({{ ciclo.ciclo.id }}, 'ciclo')">
+                                                    <i class="fas fa-{{ 'ban' if ciclo.ciclo.activo else 'check' }} me-2"></i>
+                                                    {{ 'Desactivar' if ciclo.ciclo.activo else 'Activar' }}
+                                                </button>
+                                            </li>
+                                            {% if ciclo.puede_eliminar %}
+                                            <li>
+                                                <button class="dropdown-item text-danger" onclick="eliminarCiclo({{ ciclo.ciclo.id }})">
+                                                    <i class="fas fa-trash me-2"></i>Eliminar
+                                                </button>
+                                            </li>
+                                            {% else %}
+                                            <li>
+                                                <span class="dropdown-item text-muted disabled" title="No se puede eliminar: tiene cursos, alumnos o notas asociadas">
+                                                    <i class="fas fa-trash me-2"></i>Eliminar
+                                                </span>
+                                            </li>
+                                            {% endif %}
+                                        </ul>
                                     </div>
                                 </td>
                             </tr>
