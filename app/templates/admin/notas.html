@@ -35,7 +35,83 @@
                             <option value="">-- Todos los ciclos --</option>
                             {% for ciclo in ciclos %}
                             <option value="{{ ciclo.id }}" 
-                                    {% if ciclo_seleccionado and ciclo.id == ciclo_seleccionado.id %}selected{% endif %}>
+                                    {% if ciclo_seleccionado and ciclo.id == ciclo_seleccionado.id %}selected{% endif %}
+
+<!-- Paginación -->
+{% if notas_paginadas and notas_paginadas.pages > 1 %}
+<div class="row mt-4">
+    <div class="col-12">
+        <nav aria-label="Navegación de páginas">
+            <ul class="pagination justify-content-center">
+                <!-- Página anterior -->
+                {% if notas_paginadas.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.ver_notas', page=notas_paginadas.prev_num, 
+                        ciclo_id=request.args.get('ciclo_id'), 
+                        curso_id=request.args.get('curso_id'), 
+                        alumno_id=request.args.get('alumno_id')) }}">>
+                        <i class="fas fa-chevron-left"></i> Anterior
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-chevron-left"></i> Anterior</span>
+                </li>
+                {% endif %}
+
+                <!-- Números de página -->
+                {% for page_num in notas_paginadas.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != notas_paginadas.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin.ver_notas', page=page_num,
+                                ciclo_id=request.args.get('ciclo_id'), 
+                                curso_id=request.args.get('curso_id'), 
+                                alumno_id=request.args.get('alumno_id')) }}">>
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                <!-- Página siguiente -->
+                {% if notas_paginadas.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.ver_notas', page=notas_paginadas.next_num,
+                        ciclo_id=request.args.get('ciclo_id'), 
+                        curso_id=request.args.get('curso_id'), 
+                        alumno_id=request.args.get('alumno_id')) }}">>
+                        Siguiente <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Siguiente <i class="fas fa-chevron-right"></i></span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        
+        <!-- Información de paginación -->
+        <div class="text-center text-muted mt-2">
+            <small>
+                Mostrando {{ (notas_paginadas.page - 1) * notas_paginadas.per_page + 1 }} - 
+                {{ notas_paginadas.page * notas_paginadas.per_page if notas_paginadas.page * notas_paginadas.per_page <= notas_paginadas.total else notas_paginadas.total }} 
+                de {{ notas_paginadas.total }} resultados
+            </small>
+        </div>
+    </div>
+</div>
+{% endif %}>
                                 {{ ciclo.nombre }}
                             </option>
                             {% endfor %}
@@ -65,14 +141,7 @@
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="col-md-3">
-                        <label for="estado" class="form-label">Estado:</label>
-                        <select class="form-select" id="estado" name="estado">
-                            <option value="todas" {% if estado_seleccionado == 'todas' %}selected{% endif %}>Todas</option>
-                            <option value="publicada" {% if estado_seleccionado == 'publicada' %}selected{% endif %}>Publicadas</option>
-                            <option value="borrador" {% if estado_seleccionado == 'borrador' %}selected{% endif %}>Borrador</option>
-                        </select>
-                    </div>
+
                     <div class="col-12">
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-search me-2"></i>Buscar
@@ -109,11 +178,6 @@
                 {% if alumno_seleccionado %}
                 <span class="badge bg-success">
                     <i class="fas fa-user me-1"></i>Estudiante: {{ alumno_seleccionado.nombre }} {{ alumno_seleccionado.apellido }}
-                </span>
-                {% endif %}
-                {% if estado_seleccionado != 'todas' %}
-                <span class="badge bg-info">
-                    <i class="fas fa-flag me-1"></i>Estado: {{ estado_seleccionado.title() }}
                 </span>
                 {% endif %}
             </div>
@@ -191,8 +255,8 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge bg-{{ 'success' if nota.nota_final >= 10.5 else 'warning' if nota.nota_final >= 5 else 'danger' }}">
-                                        {{ nota.nota_final }}
+                                    <span class="badge bg-{{ 'success' if nota.promedio_final >= 10.5 else 'warning' if nota.promedio_final >= 5 else 'danger' }}">
+                                        {{ nota.promedio_final }}
                                     </span>
                                 </td>
                                 <td>
@@ -240,69 +304,96 @@
     </div>
 </div>
 
-<!-- Estadísticas Rápidas -->
-{% if notas %}
+
+<!-- Paginación -->
+{% if notas_paginadas and notas_paginadas.pages > 1 %}
 <div class="row mt-4">
     <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Estadísticas</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="stat-item">
-                            <div class="stat-icon bg-primary">
-                                <i class="fas fa-clipboard-list"></i>
-                            </div>
-                            <div class="stat-content">
-                                <div class="stat-number">{{ notas|length }}</div>
-                                <div class="stat-label">Total Notas</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-item">
-                            <div class="stat-icon bg-success">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
-                            <div class="stat-content">
-                                <div class="stat-number">{{ notas|selectattr('0.estado', 'equalto', 'publicada')|list|length }}</div>
-                                <div class="stat-label">Publicadas</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-item">
-                            <div class="stat-icon bg-warning">
-                                <i class="fas fa-edit"></i>
-                            </div>
-                            <div class="stat-content">
-                                <div class="stat-number">{{ notas|selectattr('0.estado', 'equalto', 'borrador')|list|length }}</div>
-                                <div class="stat-label">Borrador</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-item">
-                            <div class="stat-icon bg-info">
-                                <i class="fas fa-calculator"></i>
-                            </div>
-                            <div class="stat-content">
-                                <div class="stat-number">
-                                    {% set notas_finales = notas|selectattr('0.nota_final', 'gt', 0)|list %}
-                                    {% if notas_finales %}
-                                        {{ "%.1f"|format((notas_finales|sum(attribute='0.nota_final') / notas_finales|length)) }}
-                                    {% else %}
-                                        0.0
-                                    {% endif %}
-                                </div>
-                                <div class="stat-label">Promedio General</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <nav aria-label="Navegación de páginas">
+            <ul class="pagination justify-content-center">
+                <!-- Página anterior -->
+                {% if notas_paginadas.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.ver_notas', page=notas_paginadas.prev_num, 
+                        ciclo_id=request.args.get('ciclo_id'), 
+                        curso_id=request.args.get('curso_id'), 
+                        alumno_id=request.args.get('alumno_id'),
+                        estado=request.args.get('estado'),
+                        buscar_texto=request.args.get('buscar_texto'),
+                        fecha_desde=request.args.get('fecha_desde'),
+                        fecha_hasta=request.args.get('fecha_hasta'),
+                        promedio_min=request.args.get('promedio_min'),
+                        promedio_max=request.args.get('promedio_max')) }}">
+                        <i class="fas fa-chevron-left"></i> Anterior
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-chevron-left"></i> Anterior</span>
+                </li>
+                {% endif %}
+
+                <!-- Números de página -->
+                {% for page_num in notas_paginadas.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != notas_paginadas.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin.ver_notas', page=page_num,
+                                ciclo_id=request.args.get('ciclo_id'), 
+                                curso_id=request.args.get('curso_id'), 
+                                alumno_id=request.args.get('alumno_id'),
+                                estado=request.args.get('estado'),
+                                buscar_texto=request.args.get('buscar_texto'),
+                                fecha_desde=request.args.get('fecha_desde'),
+                                fecha_hasta=request.args.get('fecha_hasta'),
+                                promedio_min=request.args.get('promedio_min'),
+                                promedio_max=request.args.get('promedio_max')) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                <!-- Página siguiente -->
+                {% if notas_paginadas.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.ver_notas', page=notas_paginadas.next_num,
+                        ciclo_id=request.args.get('ciclo_id'), 
+                        curso_id=request.args.get('curso_id'), 
+                        alumno_id=request.args.get('alumno_id'),
+                        estado=request.args.get('estado'),
+                        buscar_texto=request.args.get('buscar_texto'),
+                        fecha_desde=request.args.get('fecha_desde'),
+                        fecha_hasta=request.args.get('fecha_hasta'),
+                        promedio_min=request.args.get('promedio_min'),
+                        promedio_max=request.args.get('promedio_max')) }}">
+                        Siguiente <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Siguiente <i class="fas fa-chevron-right"></i></span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        
+        <!-- Información de paginación -->
+        <div class="text-center text-muted mt-2">
+            <small>
+                Mostrando {{ (notas_paginadas.page - 1) * notas_paginadas.per_page + 1 }} - 
+                {{ notas_paginadas.page * notas_paginadas.per_page if notas_paginadas.page * notas_paginadas.per_page <= notas_paginadas.total else notas_paginadas.total }} 
+                de {{ notas_paginadas.total }} resultados
+            </small>
         </div>
     </div>
 </div>
@@ -375,4 +466,90 @@
         font-size: 0.75rem;
     }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cicloSelect = document.getElementById('ciclo_id');
+    const cursoSelect = document.getElementById('curso_id');
+    const alumnoSelect = document.getElementById('alumno_id');
+    
+    // Función para actualizar cursos basado en el ciclo seleccionado
+    function actualizarCursos() {
+        const cicloId = cicloSelect.value;
+        
+        if (!cicloId) {
+            // Si no hay ciclo seleccionado, mostrar todos los cursos
+            Array.from(cursoSelect.options).forEach(option => {
+                if (option.value !== '') {
+                    option.style.display = 'block';
+                }
+            });
+            return;
+        }
+        
+        // Hacer petición AJAX para obtener cursos del ciclo
+        fetch(`/admin/api/cursos-por-ciclo/${cicloId}`)
+            .then(response => response.json())
+            .then(data => {
+                // Limpiar opciones actuales (excepto la primera)
+                cursoSelect.innerHTML = '<option value="">-- Todos los cursos --</option>';
+                
+                // Agregar cursos del ciclo seleccionado
+                data.cursos.forEach(curso => {
+                    const option = document.createElement('option');
+                    option.value = curso.id;
+                    option.textContent = `${curso.nombre} (${curso.codigo})`;
+                    cursoSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error al cargar cursos:', error);
+            });
+    }
+    
+    // Función para actualizar estudiantes basado en el ciclo seleccionado
+    function actualizarEstudiantes() {
+        const cicloId = cicloSelect.value;
+        
+        if (!cicloId) {
+            // Si no hay ciclo seleccionado, mostrar todos los estudiantes
+            Array.from(alumnoSelect.options).forEach(option => {
+                if (option.value !== '') {
+                    option.style.display = 'block';
+                }
+            });
+            return;
+        }
+        
+        // Hacer petición AJAX para obtener estudiantes del ciclo
+        fetch(`/admin/api/estudiantes-por-ciclo/${cicloId}`)
+            .then(response => response.json())
+            .then(data => {
+                // Limpiar opciones actuales (excepto la primera)
+                alumnoSelect.innerHTML = '<option value="">-- Todos los estudiantes --</option>';
+                
+                // Agregar estudiantes del ciclo seleccionado
+                data.estudiantes.forEach(estudiante => {
+                    const option = document.createElement('option');
+                    option.value = estudiante.id;
+                    option.textContent = `${estudiante.nombre} ${estudiante.apellido}`;
+                    alumnoSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error al cargar estudiantes:', error);
+            });
+    }
+    
+    // Event listener para cambios en el ciclo
+    cicloSelect.addEventListener('change', function() {
+        actualizarCursos();
+        actualizarEstudiantes();
+        // Resetear selecciones de curso y estudiante
+        cursoSelect.value = '';
+        alumnoSelect.value = '';
+    });
+});
+</script>
+
 {% endblock %}

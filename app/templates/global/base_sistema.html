@@ -85,7 +85,7 @@
     </nav>
 
     <!-- Toast Notifications -->
-    <div id="toast-container" style="position: fixed; top: 24px; right: 24px; z-index: 2000; min-width: 300px; max-width: 350px;">
+    <div id="toast-container" style="position: fixed; top: 24px; right: 24px; z-index: 5000; min-width: 300px; max-width: 350px;">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}

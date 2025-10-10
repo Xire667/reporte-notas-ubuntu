@@ -124,21 +124,33 @@
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="promedio_final" class="form-label">Promedio Final</label>
-                            <input type="number" class="form-control fs-4 fw-bold bg-info text-white" id="promedio_final" name="promedio_final"
-                                value="{{ nota.promedio_final if nota and nota.promedio_final else 0 }}" min="0" max="20" step="0.1"
-                                readonly>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="estado" class="form-label">Estado</label>
-                            <select class="form-select" id="estado" name="estado">
-                                <option value="borrador" {% if nota and nota.estado=='borrador' %}selected{% endif %}>Borrador
-                                </option>
-                                <option value="publicada" {% if nota and nota.estado=='publicada' %}selected{% endif %}>Publicada
-                                </option>
-                            </select>
+                    <!-- Promedio Final con pesos aplicados -->
+                    <div class="mb-4">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title text-success mb-3">
+                                    <i class="fas fa-calculator me-2"></i>Promedio Final 
+                                    <small class="text-muted">(10% Actividades + 30% Prácticas + 60% Parciales)</small>
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="promedio_final" class="form-label fw-bold">Promedio Final</label>
+                                        <input type="number" class="form-control fs-3 fw-bold bg-success text-white text-center" 
+                                               id="promedio_final" name="promedio_final"
+                                               value="{{ nota.promedio_final if nota and nota.promedio_final else 0 }}" 
+                                               min="0" max="20" step="0.1" readonly>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="estado" class="form-label">Estado</label>
+                                        <select class="form-select" id="estado" name="estado">
+                                            <option value="borrador" {% if nota and nota.estado=='borrador' %}selected{% endif %}>Borrador
+                                            </option>
+                                            <option value="publicada" {% if nota and nota.estado=='publicada' %}selected{% endif %}>Publicada
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -214,10 +226,10 @@
         const promedioParciales = contadorParciales > 0 ? sumaParciales / contadorParciales : 0;
         document.getElementById('promedio_parciales').value = promedioParciales.toFixed(1);
 
-        // Calcular promedio final (30% actividades + 30% prácticas + 40% parciales)
+        // Calcular promedio final (10% actividades + 30% prácticas + 60% parciales)
         let promedioFinal = 0;
         if (contadorActividades > 0 || contadorPracticas > 0 || contadorParciales > 0) {
-            promedioFinal = (promedioActividades * 0.30) + (promedioPracticas * 0.30) + (promedioParciales * 0.40);
+            promedioFinal = (promedioActividades * 0.10) + (promedioPracticas * 0.30) + (promedioParciales * 0.60);
         }
         document.getElementById('promedio_final').value = promedioFinal.toFixed(1);
     }

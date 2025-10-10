@@ -36,7 +36,7 @@
                                 <div class="input-group input-group-sm">
                                     <input type="number" class="form-control" 
                                         value="{{ nota_actividades['actividad' + i|string] or 0 }}" readonly>
-                                    <span class="input-group-text">
+                                    <!-- <span class="input-group-text">
                                         {% set actividad_valor = nota_actividades['actividad' + i|string] %}
                                         {% if actividad_valor %}
                                         <span class="badge bg-{{ 'success' if actividad_valor >= 13 else 'warning' if actividad_valor >= 10 else 'danger' }}">
@@ -45,7 +45,7 @@
                                         {% else %}
                                         <span class="text-muted small">N/A</span>
                                         {% endif %}
-                                    </span>
+                                    </span> -->
                                 </div>
                             </div>
                             {% endfor %}
@@ -56,7 +56,7 @@
                                 <div class="input-group">
                                     <input type="number" class="form-control fw-bold" 
                                         value="{{ promedio_actividades or 0 }}" readonly>
-                                    <span class="input-group-text">
+                                    <!-- <span class="input-group-text">
                                         {% if promedio_actividades %}
                                         <span class="badge bg-{{ 'success' if promedio_actividades >= 13 else 'warning' if promedio_actividades >= 10 else 'danger' }}">
                                             {{ "%.1f"|format(promedio_actividades) }}
@@ -64,7 +64,7 @@
                                         {% else %}
                                         <span class="text-muted">Sin calificar</span>
                                         {% endif %}
-                                    </span>
+                                    </span> -->
                                 </div>
                             </div>
                         </div>
@@ -84,7 +84,7 @@
                                 <div class="input-group input-group-sm">
                                     <input type="number" class="form-control" 
                                         value="{{ nota_practicas['practica' + i|string] or 0 }}" readonly>
-                                    <span class="input-group-text">
+                                    <!-- <span class="input-group-text">
                                         {% set practica_valor = nota_practicas['practica' + i|string] %}
                                         {% if practica_valor %}
                                         <span class="badge bg-{{ 'success' if practica_valor >= 13 else 'warning' if practica_valor >= 10 else 'danger' }}">
@@ -93,7 +93,7 @@
                                         {% else %}
                                         <span class="text-muted small">N/A</span>
                                         {% endif %}
-                                    </span>
+                                    </span> -->
                                 </div>
                             </div>
                             {% endfor %}
@@ -104,7 +104,7 @@
                                 <div class="input-group">
                                     <input type="number" class="form-control fw-bold" 
                                         value="{{ promedio_practicas or 0 }}" readonly>
-                                    <span class="input-group-text">
+                                    <!-- <span class="input-group-text">
                                         {% if promedio_practicas %}
                                         <span class="badge bg-{{ 'success' if promedio_practicas >= 13 else 'warning' if promedio_practicas >= 10 else 'danger' }}">
                                             {{ "%.1f"|format(promedio_practicas) }}
@@ -112,7 +112,7 @@
                                         {% else %}
                                         <span class="text-muted">Sin calificar</span>
                                         {% endif %}
-                                    </span>
+                                    </span> -->
                                 </div>
                             </div>
                         </div>
@@ -132,7 +132,7 @@
                                 <div class="input-group input-group-sm">
                                     <input type="number" class="form-control" 
                                         value="{{ nota_parcial['parcial' + i|string] or 0 }}" readonly>
-                                    <span class="input-group-text">
+                                    <!-- <span class="input-group-text">
                                         {% set parcial_valor = nota_parcial['parcial' + i|string] %}
                                         {% if parcial_valor %}
                                         <span class="badge bg-{{ 'success' if parcial_valor >= 13 else 'warning' if parcial_valor >= 10 else 'danger' }}">
@@ -141,7 +141,7 @@
                                         {% else %}
                                         <span class="text-muted small">N/A</span>
                                         {% endif %}
-                                    </span>
+                                    </span> -->
                                 </div>
                             </div>
                             {% endfor %}
@@ -152,7 +152,7 @@
                                 <div class="input-group">
                                     <input type="number" class="form-control fw-bold" 
                                         value="{{ promedio_parciales or 0 }}" readonly>
-                                    <span class="input-group-text">
+                                    <!-- <span class="input-group-text">
                                         {% if promedio_parciales %}
                                         <span class="badge bg-{{ 'success' if promedio_parciales >= 13 else 'warning' if promedio_parciales >= 10 else 'danger' }}">
                                             {{ "%.1f"|format(promedio_parciales) }}
@@ -160,7 +160,7 @@
                                         {% else %}
                                         <span class="text-muted">Sin calificar</span>
                                         {% endif %}
-                                    </span>
+                                    </span> -->
                                 </div>
                             </div>
                         </div>
@@ -177,7 +177,7 @@
                             <div class="input-group">
                                 <input type="number" class="form-control fs-4 fw-bold"
                                     value="{{ nota.promedio_final or 0 }}" readonly>
-                                <span class="input-group-text">
+                                <!-- <span class="input-group-text">
                                     {% if nota.promedio_final %}
                                     <span
                                         class="badge bg-{{ 'success' if nota.promedio_final >= 13 else 'warning' if nota.promedio_final >= 10 else 'danger' }} fs-6">
@@ -186,7 +186,7 @@
                                     {% else %}
                                     <span class="text-muted">Sin calificar</span>
                                     {% endif %}
-                                </span>
+                                </span> -->
                             </div>
                         </div>
 

@@ -991,14 +991,14 @@ def suspender_matricula_alumno(alumno_id):
 @admin_required
 def ver_notas():
     """Vista principal de notas para administradores"""
-    # Obtener filtros de la URL
+    # Obtener filtros de la URL (solo ciclo, curso y alumno)
     ciclo_id = request.args.get('ciclo_id')
     curso_id = request.args.get('curso_id')
     alumno_id = request.args.get('alumno_id')
-    estado = request.args.get('estado', 'todas')
     
     # Construir query base con alias para evitar conflicto de nombres
     from sqlalchemy.orm import aliased
+    
     Alumno = aliased(Usuario)
     Docente = aliased(Usuario)
     
@@ -1006,7 +1006,7 @@ def ver_notas():
         Alumno, Nota.alumno_id == Alumno.id
     ).join(Docente, Nota.docente_id == Docente.id)
     
-    # Aplicar filtros
+    # Aplicar filtros simplificados
     if ciclo_id:
         query = query.filter(Curso.ciclo_academico_id == ciclo_id)
     
@@ -1016,11 +1016,13 @@ def ver_notas():
     if alumno_id:
         query = query.filter(Nota.alumno_id == alumno_id)
     
-    if estado != 'todas':
-        query = query.filter(Nota.estado == estado)
+    # Ordenar por fecha de actualización y aplicar paginación
+    page = request.args.get('page', 1, type=int)
+    per_page = 20  # Número de registros por página
     
-    # Ordenar por fecha de actualización
-    notas = query.order_by(Nota.fecha_actualizacion.desc()).all()
+    notas_paginadas = query.order_by(Nota.fecha_actualizacion.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
     
     # Obtener datos para los filtros
     ciclos = CicloAcademico.query.filter_by(activo=True).order_by(CicloAcademico.orden).all()
@@ -1033,14 +1035,14 @@ def ver_notas():
     alumno_seleccionado = Usuario.query.get(alumno_id) if alumno_id else None
     
     return render_template('admin/notas.html',
-                         notas=notas,
+                         notas_paginadas=notas_paginadas,
+                         notas=notas_paginadas.items,
                          ciclos=ciclos,
                          cursos=cursos,
                          alumnos=alumnos,
                          ciclo_seleccionado=ciclo_seleccionado,
                          curso_seleccionado=curso_seleccionado,
-                         alumno_seleccionado=alumno_seleccionado,
-                         estado_seleccionado=estado)
+                         alumno_seleccionado=alumno_seleccionado)
 
 @admin_bp.route('/notas/curso/<int:curso_id>')
 @login_required
@@ -1615,3 +1617,69 @@ def sincronizar_matriculas():
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': f'Error en la sincronización: {str(e)}'})
+
+# API endpoints para filtros en cascada
+@admin_bp.route('/api/cursos-por-ciclo/<int:ciclo_id>')
+@login_required
+@admin_required
+def api_cursos_por_ciclo(ciclo_id):
+    """API para obtener cursos de un ciclo específico"""
+    try:
+        cursos = Curso.query.filter_by(
+            ciclo_academico_id=ciclo_id, 
+            activo=True
+        ).order_by(Curso.nombre).all()
+        
+        cursos_data = [
+            {
+                'id': curso.id,
+                'nombre': curso.nombre,
+                'codigo': curso.codigo
+            }
+            for curso in cursos
+        ]
+        
+        return jsonify({
+            'success': True,
+            'cursos': cursos_data
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Error al obtener cursos: {str(e)}'
+        })
+
+@admin_bp.route('/api/estudiantes-por-ciclo/<int:ciclo_id>')
+@login_required
+@admin_required
+def api_estudiantes_por_ciclo(ciclo_id):
+    """API para obtener estudiantes matriculados en un ciclo específico"""
+    try:
+        # Obtener estudiantes matriculados en el ciclo
+        estudiantes = db.session.query(Usuario).join(
+            MatriculaAlumno, Usuario.id == MatriculaAlumno.alumno_id
+        ).filter(
+            MatriculaAlumno.ciclo_academico_id == ciclo_id,
+            MatriculaAlumno.activo == True,
+            Usuario.rol == 'alumno',
+            Usuario.activo == True
+        ).order_by(Usuario.nombre, Usuario.apellido).all()
+        
+        estudiantes_data = [
+            {
+                'id': estudiante.id,
+                'nombre': f"{estudiante.nombre} {estudiante.apellido}",
+                'dni': estudiante.dni
+            }
+            for estudiante in estudiantes
+        ]
+        
+        return jsonify({
+            'success': True,
+            'estudiantes': estudiantes_data
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Error al obtener estudiantes: {str(e)}'
+        })
