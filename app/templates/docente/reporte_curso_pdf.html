@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <style>
+    body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; }
+    h1 { font-size: 18px; margin: 0 0 10px 0; }
+    p { margin: 4px 0; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #333; padding: 4px; text-align: center; }
+    th { background: #f0f0f0; }
+    .left { text-align: left; }
+  </style>
+</head>
+<body>
+  <h1>Reporte de Curso: {{ curso.nombre }} ({{ curso.codigo }})</h1>
+  <p>Pesos: 10% Actividades, 30% Prácticas, 60% Parciales</p>
+  <p>Fecha: {{ (now() | string) if false else '' }}</p>
+  <table>
+    <thead>
+      <tr>
+        <th rowspan="2" class="left">Alumno</th>
+        <th colspan="8">Actividades</th>
+        <th colspan="4">Prácticas</th>
+        <th colspan="2">Parciales</th>
+        <th rowspan="2">Prom. Act.</th>
+        <th rowspan="2">Prom. Prac.</th>
+        <th rowspan="2">Prom. Par.</th>
+        <th rowspan="2">Prom. Final</th>
+        <th rowspan="2">Estado</th>
+      </tr>
+      <tr>
+        <th>A1</th><th>A2</th><th>A3</th><th>A4</th><th>A5</th><th>A6</th><th>A7</th><th>A8</th>
+        <th>P1</th><th>P2</th><th>P3</th><th>P4</th>
+        <th>Par1</th><th>Par2</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for fila in datos %}
+      <tr>
+        <td class="left">{{ fila.alumno.nombre }} {{ fila.alumno.apellido }}</td>
+        {% for v in fila.actividades %}
+          {% if v is not none and v > 0 %}
+            <td>{{ ('%.2f' % v) }}</td>
+          {% else %}
+            <td>-</td>
+          {% endif %}
+        {% endfor %}
+        {% for v in fila.practicas %}
+          {% if v is not none and v > 0 %}
+            <td>{{ ('%.2f' % v) }}</td>
+          {% else %}
+            <td>-</td>
+          {% endif %}
+        {% endfor %}
+        {% for v in fila.parciales %}
+          {% if v is not none and v > 0 %}
+            <td>{{ ('%.2f' % v) }}</td>
+          {% else %}
+            <td>-</td>
+          {% endif %}
+        {% endfor %}
+        <td>{{ fila.promedio_actividades|round(2) }}</td>
+        <td>{{ fila.promedio_practicas|round(2) }}</td>
+        <td>{{ fila.promedio_parciales|round(2) }}</td>
+        <td>{{ fila.promedio_final|round(2) }}</td>
+        <td>{{ fila.estado if fila.estado else '-' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
