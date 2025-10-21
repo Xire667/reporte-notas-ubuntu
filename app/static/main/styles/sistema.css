@@ -464,3 +464,31 @@ footer {
 .nav-link{
     color: #fff !important;
 }
+
+/* Tabla de notas del alumno */
+.notas-curso { margin-bottom: 1rem; }
+.tabla-notas { font-size: 0.95rem; border-color: #dee2e6; }
+.tabla-notas thead th { font-weight: 600; letter-spacing: .02em; }
+.tabla-notas th, .tabla-notas td { padding: .5rem .75rem; }
+.tabla-notas .nota-valor { text-align: right; font-variant-numeric: tabular-nums; }
+.tabla-notas .nota-valor.no-data { color: #6c757d; font-style: italic; }
+.tabla-notas .seccion-titulo th { font-weight: 600; }
+.tabla-notas .seccion-actividades th { background-color: #e8f0fe; }
+.tabla-notas .seccion-practicas th { background-color: #e6f4ea; }
+.tabla-notas .seccion-parciales th { background-color: #fff4e5; }
+.tabla-notas .seccion-resumen th { background-color: #f1f3f4; }
+.tabla-notas .promedio-row td { font-weight: 600; border-top: 2px solid #dee2e6; }
+.tabla-notas .resumen-row td { font-weight: 700; }
+th:nth-child(1){
+    width: 200px;
+}
+th:nth-child(2){
+    width: 100px;
+}
+th:nth-child(2){
+    width: 100px;
+}
+
+.text-end{
+    text-align: center !important;
+}

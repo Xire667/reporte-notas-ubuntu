@@ -1028,6 +1028,7 @@ def ver_notas():
     ciclos = CicloAcademico.query.filter_by(activo=True).order_by(CicloAcademico.orden).all()
     cursos = Curso.query.filter_by(activo=True).order_by(Curso.nombre).all()
     alumnos = Usuario.query.filter_by(rol='alumno', activo=True).order_by(Usuario.nombre).all()
+    docentes = Usuario.query.filter_by(rol='docente', activo=True).order_by(Usuario.nombre).all()
     
     # Obtener ciclo y curso seleccionados
     ciclo_seleccionado = CicloAcademico.query.get(ciclo_id) if ciclo_id else None
@@ -1040,6 +1041,7 @@ def ver_notas():
                          ciclos=ciclos,
                          cursos=cursos,
                          alumnos=alumnos,
+                         docentes=docentes,
                          ciclo_seleccionado=ciclo_seleccionado,
                          curso_seleccionado=curso_seleccionado,
                          alumno_seleccionado=alumno_seleccionado)
@@ -1128,6 +1130,7 @@ def exportar_notas():
     ciclo_id = request.args.get('ciclo_id')
     curso_id = request.args.get('curso_id')
     estado = request.args.get('estado', 'todas')
+    docente_id = request.args.get('docente_id')
     
     # Construir query con alias para evitar conflicto de nombres
     from sqlalchemy.orm import aliased
@@ -1142,6 +1145,8 @@ def exportar_notas():
         query = query.filter(Curso.ciclo_academico_id == ciclo_id)
     if curso_id:
         query = query.filter(Nota.curso_id == curso_id)
+    if docente_id:
+        query = query.filter(Nota.docente_id == docente_id)
     if estado != 'todas':
         query = query.filter(Nota.estado == estado)
     
@@ -1190,6 +1195,98 @@ def exportar_notas():
             'Content-Disposition': f'attachment; filename=notas_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
         }
     )
+
+@admin_bp.route('/notas/exportar/pdf')
+@login_required
+@admin_required
+def exportar_notas_pdf():
+    """Exportar notas a PDF usando xhtml2pdf"""
+    # Imports locales para evitar tocar cabeceras
+    from io import BytesIO
+    from xhtml2pdf import pisa
+    from flask import make_response
+    from datetime import datetime
+
+    # Obtener filtros
+    ciclo_id = request.args.get('ciclo_id')
+    curso_id = request.args.get('curso_id')
+    estado = request.args.get('estado', 'todas')
+    docente_id = request.args.get('docente_id')
+
+    # Construir query con alias
+    from sqlalchemy.orm import aliased
+    Alumno = aliased(Usuario)
+    Docente = aliased(Usuario)
+
+    query = db.session.query(Nota, Curso, Alumno, Docente).join(Curso).join(
+        Alumno, Nota.alumno_id == Alumno.id
+    ).join(Docente, Nota.docente_id == Docente.id)
+
+    if ciclo_id:
+        query = query.filter(Curso.ciclo_academico_id == ciclo_id)
+    if curso_id:
+        query = query.filter(Nota.curso_id == curso_id)
+    if docente_id:
+        query = query.filter(Nota.docente_id == docente_id)
+    if estado != 'todas':
+        query = query.filter(Nota.estado == estado)
+
+    filas = []
+    for nota, curso, alumno, docente in query.order_by(Curso.nombre, Alumno.apellido, Alumno.nombre).all():
+        # Promedios robustos
+        prom_acts = getattr(nota, 'promedio_actividades', 0.0) or 0.0
+        prom_pracs = getattr(nota, 'promedio_practicas', 0.0) or 0.0
+        prom_parcs = getattr(nota, 'promedio_parciales', 0.0) or 0.0
+        if nota.nota_actividades and (not prom_acts or prom_acts == 0.0):
+            prom_acts = nota.nota_actividades.calcular_promedio_actividades() or 0.0
+        if nota.nota_practicas and (not prom_pracs or prom_pracs == 0.0):
+            prom_pracs = nota.nota_practicas.calcular_promedio_practicas() or 0.0
+        if nota.nota_parcial and (not prom_parcs or prom_parcs == 0.0):
+            prom_parcs = nota.nota_parcial.calcular_promedio_parciales() or 0.0
+        promedio_final = round((prom_acts * 0.10) + (prom_pracs * 0.30) + (prom_parcs * 0.60), 2)
+
+        filas.append({
+            'curso': curso,
+            'alumno': alumno,
+            'docente': docente,
+            'promedio_actividades': round(prom_acts, 2),
+            'promedio_practicas': round(prom_pracs, 2),
+            'promedio_parciales': round(prom_parcs, 2),
+            'promedio_final': promedio_final,
+            'estado': getattr(nota, 'estado', None),
+            'fecha': nota.fecha_actualizacion
+        })
+
+    # Datos de contexto y filtros legibles
+    ciclo = CicloAcademico.query.get(ciclo_id) if ciclo_id else None
+    curso_sel = Curso.query.get(curso_id) if curso_id else None
+    docente_sel = Usuario.query.get(docente_id) if docente_id else None
+
+    html = render_template(
+        'admin/notas_pdf.html',
+        filas=filas,
+        ciclo=ciclo,
+        curso=curso_sel,
+        docente=docente_sel,
+        estado=estado,
+        generado=datetime.now()
+    )
+
+    resultado = BytesIO()
+    pisa_status = pisa.CreatePDF(html, dest=resultado)
+    if hasattr(pisa_status, 'err') and pisa_status.err:
+        flash('Error generando PDF.', 'error')
+        return redirect(url_for('admin.ver_notas'))
+
+    response = make_response(resultado.getvalue())
+    response.headers['Content-Type'] = 'application/pdf'
+    nombre = 'notas'
+    if curso_sel:
+        nombre += f"_{curso_sel.codigo}"
+    if docente_sel:
+        nombre += f"_doc_{docente_sel.id}"
+    response.headers['Content-Disposition'] = f"attachment; filename={nombre}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+    return response
 
 # Gestión de Ciclos Académicos
 @admin_bp.route('/ciclos')
@@ -1682,4 +1779,34 @@ def api_estudiantes_por_ciclo(ciclo_id):
         return jsonify({
             'success': False,
             'message': f'Error al obtener estudiantes: {str(e)}'
+        })
+
+@admin_bp.route('/api/cursos-por-docente/<int:docente_id>')
+@login_required
+@admin_required
+def api_cursos_por_docente(docente_id):
+    """API para obtener cursos asignados a un docente específico"""
+    try:
+        cursos = db.session.query(Curso).join(CursoDocente, CursoDocente.curso_id == Curso.id).filter(
+            CursoDocente.docente_id == docente_id,
+            Curso.activo == True
+        ).order_by(Curso.nombre).all()
+        
+        cursos_data = [
+            {
+                'id': curso.id,
+                'nombre': curso.nombre,
+                'codigo': curso.codigo
+            }
+            for curso in cursos
+        ]
+        
+        return jsonify({
+            'success': True,
+            'cursos': cursos_data
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Error al obtener cursos: {str(e)}'
         })
