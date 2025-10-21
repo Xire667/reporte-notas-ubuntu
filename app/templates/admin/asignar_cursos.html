@@ -76,7 +76,8 @@
                                     <td>{{ docente.nombre }} {{ docente.apellido }}</td>
                                     <td>{{ asignacion.fecha_asignacion.strftime('%d/%m/%Y') }}</td>
                                     <td>
-                                        <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar asignación">
+                                        <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar asignación"
+                                                onclick="eliminarAsignacion({{ docente.id }}, {{ curso.id }}, '{{ curso.nombre }}', '{{ docente.nombre }} {{ docente.apellido }}')">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </td>
@@ -96,4 +97,55 @@
         </div>
     </div>
 </div>
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmButton">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function eliminarAsignacion(docenteId, cursoId, nombreCurso, nombreDocente) {
+        const message = `¿Estás seguro de que quieres eliminar la asignación del curso "${nombreCurso}" del docente "${nombreDocente}"?`;
+        
+        document.getElementById('confirmMessage').textContent = message;
+        document.getElementById('confirmButton').onclick = function () {
+            fetch(`/admin/docentes/${docenteId}/desasignar-curso/${cursoId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al procesar la solicitud');
+                });
+
+            bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+        };
+
+        new bootstrap.Modal(document.getElementById('confirmModal')).show();
+    }
+</script>
 {% endblock %}

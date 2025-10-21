@@ -1,0 +1,70 @@
+﻿{% extends "global/base_sistema.html" %}
+{% block title %}Reportes de Notas - Docente{% endblock %}
+{% block content %}
+<div class="row align-items-center mb-3">
+  <div class="col">
+    <h2 class="mb-0"><i class="fas fa-file-alt me-2"></i>Reportes de Notas</h2>
+  </div>
+  <div class="col-auto">
+    <a href="{{ url_for('docente.dashboard') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Volver</a>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6 mb-4">
+    <div class="card h-100">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-chalkboard me-2"></i>Reporte por Curso</h5>
+      </div>
+      <div class="card-body">
+        <label class="form-label">Selecciona un curso</label>
+        <select id="selectCurso" class="form-select">
+          <option value="">-- Selecciona --</option>
+          {% for curso in cursos %}
+          <option value="{{ curso.id }}">{{ curso.nombre }} ({{ curso.codigo }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="card-footer">
+        <button id="btnReporteCurso" class="btn btn-success"><i class="fas fa-file-export me-1"></i>Generar Reporte</button>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 mb-4">
+    <div class="card h-100">
+      <div class="card-header bg-success text-white">
+        <h5 class="mb-0"><i class="fas fa-user-graduate me-2"></i>Reporte por Alumno</h5>
+      </div>
+      <div class="card-body">
+        <label class="form-label">Selecciona un alumno</label>
+        <select id="selectAlumno" class="form-select">
+          <option value="">-- Selecciona --</option>
+          {% for alumno in alumnos %}
+          <option value="{{ alumno.id }}">{{ alumno.nombre }} {{ alumno.apellido }} (DNI: {{ alumno.dni }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="card-footer">
+        <button id="btnReporteAlumno" class="btn btn-primary"><i class="fas fa-file-export me-1"></i>Generar Reporte</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  document.getElementById('btnReporteCurso').addEventListener('click', function() {
+    const id = document.getElementById('selectCurso').value;
+    if (!id) { alert('Selecciona un curso'); return; }
+    const base = "{{ url_for('docente.reporte_curso', curso_id=0) }}"; // /docente/reportes/curso/0
+    const url = base.replace(/0$/, id);
+    window.location.href = url;
+  });
+  document.getElementById('btnReporteAlumno').addEventListener('click', function() {
+    const id = document.getElementById('selectAlumno').value;
+    if (!id) { alert('Selecciona un alumno'); return; }
+    const base = "{{ url_for('docente.reporte_alumno', alumno_id=0) }}"; // /docente/reportes/alumno/0
+    const url = base.replace(/0$/, id);
+    window.location.href = url;
+  });
+</script>
+{% endblock %}
