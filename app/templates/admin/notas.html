@@ -191,8 +191,8 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge bg-{{ 'success' if nota.nota_final >= 10.5 else 'warning' if nota.nota_final >= 5 else 'danger' }}">
-                                        {{ nota.nota_final }}
+                                    <span class="badge bg-{{ 'success' if nota.promedio_final >= 10.5 else 'warning' if nota.promedio_final >= 5 else 'danger' }}">
+                                        {{ nota.promedio_final }}
                                     </span>
                                 </td>
                                 <td>
@@ -290,9 +290,9 @@
                             </div>
                             <div class="stat-content">
                                 <div class="stat-number">
-                                    {% set notas_finales = notas|selectattr('0.nota_final', 'gt', 0)|list %}
+                                    {% set notas_finales = notas|selectattr('0.promedio_final', 'gt', 0)|list %}
                                     {% if notas_finales %}
-                                        {{ "%.1f"|format((notas_finales|sum(attribute='0.nota_final') / notas_finales|length)) }}
+                                        {{ "%.1f"|format((notas_finales|sum(attribute='0.promedio_final') / notas_finales|length)) }}
                                     {% else %}
                                         0.0
                                     {% endif %}
