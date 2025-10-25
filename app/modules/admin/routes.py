@@ -1,7 +1,7 @@
-from flask import render_template, request, redirect, url_for, flash, jsonify
+from flask import render_template, request, redirect, url_for, flash, jsonify, make_response
 from flask_login import login_required, current_user
 from app import db
-from app.models import Usuario, Curso, CursoDocente, CursoAlumno, CicloAcademico, MatriculaAlumno, Nota, NotaActividades, NotaPracticas, NotaParcial
+from app.models import Usuario, Curso, CursoDocente, CursoAlumno, CicloAcademico, MatriculaAlumno, Nota, NotaActividades, NotaPracticas, NotaParcial, ThemeConfig
 from . import admin_bp
 
 def admin_required(f):
@@ -1745,6 +1745,58 @@ def api_cursos_por_ciclo(ciclo_id):
             'success': False,
             'message': f'Error al obtener cursos: {str(e)}'
         })
+
+@admin_bp.route('/estilos', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def editar_estilos():
+    """Vista para editar la configuración de colores del sistema"""
+    config = ThemeConfig.query.first()
+    if not config:
+        config = ThemeConfig()
+        db.session.add(config)
+        db.session.commit()
+
+    if request.method == 'POST':
+        config.nombre = request.form.get('nombre') or config.nombre
+        config.color_oscuro = request.form.get('color_oscuro') or config.color_oscuro
+        config.color_claro = request.form.get('color_claro') or config.color_claro
+        config.color_medio = request.form.get('color_medio') or config.color_medio
+        config.color_medio_oscuro = request.form.get('color_medio_oscuro') or config.color_medio_oscuro
+        config.color_medio_claro = request.form.get('color_medio_claro') or config.color_medio_claro
+        try:
+            db.session.commit()
+            flash('Estilos actualizados correctamente.', 'success')
+            return redirect(url_for('admin.editar_estilos'))
+        except Exception:
+            db.session.rollback()
+            flash('Error al actualizar los estilos.', 'error')
+
+    return render_template('admin/editar_estilos.html', config=config)
+
+@admin_bp.route('/theme.css')
+def theme_css():
+    """Sirve CSS dinámico con variables de colores desde ThemeConfig"""
+    config = ThemeConfig.query.first()
+    valores = {
+        'color_oscuro': '#00378F',
+        'color_claro': '#3775DA',
+        'color_medio': '#1C56B5',
+        'color_medio_oscuro': '#0E47A2',
+        'color_medio_claro': '#2966C7'
+    }
+    if config:
+        valores.update({
+            'color_oscuro': config.color_oscuro,
+            'color_claro': config.color_claro,
+            'color_medio': config.color_medio,
+            'color_medio_oscuro': config.color_medio_oscuro,
+            'color_medio_claro': config.color_medio_claro
+        })
+    css = f":root{{\n    --color-oscuro: {valores['color_oscuro']};\n    --color-claro: {valores['color_claro']};\n    --color-medio: {valores['color_medio']};\n    --color-medio-oscuro: {valores['color_medio_oscuro']};\n    --color-medio-claro: {valores['color_medio_claro']};\n    --primary-color: {valores['color_oscuro']};\n}}"
+    resp = make_response(css)
+    resp.headers['Content-Type'] = 'text/css'
+    return resp
 
 @admin_bp.route('/api/estudiantes-por-ciclo/<int:ciclo_id>')
 @login_required

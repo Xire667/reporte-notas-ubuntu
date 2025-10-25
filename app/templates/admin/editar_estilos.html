@@ -1,0 +1,80 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Editar Estilos - Sistema de Notas{% endblock %}
+
+{% block admin_content %}
+<div class="row">
+  <div class="col-lg-8 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <i class="fas fa-paint-brush me-2"></i>Editar esquema de colores
+      </div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('admin.editar_estilos') }}">
+          <div class="mb-3">
+            <label class="form-label">Nombre del tema</label>
+            <input type="text" name="nombre" class="form-control" value="{{ config.nombre }}" placeholder="Ej: Azul corporativo">
+          </div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Color oscuro</label>
+              <input type="color" name="color_oscuro" class="form-control form-control-color" value="{{ config.color_oscuro }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Color claro</label>
+              <input type="color" name="color_claro" class="form-control form-control-color" value="{{ config.color_claro }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Color medio</label>
+              <input type="color" name="color_medio" class="form-control form-control-color" value="{{ config.color_medio }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Medio oscuro</label>
+              <input type="color" name="color_medio_oscuro" class="form-control form-control-color" value="{{ config.color_medio_oscuro }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Medio claro</label>
+              <input type="color" name="color_medio_claro" class="form-control form-control-color" value="{{ config.color_medio_claro }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Logo</label>
+              <br>
+              <input type="file">
+            </div>
+          </div>
+          <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save me-1"></i>Guardar cambios
+            </button>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+              <i class="fas fa-arrow-left me-1"></i>Volver al Dashboard
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <i class="fas fa-eye me-2"></i>Vista previa
+      </div>
+      <div class="card-body">
+        <div class="preview-box" style="border-radius: 10px; overflow: hidden;">
+          <div style="background: var(--color-oscuro); color: white; padding: 12px;">Barra superior</div>
+          <div style="padding: 16px; background: var(--color-medio-claro);">
+            <div style="background: white; border-radius: 8px; padding: 12px;">
+              <div style="height: 8px; background: var(--color-claro); border-radius: 4px; margin-bottom: 12px;"></div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <div style="height: 40px; background: var(--color-medio); border-radius: 6px;"></div>
+                <div style="height: 40px; background: var(--color-medio-oscuro); border-radius: 6px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="text-muted mt-3">Los cambios guardados se aplicarán inmediatamente al sistema.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

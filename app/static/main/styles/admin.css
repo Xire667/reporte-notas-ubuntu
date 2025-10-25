@@ -1,12 +1,12 @@
 .navbar{
-    background-color: #00034e !important;
+    background-color: var(--primary-color) !important;
     position: sticky;
     top: 0;
     z-index: 1000;
 }
 
 .dashboard-header{
-    background: linear-gradient(135deg, #0a2271, #134093) !important;
+    background: linear-gradient(135deg, var(--primary-color), var(--color-claro)) !important;
 }
 
 .text-muted, .texto-simple{
