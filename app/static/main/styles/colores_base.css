@@ -1,7 +1,23 @@
+/* 
+ * Archivo: colores_base.css
+ * Descripción: Define las variables de color base para todo el sistema
+ * Estas variables son utilizadas en toda la aplicación para mantener una paleta de colores consistente
+ * Los valores pueden ser sobrescritos por la configuración de ThemeConfig en la base de datos
+ */
+
 :root{
+    /* Color principal oscuro - usado para fondos de elementos principales y acentos fuertes */
     --color-oscuro: #00378f;
+    
+    /* Color principal claro - usado para elementos destacados y contrastes suaves */
     --color-claro: #3775DA;
+    
+    /* Color intermedio - balance entre oscuro y claro, usado para elementos secundarios */
     --color-medio: #1C56B5;
+    
+    /* Variante oscura del color intermedio - para hover y elementos activos */
     --color-medio-oscuro: #0E47A2;
+    
+    /* Variante clara del color intermedio - para fondos sutiles y bordes */
     --color-medio-claro: #2966C7;
 }
