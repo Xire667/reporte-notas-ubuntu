@@ -1,4 +1,4 @@
-﻿{% extends "global/base_sistema.html" %}
+{% extends "global/base_sistema.html" %}
 {% block title %}Reporte por Curso - Docente{% endblock %}
 {% block content %}
 <div class="row align-items-center mb-3">
@@ -23,8 +23,7 @@
           <th>Prom. Prácticas</th>
           <th>Prom. Parciales</th>
           <th>Promedio Final</th>
-          <th>Estado</th>
-        </tr>
+                  </tr>
       </thead>
       <tbody>
         {% for fila in datos %}
@@ -34,8 +33,7 @@
           <td>{{ fila.promedio_practicas|round(2) }}</td>
           <td>{{ fila.promedio_parciales|round(2) }}</td>
           <td><strong>{{ fila.promedio_final|round(2) }}</strong></td>
-          <td>{{ fila.estado if fila.estado else '-' }}</td>
-        </tr>
+                  </tr>
         {% endfor %}
       </tbody>
     </table>
