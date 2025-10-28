@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 import os
@@ -40,7 +40,19 @@ def create_app(config_name=None):
     from .routes import blueprints
     for bp in blueprints:
         app.register_blueprint(bp)
-    
+
+    # Context processor: expone URL del logo para la barra de navegación
+    @app.context_processor
+    def inject_navbar_logo():
+        try:
+            uploads_dir = os.path.join(app.root_path, 'static', 'uploads')
+            logo_file = os.path.join(uploads_dir, 'logo.png')
+            if os.path.exists(logo_file):
+                return {'navbar_logo_url': url_for('static', filename='uploads/logo.png')}
+        except Exception:
+            pass
+        return {'navbar_logo_url': None}
+
     # Crear tablas de la base de datos
     with app.app_context():
         db.create_all()

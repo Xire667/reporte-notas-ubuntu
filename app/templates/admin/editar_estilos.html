@@ -16,7 +16,7 @@
       </div>
       <div class="card-body">
         <!-- Formulario para modificar los colores del tema -->
-        <form method="POST" action="{{ url_for('admin.editar_estilos') }}">
+        <form method="POST" action="{{ url_for('admin.editar_estilos') }}" enctype="multipart/form-data">
           <!-- Campo para el nombre del tema -->
           <div class="mb-3">
             <label class="form-label">Nombre del tema</label>
@@ -55,11 +55,73 @@
               <input type="color" name="color_medio_claro" class="form-control form-control-color" value="{{ config.color_medio_claro }}">
             </div>
             
-            <!-- Selector de archivo para logo (funcionalidad pendiente) -->
-            <div class="col-md-6">
-              <label class="form-label">Logo</label>
-              <br>
-              <input type="file">
+            <!-- Sección de Logo Mejorada -->
+            <div class="col-12">
+              <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                  <h6 class="mb-0"><i class="fas fa-image me-2"></i>Logo del Sistema</h6>
+                </div>
+                <div class="card-body">
+                  <div class="row align-items-center">
+                    <div class="col-md-6">
+                      <div class="logo-upload-area" id="logoUploadArea">
+                        <div class="upload-content text-center p-4">
+                          <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                          <h6 class="text-muted">Arrastra tu logo aquí o haz clic para seleccionar</h6>
+                          <p class="small text-muted mb-3">Formatos soportados: PNG, JPG, JPEG (máx. 2MB)</p>
+                          <input type="file" name="logo" id="logoInput" accept="image/png,image/jpg,image/jpeg" class="d-none">
+                          <button type="button" id="selectLogoBtn" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-folder-open me-1"></i>Seleccionar archivo
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="logo-preview-section">
+                        <h6 class="text-muted mb-3">Vista previa</h6>
+                        <div class="logo-preview-container">
+                          {% if navbar_logo_url %}
+                          <div class="current-logo mb-3">
+                            <div class="d-flex align-items-center justify-content-between bg-light p-3 rounded">
+                              <div class="d-flex align-items-center">
+                                <img src="{{ navbar_logo_url }}" alt="Logo actual" class="logo-thumbnail me-3">
+                                <div>
+                                  <small class="text-success fw-bold">Logo actual</small>
+                                  <div class="small text-muted">Visible en la navbar</div>
+                                </div>
+                              </div>
+                              <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeLogo()">
+                                <i class="fas fa-trash"></i>
+                              </button>
+                            </div>
+                          </div>
+                          {% else %}
+                          <div class="no-logo text-center p-4 bg-light rounded">
+                            <i class="fas fa-image fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">No hay logo configurado</p>
+                            <small class="text-muted">Se mostrará "Sistema de Notas"</small>
+                          </div>
+                          {% endif %}
+                          <div id="newLogoPreview" class="new-logo-preview" style="display: none;">
+                            <div class="d-flex align-items-center justify-content-between bg-success bg-opacity-10 p-3 rounded border border-success">
+                              <div class="d-flex align-items-center">
+                                <img id="previewImage" src="" alt="Nuevo logo" class="logo-thumbnail me-3">
+                                <div>
+                                  <small class="text-success fw-bold">Nuevo logo</small>
+                                  <div class="small text-muted" id="fileName"></div>
+                                </div>
+                              </div>
+                              <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearPreview()">
+                                <i class="fas fa-times"></i>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           
@@ -113,4 +175,105 @@
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const logoUploadArea = document.getElementById('logoUploadArea');
+    const logoInput = document.getElementById('logoInput');
+    const newLogoPreview = document.getElementById('newLogoPreview');
+    const previewImage = document.getElementById('previewImage');
+    const fileName = document.getElementById('fileName');
+
+    // Funcionalidad de drag & drop
+    logoUploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        logoUploadArea.classList.add('dragover');
+    });
+
+    logoUploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        logoUploadArea.classList.remove('dragover');
+    });
+
+    logoUploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        logoUploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFileSelection(files[0]);
+        }
+    });
+
+    // Click en el área de subida (solo cuando el click no proviene del botón)
+    logoUploadArea.addEventListener('click', function(e) {
+        // Evitar doble apertura cuando se hace clic en el botón dentro del área
+        if (e.target && (e.target.id === 'selectLogoBtn' || e.target.closest('#selectLogoBtn'))) {
+            return;
+        }
+        logoInput.click();
+    });
+
+    // Click en el botón de seleccionar archivo con stopPropagation para evitar doble apertura
+    const selectLogoBtn = document.getElementById('selectLogoBtn');
+    if (selectLogoBtn) {
+        selectLogoBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            logoInput.click();
+        });
+    }
+
+    // Cambio en el input de archivo
+    logoInput.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            handleFileSelection(e.target.files[0]);
+        }
+    });
+
+    function handleFileSelection(file) {
+        // Validar tipo de archivo
+        const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Por favor selecciona un archivo PNG, JPG o JPEG.');
+            return;
+        }
+
+        // Validar tamaño (2MB máximo)
+        if (file.size > 2 * 1024 * 1024) {
+            alert('El archivo es muy grande. El tamaño máximo es 2MB.');
+            return;
+        }
+
+        // Mostrar vista previa
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImage.src = e.target.result;
+            fileName.textContent = file.name;
+            newLogoPreview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+
+        // Actualizar el input file
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        logoInput.files = dataTransfer.files;
+    }
+
+    // Función para limpiar la vista previa
+    window.clearPreview = function() {
+        newLogoPreview.style.display = 'none';
+        logoInput.value = '';
+    };
+
+    // Función para remover logo (requiere implementación en el backend)
+    window.removeLogo = function() {
+        if (confirm('¿Estás seguro de que quieres eliminar el logo actual?')) {
+            // Aquí se podría hacer una petición AJAX para eliminar el logo
+            // Por ahora, solo mostramos un mensaje
+            alert('Funcionalidad de eliminación pendiente de implementar.');
+        }
+    };
+});
+</script>
+
 {% endblock %}

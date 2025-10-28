@@ -21,6 +21,9 @@ body {
 .navbar-brand {
     font-weight: bold;
     font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 
@@ -32,6 +35,75 @@ body {
 
 .navbar-nav .nav-link:hover {
     color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Logo en la barra de navegación */
+.navbar-logo {
+    height: 40px;
+    width: auto;
+    display: inline-block;
+    object-fit: contain;
+}
+
+/* Estilos para la sección de subida de logo */
+.logo-upload-area {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.logo-upload-area:hover {
+    border-color: #0d6efd;
+    background-color: #e7f1ff;
+}
+
+.logo-upload-area.dragover {
+    border-color: #0d6efd;
+    background-color: #e7f1ff;
+    transform: scale(1.02);
+}
+
+.logo-thumbnail {
+    height: 50px;
+    width: auto;
+    max-width: 80px;
+    object-fit: contain;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+.upload-content {
+    transition: all 0.3s ease;
+}
+
+.logo-upload-area:hover .upload-content {
+    transform: translateY(-2px);
+}
+
+.new-logo-preview {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.logo-preview-container .current-logo {
+    transition: all 0.3s ease;
+}
+
+.logo-preview-container .current-logo:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 /* Cards personalizadas */

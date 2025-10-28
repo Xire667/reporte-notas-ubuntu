@@ -5,11 +5,13 @@ del sistema de notas, incluyendo la gestión de usuarios (docentes y alumnos), c
 ciclos académicos, asignaciones, matrículas y configuración del sistema.
 """
 
-from flask import render_template, request, redirect, url_for, flash, jsonify, make_response
+from flask import render_template, request, redirect, url_for, flash, jsonify, make_response, current_app
 from flask_login import login_required, current_user
 from app import db  # Importación de la instancia de la base de datos
 from app.models import Usuario, Curso, CursoDocente, CursoAlumno, CicloAcademico, MatriculaAlumno, Nota, NotaActividades, NotaPracticas, NotaParcial, ThemeConfig  # Importación de todos los modelos necesarios
 from . import admin_bp  # Importación del Blueprint de administración
+import os
+from werkzeug.utils import secure_filename
 
 def admin_required(f):
     """
@@ -1815,15 +1817,56 @@ def editar_estilos():
         db.session.commit()
 
     if request.method == 'POST':
+        # Actualizar colores del tema
         config.nombre = request.form.get('nombre') or config.nombre
         config.color_oscuro = request.form.get('color_oscuro') or config.color_oscuro
         config.color_claro = request.form.get('color_claro') or config.color_claro
         config.color_medio = request.form.get('color_medio') or config.color_medio
         config.color_medio_oscuro = request.form.get('color_medio_oscuro') or config.color_medio_oscuro
         config.color_medio_claro = request.form.get('color_medio_claro') or config.color_medio_claro
+
+        # Manejar subida de logo (PNG, JPG, JPEG)
+        logo_file = request.files.get('logo')
+        if logo_file and logo_file.filename:
+            filename = secure_filename(logo_file.filename)
+            ext = os.path.splitext(filename)[1].lower()
+            allowed_extensions = {'.png', '.jpg', '.jpeg'}
+            
+            if ext not in allowed_extensions:
+                flash('El logo debe ser un archivo PNG, JPG o JPEG.', 'error')
+            else:
+                try:
+                    upload_dir = os.path.join(current_app.root_path, 'static', 'uploads')
+                    os.makedirs(upload_dir, exist_ok=True)
+                    save_path = os.path.join(upload_dir, 'logo.png')
+                    
+                    # Si es PNG, guardar directamente
+                    if ext == '.png':
+                        logo_file.save(save_path)
+                    else:
+                        # Para JPG/JPEG, convertir a PNG si PIL está disponible
+                        try:
+                            from PIL import Image
+                            img = Image.open(logo_file.stream)
+                            # Convertir a RGB si es necesario
+                            if img.mode in ('RGBA', 'LA'):
+                                background = Image.new('RGB', img.size, (255, 255, 255))
+                                background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+                                img = background
+                            img.save(save_path, 'PNG')
+                        except ImportError:
+                            # Si PIL no está disponible, guardar directamente
+                            logo_file.save(save_path)
+                    
+                    flash('Logo actualizado correctamente.', 'success')
+                except Exception as e:
+                    flash('Error al subir el logo.', 'error')
+
+        # Guardar cambios de estilos
         try:
             db.session.commit()
-            flash('Estilos actualizados correctamente.', 'success')
+            if not logo_file:
+                flash('Estilos actualizados correctamente.', 'success')
             return redirect(url_for('admin.editar_estilos'))
         except Exception:
             db.session.rollback()
