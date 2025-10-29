@@ -4,6 +4,11 @@
 {% block title %}Editar Estilos - Sistema de Notas{% endblock %}
 {# Define el título específico de esta página #}
 
+{% block head %}
+{{ super() }}
+<meta name="csrf-token" content="{{ csrf_token() }}">
+{% endblock %}
+
 {% block admin_content %}
 {# Contenido principal específico para la página de edición de estilos #}
 <div class="row">
@@ -51,7 +56,7 @@
             
             <!-- Color medio claro -->
             <div class="col-md-6">
-              <label class="form-label">Color medio claro</label>
+              <label class="form-label">Color Texto</label>
               <input type="color" name="color_medio_claro" class="form-control form-control-color" value="{{ config.color_medio_claro }}">
             </div>
             
@@ -296,12 +301,18 @@ document.addEventListener('DOMContentLoaded', function() {
         logoInput.value = '';
     };
 
-    // Función para remover logo (requiere implementación en el backend)
+    // Función para remover logo
     window.removeLogo = function() {
         if (confirm('¿Estás seguro de que quieres eliminar el logo actual?')) {
-            // Aquí se podría hacer una petición AJAX para eliminar el logo
-            // Por ahora, solo mostramos un mensaje
-            alert('Funcionalidad de eliminación pendiente de implementar.');
+            // Crear un formulario temporal para enviar la solicitud POST
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/admin/eliminar_logo';
+            form.style.display = 'none';
+            
+            // Agregar el formulario al documento y enviarlo
+            document.body.appendChild(form);
+            form.submit();
         }
     };
 });

@@ -1874,6 +1874,30 @@ def editar_estilos():
 
     return render_template('admin/editar_estilos.html', config=config)
 
+@admin_bp.route('/eliminar_logo', methods=['POST'])
+@login_required
+@admin_required
+def eliminar_logo():
+    """Elimina el logo actual del sistema"""
+    try:
+        # Ruta al logo actual
+        upload_dir = os.path.join(current_app.root_path, 'static', 'uploads')
+        logo_path = os.path.join(upload_dir, 'logo.png')
+        
+        # Verificar si existe el logo
+        if os.path.exists(logo_path):
+            # Eliminar el archivo
+            os.remove(logo_path)
+            flash('Logo eliminado correctamente.', 'success')
+        else:
+            flash('No se encontró el logo para eliminar.', 'warning')
+        
+        # Redirigir de vuelta a la página de edición de estilos
+        return redirect(url_for('admin.editar_estilos'))
+    except Exception as e:
+        flash(f'Error al eliminar el logo: {str(e)}', 'error')
+        return redirect(url_for('admin.editar_estilos'))
+
 @admin_bp.route('/theme.css')
 def theme_css():
     """Sirve CSS dinámico con variables de colores desde ThemeConfig"""
