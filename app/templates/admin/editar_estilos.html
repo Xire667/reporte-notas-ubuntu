@@ -1,0 +1,116 @@
+{% extends "admin/base_admin.html" %}
+{# Extiende la plantilla base de administrador para mantener la estructura común #}
+
+{% block title %}Editar Estilos - Sistema de Notas{% endblock %}
+{# Define el título específico de esta página #}
+
+{% block admin_content %}
+{# Contenido principal específico para la página de edición de estilos #}
+<div class="row">
+  <!-- Panel principal: Formulario de edición de estilos -->
+  <div class="col-lg-8 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <i class="fas fa-paint-brush me-2"></i>Editar esquema de colores
+        {# Icono y título del panel de edición #}
+      </div>
+      <div class="card-body">
+        <!-- Formulario para modificar los colores del tema -->
+        <form method="POST" action="{{ url_for('admin.editar_estilos') }}">
+          <!-- Campo para el nombre del tema -->
+          <div class="mb-3">
+            <label class="form-label">Nombre del tema</label>
+            <input type="text" name="nombre" class="form-control" value="{{ config.nombre }}" placeholder="Ej: Azul corporativo">
+          </div>
+          
+          <!-- Selección de colores para el tema -->
+          <div class="row g-3">
+            <!-- Color principal oscuro -->
+            <div class="col-md-6">
+              <label class="form-label">Color oscuro</label>
+              <input type="color" name="color_oscuro" class="form-control form-control-color" value="{{ config.color_oscuro }}">
+            </div>
+            
+            <!-- Color principal claro -->
+            <div class="col-md-6">
+              <label class="form-label">Color claro</label>
+              <input type="color" name="color_claro" class="form-control form-control-color" value="{{ config.color_claro }}">
+            </div>
+            
+            <!-- Color intermedio (tono medio) -->
+            <div class="col-md-6">
+              <label class="form-label">Color medio</label>
+              <input type="color" name="color_medio" class="form-control form-control-color" value="{{ config.color_medio }}">
+            </div>
+            
+            <!-- Variante oscura del color intermedio -->
+            <div class="col-md-6">
+              <label class="form-label">Medio oscuro</label>
+              <input type="color" name="color_medio_oscuro" class="form-control form-control-color" value="{{ config.color_medio_oscuro }}">
+            </div>
+            
+            <!-- Variante clara del color intermedio -->
+            <div class="col-md-6">
+              <label class="form-label">Medio claro</label>
+              <input type="color" name="color_medio_claro" class="form-control form-control-color" value="{{ config.color_medio_claro }}">
+            </div>
+            
+            <!-- Selector de archivo para logo (funcionalidad pendiente) -->
+            <div class="col-md-6">
+              <label class="form-label">Logo</label>
+              <br>
+              <input type="file">
+            </div>
+          </div>
+          
+          <!-- Botones de acción -->
+          <div class="mt-4 d-flex gap-2">
+            <!-- Botón para guardar cambios -->
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save me-1"></i>Guardar cambios
+            </button>
+            
+            <!-- Botón para volver al dashboard -->
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+              <i class="fas fa-arrow-left me-1"></i>Volver al Dashboard
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Panel lateral: Vista previa del tema -->
+  <div class="col-lg-4 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <i class="fas fa-eye me-2"></i>Vista previa
+        {# Icono y título del panel de vista previa #}
+      </div>
+      <div class="card-body">
+        <!-- Contenedor de vista previa que muestra cómo se verá el tema -->
+        <div class="preview-box" style="border-radius: 10px; overflow: hidden;">
+          <!-- Simulación de la barra superior -->
+          <div style="background: var(--color-oscuro); color: white; padding: 12px;">Barra superior</div>
+          
+          <!-- Simulación del contenido principal -->
+          <div style="padding: 16px; background: var(--color-medio-claro);">
+            <!-- Simulación de una tarjeta o panel -->
+            <div style="background: white; border-radius: 8px; padding: 12px;">
+              <!-- Elementos decorativos para mostrar los colores -->
+              <div style="height: 8px; background: var(--color-claro); border-radius: 4px; margin-bottom: 12px;"></div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <div style="height: 40px; background: var(--color-medio); border-radius: 6px;"></div>
+                <div style="height: 40px; background: var(--color-medio-oscuro); border-radius: 6px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Nota informativa sobre la aplicación de cambios -->
+        <p class="text-muted mt-3">Los cambios guardados se aplicarán inmediatamente al sistema.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <style>
+    body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; }
+    h1 { font-size: 18px; margin: 0 0 6px 0; }
+    .sub { margin: 0 0 10px 0; font-size: 12px; color: #333; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #333; padding: 4px; text-align: center; }
+    th { background: #f0f0f0; }
+    .left { text-align: left; }
+    .small { font-size: 11px; }
+  </style>
+</head>
+<body>
+  <h1>Reporte de Notas</h1>
+  <p class="sub">
+    {% if ciclo %}Ciclo: {{ ciclo.nombre }}. {% endif %}
+    {% if curso %}Curso: {{ curso.nombre }} ({{ curso.codigo }}). {% endif %}
+    {% if docente %}Docente: {{ docente.nombre }} {{ docente.apellido }}. {% endif %}
+    Estado: {{ estado|title if estado else 'Todas' }}. 
+    Fecha: {{ generado.strftime('%d/%m/%Y %H:%M') }}
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th class="left">Alumno</th>
+        <th>DNI</th>
+        <th class="left">Curso</th>
+        <th class="left">Docente</th>
+        <th>Prom. Act.</th>
+        <th>Prom. Prac.</th>
+        <th>Prom. Par.</th>
+        <th>Prom. Final</th>
+        <th>Estado</th>
+        <th>Últ. Actualización</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for f in filas %}
+      <tr>
+        <td class="left">{{ f.alumno.nombre }} {{ f.alumno.apellido }}</td>
+        <td class="small">{{ f.alumno.dni }}</td>
+        <td class="left">{{ f.curso.nombre }} ({{ f.curso.codigo }})</td>
+        <td class="left">{{ f.docente.nombre }} {{ f.docente.apellido }}</td>
+        <td>{{ f.promedio_actividades|round(2) }}</td>
+        <td>{{ f.promedio_practicas|round(2) }}</td>
+        <td>{{ f.promedio_parciales|round(2) }}</td>
+        <td><strong>{{ f.promedio_final|round(2) }}</strong></td>
+        <td>{{ f.estado if f.estado else '-' }}</td>
+        <td class="small">{{ f.fecha.strftime('%d/%m/%Y %H:%M') if f.fecha else '' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

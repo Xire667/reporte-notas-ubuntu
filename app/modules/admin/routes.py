@@ -1,11 +1,28 @@
-from flask import render_template, request, redirect, url_for, flash, jsonify
+"""
+Módulo de rutas para el panel de administración.
+Este archivo contiene todas las rutas y funciones relacionadas con la gestión administrativa
+del sistema de notas, incluyendo la gestión de usuarios (docentes y alumnos), cursos,
+ciclos académicos, asignaciones, matrículas y configuración del sistema.
+"""
+
+from flask import render_template, request, redirect, url_for, flash, jsonify, make_response
 from flask_login import login_required, current_user
-from app import db
-from app.models import Usuario, Curso, CursoDocente, CursoAlumno, CicloAcademico, MatriculaAlumno, Nota, NotaActividades, NotaPracticas, NotaParcial
-from . import admin_bp
+from app import db  # Importación de la instancia de la base de datos
+from app.models import Usuario, Curso, CursoDocente, CursoAlumno, CicloAcademico, MatriculaAlumno, Nota, NotaActividades, NotaPracticas, NotaParcial, ThemeConfig  # Importación de todos los modelos necesarios
+from . import admin_bp  # Importación del Blueprint de administración
 
 def admin_required(f):
-    """Decorator para requerir rol de administrador"""
+    """
+    Decorator para requerir rol de administrador.
+    Verifica que el usuario actual esté autenticado y tenga el rol de administrador.
+    Si no cumple con estos requisitos, redirige al dashboard principal con un mensaje de error.
+    
+    Args:
+        f: La función a decorar
+        
+    Returns:
+        La función decorada que verifica los permisos de administrador
+    """
     from functools import wraps
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -19,6 +36,11 @@ def admin_required(f):
 @login_required
 @admin_required
 def dashboard():
+    """
+    Dashboard principal del administrador.
+    Muestra estadísticas generales del sistema: total de docentes, alumnos,
+    cursos, alumnos matriculados y notas registradas.
+    """
     total_docentes = Usuario.query.filter_by(rol='docente').count()
     total_alumnos = Usuario.query.filter_by(rol='alumno').count()
     total_cursos = Curso.query.count()
@@ -41,6 +63,11 @@ def dashboard():
 @login_required
 @admin_required
 def docentes():
+    """
+    Lista todos los docentes registrados en el sistema.
+    Muestra información sobre cursos asignados, notas registradas y
+    determina si cada docente puede ser desactivado o eliminado.
+    """
     docentes_data = []
     docentes = Usuario.query.filter_by(rol='docente').all()
     
@@ -67,6 +94,10 @@ def docentes():
 @login_required
 @admin_required
 def registrar_docente():
+    """
+    Registra un nuevo docente en el sistema.
+    Valida que el DNI y email no estén ya registrados.
+    """
     if request.method == 'POST':
         dni = request.form.get('dni')
         nombre = request.form.get('nombre')
@@ -74,14 +105,17 @@ def registrar_docente():
         email = request.form.get('email')
         password = request.form.get('password')
         
+        # Validación de DNI único
         if Usuario.query.filter_by(dni=dni).first():
             flash('El DNI ya está registrado.', 'error')
             return render_template('admin/registrar_docente.html')
         
+        # Validación de email único
         if Usuario.query.filter_by(email=email).first():
             flash('El email ya está registrado.', 'error')
             return render_template('admin/registrar_docente.html')
         
+        # Creación del nuevo usuario docente
         docente = Usuario(
             dni=dni,
             nombre=nombre,
@@ -107,6 +141,11 @@ def registrar_docente():
 @login_required
 @admin_required
 def cursos():
+    """
+    Lista todos los cursos registrados en el sistema.
+    Muestra información sobre docentes asignados, alumnos matriculados,
+    notas registradas y determina si cada curso puede ser desactivado o eliminado.
+    """
     cursos_data = []
     cursos = db.session.query(Curso, CicloAcademico).outerjoin(CicloAcademico).all()
     
@@ -136,6 +175,11 @@ def cursos():
 @login_required
 @admin_required
 def registrar_curso():
+    """
+    Registra un nuevo curso en el sistema.
+    Valida que el código del curso no esté ya registrado y permite
+    asociar el curso a un ciclo académico activo.
+    """
     if request.method == 'POST':
         nombre = request.form.get('nombre')
         codigo = request.form.get('codigo')
@@ -171,6 +215,10 @@ def registrar_curso():
 @login_required
 @admin_required
 def editar_curso(id):
+    """
+    Edita la información de un curso existente.
+    Valida que el código del curso no esté en uso por otro curso.
+    """
     curso = Curso.query.get_or_404(id)
     
     if request.method == 'POST':
@@ -200,6 +248,11 @@ def editar_curso(id):
 @login_required
 @admin_required
 def toggle_activo_curso(id):
+    """
+    Activa o desactiva un curso existente.
+    Verifica que no tenga docentes asignados, alumnos matriculados o notas registradas
+    antes de permitir la desactivación.
+    """
     curso = Curso.query.get_or_404(id)
     
     try:
@@ -1028,6 +1081,7 @@ def ver_notas():
     ciclos = CicloAcademico.query.filter_by(activo=True).order_by(CicloAcademico.orden).all()
     cursos = Curso.query.filter_by(activo=True).order_by(Curso.nombre).all()
     alumnos = Usuario.query.filter_by(rol='alumno', activo=True).order_by(Usuario.nombre).all()
+    docentes = Usuario.query.filter_by(rol='docente', activo=True).order_by(Usuario.nombre).all()
     
     # Obtener ciclo y curso seleccionados
     ciclo_seleccionado = CicloAcademico.query.get(ciclo_id) if ciclo_id else None
@@ -1040,6 +1094,7 @@ def ver_notas():
                          ciclos=ciclos,
                          cursos=cursos,
                          alumnos=alumnos,
+                         docentes=docentes,
                          ciclo_seleccionado=ciclo_seleccionado,
                          curso_seleccionado=curso_seleccionado,
                          alumno_seleccionado=alumno_seleccionado)
@@ -1128,6 +1183,7 @@ def exportar_notas():
     ciclo_id = request.args.get('ciclo_id')
     curso_id = request.args.get('curso_id')
     estado = request.args.get('estado', 'todas')
+    docente_id = request.args.get('docente_id')
     
     # Construir query con alias para evitar conflicto de nombres
     from sqlalchemy.orm import aliased
@@ -1142,6 +1198,8 @@ def exportar_notas():
         query = query.filter(Curso.ciclo_academico_id == ciclo_id)
     if curso_id:
         query = query.filter(Nota.curso_id == curso_id)
+    if docente_id:
+        query = query.filter(Nota.docente_id == docente_id)
     if estado != 'todas':
         query = query.filter(Nota.estado == estado)
     
@@ -1190,6 +1248,98 @@ def exportar_notas():
             'Content-Disposition': f'attachment; filename=notas_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
         }
     )
+
+@admin_bp.route('/notas/exportar/pdf')
+@login_required
+@admin_required
+def exportar_notas_pdf():
+    """Exportar notas a PDF usando xhtml2pdf"""
+    # Imports locales para evitar tocar cabeceras
+    from io import BytesIO
+    from xhtml2pdf import pisa
+    from flask import make_response
+    from datetime import datetime
+
+    # Obtener filtros
+    ciclo_id = request.args.get('ciclo_id')
+    curso_id = request.args.get('curso_id')
+    estado = request.args.get('estado', 'todas')
+    docente_id = request.args.get('docente_id')
+
+    # Construir query con alias
+    from sqlalchemy.orm import aliased
+    Alumno = aliased(Usuario)
+    Docente = aliased(Usuario)
+
+    query = db.session.query(Nota, Curso, Alumno, Docente).join(Curso).join(
+        Alumno, Nota.alumno_id == Alumno.id
+    ).join(Docente, Nota.docente_id == Docente.id)
+
+    if ciclo_id:
+        query = query.filter(Curso.ciclo_academico_id == ciclo_id)
+    if curso_id:
+        query = query.filter(Nota.curso_id == curso_id)
+    if docente_id:
+        query = query.filter(Nota.docente_id == docente_id)
+    if estado != 'todas':
+        query = query.filter(Nota.estado == estado)
+
+    filas = []
+    for nota, curso, alumno, docente in query.order_by(Curso.nombre, Alumno.apellido, Alumno.nombre).all():
+        # Promedios robustos
+        prom_acts = getattr(nota, 'promedio_actividades', 0.0) or 0.0
+        prom_pracs = getattr(nota, 'promedio_practicas', 0.0) or 0.0
+        prom_parcs = getattr(nota, 'promedio_parciales', 0.0) or 0.0
+        if nota.nota_actividades and (not prom_acts or prom_acts == 0.0):
+            prom_acts = nota.nota_actividades.calcular_promedio_actividades() or 0.0
+        if nota.nota_practicas and (not prom_pracs or prom_pracs == 0.0):
+            prom_pracs = nota.nota_practicas.calcular_promedio_practicas() or 0.0
+        if nota.nota_parcial and (not prom_parcs or prom_parcs == 0.0):
+            prom_parcs = nota.nota_parcial.calcular_promedio_parciales() or 0.0
+        promedio_final = round((prom_acts * 0.10) + (prom_pracs * 0.30) + (prom_parcs * 0.60), 2)
+
+        filas.append({
+            'curso': curso,
+            'alumno': alumno,
+            'docente': docente,
+            'promedio_actividades': round(prom_acts, 2),
+            'promedio_practicas': round(prom_pracs, 2),
+            'promedio_parciales': round(prom_parcs, 2),
+            'promedio_final': promedio_final,
+            'estado': getattr(nota, 'estado', None),
+            'fecha': nota.fecha_actualizacion
+        })
+
+    # Datos de contexto y filtros legibles
+    ciclo = CicloAcademico.query.get(ciclo_id) if ciclo_id else None
+    curso_sel = Curso.query.get(curso_id) if curso_id else None
+    docente_sel = Usuario.query.get(docente_id) if docente_id else None
+
+    html = render_template(
+        'admin/notas_pdf.html',
+        filas=filas,
+        ciclo=ciclo,
+        curso=curso_sel,
+        docente=docente_sel,
+        estado=estado,
+        generado=datetime.now()
+    )
+
+    resultado = BytesIO()
+    pisa_status = pisa.CreatePDF(html, dest=resultado)
+    if hasattr(pisa_status, 'err') and pisa_status.err:
+        flash('Error generando PDF.', 'error')
+        return redirect(url_for('admin.ver_notas'))
+
+    response = make_response(resultado.getvalue())
+    response.headers['Content-Type'] = 'application/pdf'
+    nombre = 'notas'
+    if curso_sel:
+        nombre += f"_{curso_sel.codigo}"
+    if docente_sel:
+        nombre += f"_doc_{docente_sel.id}"
+    response.headers['Content-Disposition'] = f"attachment; filename={nombre}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+    return response
 
 # Gestión de Ciclos Académicos
 @admin_bp.route('/ciclos')
@@ -1649,6 +1799,62 @@ def api_cursos_por_ciclo(ciclo_id):
             'message': f'Error al obtener cursos: {str(e)}'
         })
 
+@admin_bp.route('/estilos', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def editar_estilos():
+    """
+    Vista para editar la configuración de colores del sistema.
+    Permite personalizar los colores de la interfaz (oscuro, claro, medio, etc.)
+    y guardar la configuración en la base de datos.
+    """
+    config = ThemeConfig.query.first()
+    if not config:
+        config = ThemeConfig()
+        db.session.add(config)
+        db.session.commit()
+
+    if request.method == 'POST':
+        config.nombre = request.form.get('nombre') or config.nombre
+        config.color_oscuro = request.form.get('color_oscuro') or config.color_oscuro
+        config.color_claro = request.form.get('color_claro') or config.color_claro
+        config.color_medio = request.form.get('color_medio') or config.color_medio
+        config.color_medio_oscuro = request.form.get('color_medio_oscuro') or config.color_medio_oscuro
+        config.color_medio_claro = request.form.get('color_medio_claro') or config.color_medio_claro
+        try:
+            db.session.commit()
+            flash('Estilos actualizados correctamente.', 'success')
+            return redirect(url_for('admin.editar_estilos'))
+        except Exception:
+            db.session.rollback()
+            flash('Error al actualizar los estilos.', 'error')
+
+    return render_template('admin/editar_estilos.html', config=config)
+
+@admin_bp.route('/theme.css')
+def theme_css():
+    """Sirve CSS dinámico con variables de colores desde ThemeConfig"""
+    config = ThemeConfig.query.first()
+    valores = {
+        'color_oscuro': '#00378F',
+        'color_claro': '#3775DA',
+        'color_medio': '#1C56B5',
+        'color_medio_oscuro': '#0E47A2',
+        'color_medio_claro': '#2966C7'
+    }
+    if config:
+        valores.update({
+            'color_oscuro': config.color_oscuro,
+            'color_claro': config.color_claro,
+            'color_medio': config.color_medio,
+            'color_medio_oscuro': config.color_medio_oscuro,
+            'color_medio_claro': config.color_medio_claro
+        })
+    css = f":root{{\n    --color-oscuro: {valores['color_oscuro']};\n    --color-claro: {valores['color_claro']};\n    --color-medio: {valores['color_medio']};\n    --color-medio-oscuro: {valores['color_medio_oscuro']};\n    --color-medio-claro: {valores['color_medio_claro']};\n    --primary-color: {valores['color_oscuro']};\n}}"
+    resp = make_response(css)
+    resp.headers['Content-Type'] = 'text/css'
+    return resp
+
 @admin_bp.route('/api/estudiantes-por-ciclo/<int:ciclo_id>')
 @login_required
 @admin_required
@@ -1682,4 +1888,34 @@ def api_estudiantes_por_ciclo(ciclo_id):
         return jsonify({
             'success': False,
             'message': f'Error al obtener estudiantes: {str(e)}'
+        })
+
+@admin_bp.route('/api/cursos-por-docente/<int:docente_id>')
+@login_required
+@admin_required
+def api_cursos_por_docente(docente_id):
+    """API para obtener cursos asignados a un docente específico"""
+    try:
+        cursos = db.session.query(Curso).join(CursoDocente, CursoDocente.curso_id == Curso.id).filter(
+            CursoDocente.docente_id == docente_id,
+            Curso.activo == True
+        ).order_by(Curso.nombre).all()
+        
+        cursos_data = [
+            {
+                'id': curso.id,
+                'nombre': curso.nombre,
+                'codigo': curso.codigo
+            }
+            for curso in cursos
+        ]
+        
+        return jsonify({
+            'success': True,
+            'cursos': cursos_data
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Error al obtener cursos: {str(e)}'
         })

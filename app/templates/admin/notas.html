@@ -8,13 +8,48 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="fas fa-clipboard-list me-2"></i>Gestión de Notas</h2>
             <div class="d-flex gap-2">
-                <a href="{{ url_for('admin.exportar_notas', ciclo_id=request.args.get('ciclo_id'), curso_id=request.args.get('curso_id'), estado=request.args.get('estado', 'todas')) }}" 
+                <a href="{{ url_for('admin.exportar_notas_pdf', ciclo_id=request.args.get('ciclo_id'), curso_id=request.args.get('curso_id'), estado=request.args.get('estado', 'todas')) }}" 
                    class="btn btn-outline-success">
-                    <i class="fas fa-download me-2"></i>Exportar CSV
+                    <i class="fas fa-file-pdf me-2"></i>Exportar PDF
                 </a>
                 <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
                     <i class="fas fa-arrow-left me-2"></i>Volver al Dashboard
                 </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Nueva sección: Exportar por Docente -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-tie me-2"></i>Exportar por Docente</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="docente_export_id" class="form-label">Docente:</label>
+                        <select class="form-select" id="docente_export_id">
+                            <option value="">-- Selecciona un docente --</option>
+                            {% for docente in docentes %}
+                            <option value="{{ docente.id }}">{{ docente.nombre }} {{ docente.apellido }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="curso_export_id" class="form-label">Curso:</label>
+                        <select class="form-select" id="curso_export_id" disabled>
+                            <option value="">-- Selecciona un curso --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button id="btnExportDocente" class="btn btn-success" disabled>
+                            <i class="fas fa-file-pdf me-2"></i>Exportar PDF
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -613,4 +648,63 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const docenteExportSelect = document.getElementById('docente_export_id');
+    const cursoExportSelect = document.getElementById('curso_export_id');
+    const btnExportDocente = document.getElementById('btnExportDocente');
+    const exportBaseUrl = "{{ url_for('admin.exportar_notas_pdf') }}";
+
+    function resetExportControls() {
+        cursoExportSelect.innerHTML = '<option value="">-- Selecciona un curso --</option>';
+        cursoExportSelect.disabled = true;
+        btnExportDocente.disabled = true;
+    }
+
+    if (docenteExportSelect) {
+        docenteExportSelect.addEventListener('change', function() {
+            const docenteId = this.value;
+            resetExportControls();
+            if (!docenteId) {
+                return;
+            }
+            fetch(`/admin/api/cursos-por-docente/${docenteId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && Array.isArray(data.cursos)) {
+                        cursoExportSelect.disabled = false;
+                        data.cursos.forEach(curso => {
+                            const option = document.createElement('option');
+                            option.value = curso.id;
+                            option.textContent = `${curso.nombre} (${curso.codigo})`;
+                            cursoExportSelect.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al cargar cursos del docente:', error);
+                    resetExportControls();
+                });
+        });
+    }
+
+    if (cursoExportSelect) {
+        cursoExportSelect.addEventListener('change', function() {
+            const docenteId = docenteExportSelect.value;
+            const cursoId = this.value;
+            btnExportDocente.disabled = !(docenteId && cursoId);
+        });
+    }
+
+    if (btnExportDocente) {
+        btnExportDocente.addEventListener('click', function() {
+            const docenteId = docenteExportSelect.value;
+            const cursoId = cursoExportSelect.value;
+            if (!docenteId || !cursoId) return;
+            const params = new URLSearchParams({ docente_id: docenteId, curso_id: cursoId, estado: 'todas' });
+            window.location.href = `${exportBaseUrl}?${params.toString()}`;
+        });
+    }
+});
+</script>
 {% endblock %}

@@ -1,4 +1,4 @@
-﻿from flask import render_template, request, redirect, url_for, flash, jsonify, make_response, abort
+from flask import render_template, request, redirect, url_for, flash, jsonify, make_response, abort
 from flask_login import login_required, current_user
 from app import db
 from app.models import Usuario, Curso, CursoDocente, CursoAlumno, Nota, NotaActividades, NotaPracticas, NotaParcial
@@ -422,6 +422,7 @@ def reporte_curso(curso_id):
 @login_required
 @docente_required
 def reporte_alumno(alumno_id):
+
     alumno = Usuario.query.get_or_404(alumno_id)
 
     cursos = db.session.query(Curso).join(CursoDocente).join(CursoAlumno, CursoAlumno.curso_id == Curso.id).filter(
@@ -475,6 +476,86 @@ def reporte_alumno(alumno_id):
 
     return render_template('docente/reporte_alumno.html', alumno=alumno, datos=datos)
 
+
+@docente_bp.route('/reportes/alumno/<int:alumno_id>/pdf')
+@login_required
+@docente_required
+def reporte_alumno_pdf(alumno_id):
+    alumno = Usuario.query.get_or_404(alumno_id)
+    cursos = db.session.query(Curso).join(CursoDocente).join(CursoAlumno, CursoAlumno.curso_id == Curso.id).filter(
+        CursoDocente.docente_id == current_user.id,
+        CursoAlumno.alumno_id == alumno_id
+    ).order_by(Curso.nombre).all()
+    datos = []
+    for curso in cursos:
+        nota = Nota.query.filter_by(curso_id=curso.id, alumno_id=alumno_id).first()
+        na = NotaActividades.query.filter_by(curso_id=curso.id, alumno_id=alumno_id).first()
+        np = NotaPracticas.query.filter_by(curso_id=curso.id, alumno_id=alumno_id).first()
+        npa = NotaParcial.query.filter_by(curso_id=curso.id, alumno_id=alumno_id).first()
+        
+        prom_acts = 0.0
+        prom_pracs = 0.0
+        prom_parcs = 0.0
+        prom_final = 0.0
+        
+        if nota:
+            prom_acts = nota.promedio_actividades or 0.0
+            prom_pracs = nota.promedio_practicas or 0.0
+            prom_parcs = nota.promedio_parciales or 0.0
+            if prom_acts == 0 and na:
+                prom_acts = na.promedio_actividades if na.promedio_actividades else 0.0
+            if prom_pracs == 0 and np:
+                prom_pracs = np.promedio_practicas if np.promedio_practicas else 0.0
+            if prom_parcs == 0 and npa:
+                prom_parcs = npa.promedio_parciales if npa.promedio_parciales else 0.0
+            prom_final = (prom_acts * 0.10) + (prom_pracs * 0.30) + (prom_parcs * 0.60)
+        else:
+            prom_acts = na.promedio_actividades if na and na.promedio_actividades else 0.0
+            prom_pracs = np.promedio_practicas if np and np.promedio_practicas else 0.0
+            prom_parcs = npa.promedio_parciales if npa and npa.promedio_parciales else 0.0
+            prom_final = (prom_acts * 0.10) + (prom_pracs * 0.30) + (prom_parcs * 0.60)
+        
+        # Obtener notas individuales
+        actividades = []
+        if na:
+            actividades = [na.actividad1, na.actividad2, na.actividad3, na.actividad4, na.actividad5, na.actividad6, na.actividad7, na.actividad8]
+        else:
+            actividades = [0, 0, 0, 0, 0, 0, 0, 0]
+        
+        practicas = []
+        if np:
+            practicas = [np.practica1, np.practica2, np.practica3, np.practica4]
+        else:
+            practicas = [0, 0, 0, 0]
+        
+        parciales = []
+        if npa:
+            parciales = [npa.parcial1, npa.parcial2]
+        else:
+            parciales = [0, 0]
+        
+        datos.append({
+            'curso': curso,
+            'actividades': actividades,
+            'practicas': practicas,
+            'parciales': parciales,
+            'promedio_actividades': prom_acts,
+            'promedio_practicas': prom_pracs,
+            'promedio_parciales': prom_parcs,
+            'promedio_final': prom_final
+        })
+    html = render_template('docente/reporte_alumno_pdf.html', alumno=alumno, datos=datos)
+    from xhtml2pdf import pisa
+    from io import BytesIO
+    result = BytesIO()
+    pisa_status = pisa.CreatePDF(html, dest=result)
+    if hasattr(pisa_status, 'err') and pisa_status.err:
+        flash('Error generando PDF.', 'error')
+        return redirect(url_for('docente.reporte_alumno', alumno_id=alumno_id))
+    response = make_response(result.getvalue())
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = f"attachment; filename=reporte_alumno_{alumno.dni}.pdf"
+    return response
 
 @docente_bp.route('/reportes/curso/<int:curso_id>/pdf')
 @login_required

@@ -5,7 +5,7 @@ Ejecutar este script para crear las tablas y datos iniciales
 """
 
 from app import create_app, db
-from app.models import Usuario, Curso, CursoDocente, CursoAlumno, Nota, NotaActividades, NotaPracticas, NotaParcial
+from app.models import Usuario
 
 def init_database():
     """Inicializa la base de datos con tablas y datos de ejemplo"""
@@ -34,32 +34,7 @@ def init_database():
         admin.set_password('admin123')
         db.session.add(admin)
         
-        # Crear algunos cursos de ejemplo
-        print("Creando cursos de ejemplo...")
-        cursos_ejemplo = [
-            {
-                'nombre': 'Programación Web I',
-                'codigo': 'PROG101',
-                'descripcion': 'Fundamentos de programación web con HTML, CSS y JavaScript',
-                'creditos': 4
-            },
-            {
-                'nombre': 'Base de Datos',
-                'codigo': 'BD101',
-                'descripcion': 'Diseño y gestión de bases de datos relacionales',
-                'creditos': 3
-            },
-            {
-                'nombre': 'Desarrollo de Aplicaciones',
-                'codigo': 'APP201',
-                'descripcion': 'Desarrollo de aplicaciones web con Flask y Python',
-                'creditos': 5
-            }
-        ]
-        
-        for curso_data in cursos_ejemplo:
-            curso = Curso(**curso_data)
-            db.session.add(curso)
+
         
         # Crear docente de ejemplo
         print("Creando docente de ejemplo...")
@@ -87,90 +62,11 @@ def init_database():
         
         # Guardar cambios
         db.session.commit()
-        print("✅ Datos de ejemplo creados exitosamente")
+        print("✅ Usuarios creados exitosamente")
         
-        # Asignar cursos al docente
-        print("Asignando cursos al docente...")
-        cursos = Curso.query.all()
-        docente = Usuario.query.filter_by(rol='docente').first()
+
         
-        for curso in cursos:
-            asignacion = CursoDocente(curso_id=curso.id, docente_id=docente.id)
-            db.session.add(asignacion)
-        
-        # Matricular alumno en cursos
-        print("Matriculando alumno en cursos...")
-        alumno = Usuario.query.filter_by(rol='alumno').first()
-        
-        for curso in cursos:
-            matricula = CursoAlumno(curso_id=curso.id, alumno_id=alumno.id)
-            db.session.add(matricula)
-        
-        db.session.commit()
-        print("✅ Asignaciones y matrículas creadas exitosamente")
-        
-        # Crear algunas notas de ejemplo
-        print("Creando notas de ejemplo...")
-        for curso in cursos:
-            # Crear notas de actividades (8 notas individuales)
-            nota_actividades = NotaActividades(
-                curso_id=curso.id,
-                alumno_id=alumno.id,
-                docente_id=docente.id,
-                actividad1=18.5,
-                actividad2=17.0,
-                actividad3=19.5,
-                actividad4=16.5,
-                actividad5=18.0,
-                actividad6=17.5,
-                actividad7=19.0,
-                actividad8=18.5
-            )
-            nota_actividades.calcular_promedio_actividades()
-            db.session.add(nota_actividades)
-            
-            # Crear notas de prácticas (4 notas individuales)
-            nota_practicas = NotaPracticas(
-                curso_id=curso.id,
-                alumno_id=alumno.id,
-                docente_id=docente.id,
-                practica1=16.5,
-                practica2=18.0,
-                practica3=17.5,
-                practica4=19.0
-            )
-            nota_practicas.calcular_promedio_practicas()
-            db.session.add(nota_practicas)
-            
-            # Crear notas de parciales (2 notas individuales)
-            nota_parcial = NotaParcial(
-                curso_id=curso.id,
-                alumno_id=alumno.id,
-                docente_id=docente.id,
-                parcial1=17.5,
-                parcial2=18.5
-            )
-            nota_parcial.calcular_promedio_parciales()
-            db.session.add(nota_parcial)
-            
-            # Guardar las notas individuales primero
-            db.session.commit()
-            
-            # Crear nota principal con referencias a las notas individuales
-            nota = Nota(
-                curso_id=curso.id,
-                alumno_id=alumno.id,
-                docente_id=docente.id,
-                nota_actividades_id=nota_actividades.id,
-                nota_practicas_id=nota_practicas.id,
-                nota_parcial_id=nota_parcial.id,
-                estado='publicada'
-            )
-            nota.calcular_promedio_final()
-            db.session.add(nota)
-        
-        db.session.commit()
-        print("✅ Notas de ejemplo creadas exitosamente")
+
         
         print("\n" + "="*50)
         print("🎉 INICIALIZACIÓN COMPLETADA")
