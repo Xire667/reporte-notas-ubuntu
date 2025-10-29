@@ -12,9 +12,15 @@
     <link rel="stylesheet" href="{{ url_for('admin.theme_css') }}">
 </head>
 <body>
-    <!-- Navbar -->
+    {# Mostrar navbar solo si el usuario está autenticado y es dashboard de rol #}
+    {% set hide_navbar = (request.endpoint in [
+        'main.index', 'main.inicio', 'main.inicio_sistema',
+        'auth.login', 'auth.login_admin', 'auth.login_docente', 'auth.login_alumno',
+        'auth.role_selection']) %}
+    {% if not hide_navbar and current_user.is_authenticated %}
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
+<<<<<<< HEAD
             <a class="navbar-brand" href="{{ url_for('main.index') }}">
                 {% if navbar_logo_url %}
                     <img src="{{ navbar_logo_url }}" alt="Logo" class="navbar-logo">
@@ -22,73 +28,52 @@
                     <i class="fas fa-graduation-cap me-2"></i>
                     Sistema de Notas
                 {% endif %}
+=======
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('main.index') }}">
+                <img src="{{ url_for('static', filename='main/assets/img/logo-dsi.png') }}" alt="Logo DSI" style="height:38px; width:auto; margin-right:8px;">
+                Sistema de Gestion de Academica
+>>>>>>> origin/rama-hubner
             </a>
-            
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
-                    {% if current_user.is_authenticated %}
-                        {% if current_user.rol == 'admin' %}
-                        {% elif current_user.rol == 'docente' %}
-                            <!-- <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('docente.dashboard') }}">
-                                    <i class="fas fa-tachometer-alt me-1"></i>Mis Cursos
-                                </a>
-                            </li> -->
-                        {% elif current_user.rol == 'alumno' %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('alumno.dashboard') }}">
-                                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-                                </a>
-                            </li>
-                            <!-- agregamos el boton de cerrar sesion para el panel de alumno -->
-                            <!-- <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('auth.logout') }}">
-                                    <i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión
-                                </a>
-                            </li> -->
-                        {% endif %}
-                    {% endif %}
-                </ul>
-                
-                <ul class="navbar-nav">
-                    {% if current_user.is_authenticated %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user me-1"></i>
-                                {{ current_user.nombre }} {{ current_user.apellido }}
-                                <span class="badge bg-light text-dark ms-1">{{ current_user.rol.title() }}</span>
-                            </a>
-                        </li>
-                        <!-- cuando se inicia sesion como elumno y docente, mostramos el boton de cerrar sesion -->
-
-                        {% if current_user.rol == 'alumno' %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('auth.logout') }}">
-                                    <i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión
-                                </a>
-                            </li>
-                        {% elif current_user.rol == 'docente' %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('auth.logout') }}">
-                                    <i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión
-                                </a>
-                            </li>
-                        {% endif %}
-                    {% else %}
+                    {% if current_user.rol == 'admin' %}
+                    {% elif current_user.rol == 'docente' %}
                         <!-- <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.login') }}">
-                                <i class="fas fa-sign-in-alt me-1"></i>Iniciar Sesión
+                            <a class="nav-link" href="{{ url_for('docente.dashboard') }}">
+                                <i class="fas fa-tachometer-alt me-1"></i>Mis Cursos
                             </a>
                         </li> -->
+                    {% elif current_user.rol == 'alumno' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('alumno.dashboard') }}">
+                                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-1"></i>
+                            {{ current_user.nombre }} {{ current_user.apellido }}
+                            <span class="badge bg-light text-dark ms-1">{{ current_user.rol.title() }}</span>
+                        </a>
+                    </li>
+                    {% if current_user.rol == 'alumno' or current_user.rol == 'docente' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                                <i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión
+                            </a>
+                        </li>
                     {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
+    {% endif %}
 
     <!-- Toast Notifications -->
     <div id="toast-container" style="position: fixed; top: 24px; right: 24px; z-index: 5000; min-width: 300px; max-width: 350px;">

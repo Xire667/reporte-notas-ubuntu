@@ -55,6 +55,7 @@
               <input type="color" name="color_medio_claro" class="form-control form-control-color" value="{{ config.color_medio_claro }}">
             </div>
             
+<<<<<<< HEAD
             <!-- Sección de Logo Mejorada -->
             <div class="col-12">
               <div class="card border-0 shadow-sm">
@@ -122,6 +123,18 @@
                   </div>
                 </div>
               </div>
+=======
+            <!-- Selector de archivo para logo -->
+            <div class="col-md-6">
+              <label class="form-label">Logo</label>
+              <br>
+              {% if config.logo_url %}
+                <img src="{{ config.logo_url }}" alt="Logo actual" style="max-width:80px; max-height:40px; display:block; margin-bottom:8px;">
+              {% else %}
+                <img src="{{ url_for('static', filename='main/assets/img/logo-dsi.png') }}" alt="Logo por defecto" style="max-width:80px; max-height:40px; display:block; margin-bottom:8px;">
+              {% endif %}
+              <input type="file" name="logo" accept="image/*">
+>>>>>>> origin/rama-hubner
             </div>
           </div>
           
@@ -131,7 +144,9 @@
             <button type="submit" class="btn btn-primary">
               <i class="fas fa-save me-1"></i>Guardar cambios
             </button>
-            
+            <button type="submit" name="reset_default" value="1" class="btn btn-warning">
+              <i class="fas fa-undo me-1"></i>Por defecto
+            </button>
             <!-- Botón para volver al dashboard -->
             <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
               <i class="fas fa-arrow-left me-1"></i>Volver al Dashboard

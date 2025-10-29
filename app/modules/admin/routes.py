@@ -1816,7 +1816,11 @@ def editar_estilos():
         db.session.add(config)
         db.session.commit()
 
+    import os
+    from werkzeug.utils import secure_filename
+    
     if request.method == 'POST':
+<<<<<<< HEAD
         # Actualizar colores del tema
         config.nombre = request.form.get('nombre') or config.nombre
         config.color_oscuro = request.form.get('color_oscuro') or config.color_oscuro
@@ -1871,6 +1875,51 @@ def editar_estilos():
         except Exception:
             db.session.rollback()
             flash('Error al actualizar los estilos.', 'error')
+=======
+        from flask import session
+        if request.form.get('reset_default'):
+            # Restaurar valores por defecto
+            config.nombre = 'Default'
+            config.color_oscuro = '#00378F'
+            config.color_claro = '#3775DA'
+            config.color_medio = '#1C56B5'
+            config.color_medio_oscuro = '#0E47A2'
+            config.color_medio_claro = '#2966C7'
+            config.logo_url = None
+            session.pop('logo_url', None)
+            try:
+                db.session.commit()
+                flash('Estilos y logo restaurados a valores por defecto.', 'success')
+                return redirect(url_for('admin.editar_estilos'))
+            except Exception:
+                db.session.rollback()
+                flash('Error al restaurar los valores por defecto.', 'error')
+        else:
+            config.nombre = request.form.get('nombre') or config.nombre
+            config.color_oscuro = request.form.get('color_oscuro') or config.color_oscuro
+            config.color_claro = request.form.get('color_claro') or config.color_claro
+            config.color_medio = request.form.get('color_medio') or config.color_medio
+            config.color_medio_oscuro = request.form.get('color_medio_oscuro') or config.color_medio_oscuro
+            config.color_medio_claro = request.form.get('color_medio_claro') or config.color_medio_claro
+
+            # Procesar logo si se sube (solo en caché/session, no en base de datos)
+            if 'logo' in request.files:
+                logo_file = request.files['logo']
+                if logo_file and logo_file.filename:
+                    filename = secure_filename(logo_file.filename)
+                    logo_path = os.path.join('static', 'main', 'assets', 'img', 'logo_custom_session.png')
+                    abs_logo_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), logo_path)
+                    logo_file.save(abs_logo_path)
+                    session['logo_url'] = url_for('static', filename='main/assets/img/logo_custom_session.png')
+
+            try:
+                db.session.commit()
+                flash('Estilos actualizados correctamente.', 'success')
+                return redirect(url_for('admin.editar_estilos'))
+            except Exception:
+                db.session.rollback()
+                flash('Error al actualizar los estilos.', 'error')
+>>>>>>> origin/rama-hubner
 
     return render_template('admin/editar_estilos.html', config=config)
 
