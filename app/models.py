@@ -444,6 +444,7 @@ class ThemeConfig(db.Model):
     color_medio_oscuro = db.Column(db.String(7), default='#0E47A2')  # Variante oscura del color intermedio
     color_medio_claro = db.Column(db.String(7), default='#2966C7')  # Variante clara del color intermedio
     actualizado_en = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)  # Fecha de última actualización
+    logo_url = db.Column(db.String(255), default=None)  # Ruta del logo personalizado
 
     def __repr__(self):
         return f'<ThemeConfig {self.nombre}>'
