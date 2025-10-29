@@ -27,7 +27,7 @@
           <div class="row g-3">
             <!-- Color principal oscuro -->
             <div class="col-md-6">
-              <label class="form-label">Color oscuro</label>
+              <label class="form-label">Barra superior</label>
               <input type="color" name="color_oscuro" class="form-control form-control-color" value="{{ config.color_oscuro }}">
             </div>
             
@@ -43,15 +43,15 @@
               <input type="color" name="color_medio" class="form-control form-control-color" value="{{ config.color_medio }}">
             </div>
             
-            <!-- Variante oscura del color intermedio -->
+            <!-- Color medio oscuro -->
             <div class="col-md-6">
-              <label class="form-label">Medio oscuro</label>
+              <label class="form-label">Color medio oscuro</label>
               <input type="color" name="color_medio_oscuro" class="form-control form-control-color" value="{{ config.color_medio_oscuro }}">
             </div>
             
-            <!-- Variante clara del color intermedio -->
+            <!-- Color medio claro -->
             <div class="col-md-6">
-              <label class="form-label">Medio claro</label>
+              <label class="form-label">Color medio claro</label>
               <input type="color" name="color_medio_claro" class="form-control form-control-color" value="{{ config.color_medio_claro }}">
             </div>
             
@@ -151,27 +151,58 @@
       </div>
       <div class="card-body">
         <!-- Contenedor de vista previa que muestra cómo se verá el tema -->
-        <div class="preview-box" style="border-radius: 10px; overflow: hidden;">
-          <!-- Simulación de la barra superior -->
-          <div style="background: var(--color-oscuro); color: white; padding: 12px;">Barra superior</div>
-          
-          <!-- Simulación del contenido principal -->
-          <div style="padding: 16px; background: var(--color-medio-claro);">
-            <!-- Simulación de una tarjeta o panel -->
-            <div style="background: white; border-radius: 8px; padding: 12px;">
-              <!-- Elementos decorativos para mostrar los colores -->
-              <div style="height: 8px; background: var(--color-claro); border-radius: 4px; margin-bottom: 12px;"></div>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                <div style="height: 40px; background: var(--color-medio); border-radius: 6px;"></div>
-                <div style="height: 40px; background: var(--color-medio-oscuro); border-radius: 6px;"></div>
+        <div class="preview-box" style="border-radius: 10px; overflow: hidden; border: 1px solid #eee; width: 100%; max-width: 500px; margin: 0 auto;">
+          <!-- Simulación layout con sidebar izquierdo y contenido derecho -->
+          <div style="display: flex; width: 100%;">
+            <!-- Sidebar izquierdo -->
+            <div style="background: var(--color-medio); color: white; min-height: 300px; width: 120px; position: relative;">
+              <!-- Etiqueta de color medio -->
+              <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; color: #333; padding: 5px 10px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-size: 14px; text-align: center; white-space: nowrap;">Sidebar</div>
+              <div style="padding: 15px 10px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: center;">
+                <i class="fas fa-user-shield" style="font-size: 18px;"></i>
+              </div>
+              <div style="padding: 15px 0; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <i class="fas fa-tachometer-alt"></i>
+              </div>
+              <div style="padding: 15px 0; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <i class="fas fa-users"></i>
+              </div>
+              <div style="padding: 15px 0; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <i class="fas fa-book"></i>
+              </div>
+            </div>
+            <!-- Contenido derecho -->
+            <div style="flex: 1;">
+              <!-- Barra superior -->
+              <div style="background: var(--color-oscuro); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; position: relative;">
+                <div style="font-weight: 500; font-size: 14px;">Sistema</div>
+                <div style="display: flex; gap: 15px;">
+                  <i class="fas fa-bell"></i>
+                  <i class="fas fa-user-circle"></i>
+                </div>
+                <!-- Etiqueta de color oscuro -->
+                <div style="position: absolute; top: -30px; left: 0; background: white; color: #333; padding: 5px 10px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-size: 14px;">Barra superior</div>
+              </div>
+              <!-- Contenido principal -->
+              <div style="padding: 15px; background: #f8f9fa; min-height: 250px;">
+                <!-- Header del dashboard - Panel de Administración con degradado -->
+                <div style="background: linear-gradient(135deg, var(--color-medio-oscuro), var(--color-claro)); color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; position: relative; height: 60px;">
+                  <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; color: #333; padding: 5px 10px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-size: 14px; text-align: center; white-space: nowrap; z-index: 10;">Panel de Administración</div>
+                </div>
+                <!-- Tarjeta de contenido -->
+                <div style="background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); position: relative; height: 80px;">
+                  <div style="height: 8px; background: var(--color-claro); border-radius: 4px; margin-bottom: 15px;"></div>
+                  <!-- Etiqueta de color claro -->
+                  <div style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); background: white; color: #333; padding: 5px 10px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-size: 14px;">Panel de Contenido</div>
+                  <div style="font-weight: 500; color: #333;">Contenido del sistema</div>
+                  <div style="height: 60px; background: #f1f5fb; border-radius: 6px; margin-top: 10px; display: flex; align-items: center; justify-content: center; color: #6c757d;">
+                    Área de contenido principal
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-        
-        <!-- Nota informativa sobre la aplicación de cambios -->
-        <p class="text-muted mt-3">Los cambios guardados se aplicarán inmediatamente al sistema.</p>
-      </div>
     </div>
   </div>
 </div>

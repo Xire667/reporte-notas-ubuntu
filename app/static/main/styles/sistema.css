@@ -176,7 +176,7 @@ body {
     left: 0; /* Cambiado de -280px a 0 para que esté siempre visible */
     width: 280px;
     height: 100vh;
-    background-color: var(--primary-color);
+    background-color: var(--color-medio); /* Cambiado de primary-color a color-medio */
     transition: left 0.3s ease;
     z-index: 4050;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
