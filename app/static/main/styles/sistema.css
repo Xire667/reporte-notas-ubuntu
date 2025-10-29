@@ -218,7 +218,7 @@ body {
 .sidebar-menu a {
     display: block;
     padding: 15px 20px;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--color-medio-claro, rgba(255, 255, 255, 0.9));
     text-decoration: none;
     transition: all 0.3s ease;
     position: relative;
@@ -234,6 +234,7 @@ body {
     width: 20px;
     margin-right: 10px;
     text-align: center;
+    color: var(--color-medio-claro, rgba(255, 255, 255, 0.9));
 }
 
 .sidebar-menu .submenu {
