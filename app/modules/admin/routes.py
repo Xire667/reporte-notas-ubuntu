@@ -5,11 +5,14 @@ del sistema de notas, incluyendo la gestión de usuarios (docentes y alumnos), c
 ciclos académicos, asignaciones, matrículas y configuración del sistema.
 """
 
-from flask import render_template, request, redirect, url_for, flash, jsonify, make_response
+from flask import render_template, request, redirect, url_for, flash, jsonify, make_response, current_app
 from flask_login import login_required, current_user
 from app import db  # Importación de la instancia de la base de datos
 from app.models import Usuario, Curso, CursoDocente, CursoAlumno, CicloAcademico, MatriculaAlumno, Nota, NotaActividades, NotaPracticas, NotaParcial, ThemeConfig  # Importación de todos los modelos necesarios
 from . import admin_bp  # Importación del Blueprint de administración
+import os
+import time
+from werkzeug.utils import secure_filename
 
 def admin_required(f):
     """
@@ -1844,25 +1847,66 @@ def editar_estilos():
             config.color_medio_oscuro = request.form.get('color_medio_oscuro') or config.color_medio_oscuro
             config.color_medio_claro = request.form.get('color_medio_claro') or config.color_medio_claro
 
-            # Procesar logo si se sube (solo en caché/session, no en base de datos)
-            if 'logo' in request.files:
-                logo_file = request.files['logo']
-                if logo_file and logo_file.filename:
-                    filename = secure_filename(logo_file.filename)
-                    logo_path = os.path.join('static', 'main', 'assets', 'img', 'logo_custom_session.png')
-                    abs_logo_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), logo_path)
-                    logo_file.save(abs_logo_path)
-                    session['logo_url'] = url_for('static', filename='main/assets/img/logo_custom_session.png')
+            # Manejar subida de logo (PNG, JPG, JPEG)
+            logo_file = request.files.get('logo')
+            if logo_file and logo_file.filename:
+                filename = secure_filename(logo_file.filename)
+                ext = os.path.splitext(filename)[1].lower()
+                allowed_extensions = {'.png', '.jpg', '.jpeg'}
+                
+                if ext not in allowed_extensions:
+                    flash('El logo debe ser un archivo PNG, JPG o JPEG.', 'error')
+                else:
+                    try:
+                        upload_dir = os.path.join(current_app.root_path, 'static', 'uploads')
+                        os.makedirs(upload_dir, exist_ok=True)
+                        save_path = os.path.join(upload_dir, 'logo.png')
+                        
+                        # Guardar el archivo directamente
+                        logo_file.save(save_path)
+                        # Limpiar la caché del navegador agregando un timestamp a la URL
+                        timestamp = int(time.time())
+                        session['logo_url'] = url_for('static', filename=f'uploads/logo.png?t={timestamp}')
+                        
+                        flash('Logo actualizado correctamente.', 'success')
+                    except Exception as e:
+                        flash('Error al subir el logo.', 'error')
 
-            try:
-                db.session.commit()
+        # Guardar cambios de estilos
+        try:
+            db.session.commit()
+            if not logo_file:
                 flash('Estilos actualizados correctamente.', 'success')
-                return redirect(url_for('admin.editar_estilos'))
-            except Exception:
-                db.session.rollback()
-                flash('Error al actualizar los estilos.', 'error')
+            return redirect(url_for('admin.editar_estilos'))
+        except Exception:
+            db.session.rollback()
+            flash('Error al actualizar los estilos.', 'error')
 
     return render_template('admin/editar_estilos.html', config=config)
+
+@admin_bp.route('/eliminar_logo', methods=['POST'])
+@login_required
+@admin_required
+def eliminar_logo():
+    """Elimina el logo actual del sistema"""
+    try:
+        # Ruta al logo actual
+        upload_dir = os.path.join(current_app.root_path, 'static', 'uploads')
+        logo_path = os.path.join(upload_dir, 'logo.png')
+        
+        # Verificar si existe el logo
+        if os.path.exists(logo_path):
+            # Eliminar el archivo
+            os.remove(logo_path)
+            flash('Logo eliminado correctamente.', 'success')
+        else:
+            flash('No se encontró el logo para eliminar.', 'warning')
+        
+        # Redirigir de vuelta a la página de edición de estilos
+        return redirect(url_for('admin.editar_estilos'))
+    except Exception as e:
+        flash(f'Error al eliminar el logo: {str(e)}', 'error')
+        return redirect(url_for('admin.editar_estilos'))
 
 @admin_bp.route('/theme.css')
 def theme_css():

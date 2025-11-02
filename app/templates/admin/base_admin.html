@@ -75,10 +75,8 @@
         </li>
     </ul>
     <div class="sidebar-logo" style="margin-top:auto; padding: 24px 0 12px 0; text-align:center;">
-        {% if session.logo_url %}
-            <img src="{{ session.logo_url }}" alt="Logo DSI" style="max-width:220px; max-height:160px; opacity:0.92;">
-        {% elif config.logo_url %}
-            <img src="{{ config.logo_url }}" alt="Logo DSI" style="max-width:220px; max-height:160px; opacity:0.92;">
+        {% if navbar_logo_url %}
+            <img src="{{ navbar_logo_url }}" alt="Logo DSI" style="max-width:220px; max-height:160px; opacity:0.92;">
         {% else %}
             <img src="{{ url_for('static', filename='main/assets/img/logo-dsi.png') }}" alt="Logo DSI" style="max-width:220px; max-height:160px; opacity:0.92;">
         {% endif %}
