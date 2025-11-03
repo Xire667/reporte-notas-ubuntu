@@ -3,385 +3,427 @@
 {% block title %}Nota del Alumno - {{ alumno.nombre }} {{ alumno.apellido }}{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+<!-- Encabezado de página -->
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
             <h2>
                 <i class="fas fa-user-graduate me-2"></i>Nota del Alumno: {{ alumno.nombre }} {{ alumno.apellido }}
             </h2>
-            <a href="{{ url_for('docente.gestionar_notas', curso_id=curso.id) }}" class="btn btn-outline-primary">
-                <i class="fas fa-arrow-left me-2"></i>Volver a Notas
-            </a>
+            <p class="text-muted mb-0">Curso: {{ curso.nombre }} ({{ curso.codigo }})</p>
         </div>
+        <a href="{{ url_for('docente.dashboard') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Volver a Mis Cursos
+        </a>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-8 mx-auto">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Información del Alumno</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <p><strong>Nombre:</strong> {{ alumno.nombre }} {{ alumno.apellido }}</p>
-                        <p><strong>DNI:</strong> {{ alumno.dni }}</p>
-                        <p><strong>Email:</strong> {{ alumno.email }}</p>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Información del alumno -->
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Información del Alumno</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="student-avatar">
+                            {{ alumno.nombre[0] }}{{ alumno.apellido[0] }}
+                        </div>
+                        <h5>{{ alumno.nombre }} {{ alumno.apellido }}</h5>
                     </div>
-                    <div class="col-md-6">
-                        <p><strong>Curso:</strong> {{ curso.nombre }}</p>
-                        <p><strong>Código:</strong> {{ curso.codigo }}</p>
-                        <p><strong>Créditos:</strong> {{ curso.creditos }}</p>
+                    <div class="student-details">
+                        <p><i class="fas fa-id-card me-2"></i> DNI: {{ alumno.dni }}</p>
+                        <p><i class="fas fa-envelope me-2"></i> {{ alumno.email }}</p>
+                        <p><i class="fas fa-book me-2"></i> {{ curso.nombre }}</p>
+                        <p><i class="fas fa-code me-2"></i> {{ curso.codigo }}</p>
+                        <p><i class="fas fa-star me-2"></i> {{ curso.creditos }} créditos</p>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-<div class="row mt-4">
-    <div class="col-md-8 mx-auto">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Calificaciones</h5>
-            </div>
-            <div class="card-body">
-                <!-- Mostrar mensaje cuando no hay nota, pero ocultar el formulario inicialmente -->
-                {% if not nota %}
-                <div id="mensajeNoNota" class="text-center py-5">
-                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
-                    <h5 class="text-muted">No hay nota registrada</h5>
-                    <p class="text-muted">Este alumno no tiene notas registradas para este curso.</p>
-                    <button type="button" class="btn btn-primary" onclick="crearNota()">
-                        <i class="fas fa-plus me-2"></i>Crear Nota
-                    </button>
+        <!-- Calificaciones -->
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Calificaciones</h5>
                 </div>
-                {% endif %}
-
-                <!-- Formulario de notas (siempre presente, pero oculto si no hay nota) -->
-                <form id="notaForm" {% if not nota %}style="display: none;"{% endif %}>
-                    <!-- Actividades (8) -->
-                    <div class="mb-4">
-                        <h6 class="text-primary">Actividades (10%)</h6>
-                        <div class="row">
-                            {% for i in range(1, 9) %}
-                            <div class="col-md-3 mb-3">
-                                <label for="actividad{{ i }}" class="form-label">Actividad {{ i }}</label>
-                                <input type="number" class="form-control" id="actividad{{ i }}" name="actividad{{ i }}"
-                                    value="{% if nota_actividades %}{{ nota_actividades['actividad' + i|string] if nota_actividades['actividad' + i|string] else '' }}{% endif %}"
-                                    min="0" max="20" step="0.1" placeholder="0-20" onchange="calcularPromedios()">
-                            </div>
-                            {% endfor %}
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label class="form-label">Promedio Actividades</label>
-                                <input type="number" class="form-control bg-light" id="promedio_actividades" readonly>
-                            </div>
-                        </div>
+                <div class="card-body">
+                    <!-- Mensaje cuando no hay nota -->
+                    {% if not nota %}
+                    <div id="mensajeNoNota" class="text-center py-5">
+                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                        <h5 class="text-muted">No hay nota registrada</h5>
+                        <p class="text-muted">Este alumno no tiene notas registradas para este curso.</p>
+                        <button type="button" class="btn btn-primary" onclick="crearNota()">
+                            <i class="fas fa-plus me-2"></i>Crear Nota
+                        </button>
                     </div>
+                    {% endif %}
 
-                    <!-- Prácticas (4) -->
-                    <div class="mb-4">
-                        <h6 class="text-success">Prácticas (30%)</h6>
-                        <div class="row">
-                            {% for i in range(1, 5) %}
-                            <div class="col-md-3 mb-3">
-                                <label for="practica{{ i }}" class="form-label">Práctica {{ i }}</label>
-                                <input type="number" class="form-control" id="practica{{ i }}" name="practica{{ i }}"
-                                    value="{% if nota_practicas %}{{ nota_practicas['practica' + i|string] if nota_practicas['practica' + i|string] else '' }}{% endif %}"
-                                    min="0" max="20" step="0.1" placeholder="0-20" onchange="calcularPromedios()">
+                    <!-- Formulario de notas -->
+                    <form id="notaForm" {% if not nota %}style="display: none;"{% endif %}>
+                        <!-- Actividades -->
+                        <div class="mb-4">
+                            <h6 class="text-primary">
+                                <i class="fas fa-tasks me-2"></i>Actividades
+                                <span class="badge bg-primary ms-2">10%</span>
+                            </h6>
+                            <div class="row">
+                                {% for i in range(1, 9) %}
+                                <div class="col-md-3 mb-3">
+                                    <label for="actividad{{ i }}" class="form-label">Actividad {{ i }}</label>
+                                    <input type="number" class="form-control" id="actividad{{ i }}" name="actividad{{ i }}"
+                                        value="{% if nota_actividades %}{{ nota_actividades['actividad' + i|string] if nota_actividades['actividad' + i|string] else '' }}{% endif %}"
+                                        min="0" max="20" step="0.1" placeholder="0-20" onchange="calcularPromedios()">
+                                </div>
+                                {% endfor %}
                             </div>
-                            {% endfor %}
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label class="form-label">Promedio Prácticas</label>
-                                <input type="number" class="form-control bg-light" id="promedio_practicas" readonly>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Parciales (2) -->
-                    <div class="mb-4">
-                        <h6 class="text-warning">Parciales (60%)</h6>
-                        <div class="row">
-                            {% for i in range(1, 3) %}
-                            <div class="col-md-3 mb-3">
-                                <label for="parcial{{ i }}" class="form-label">Parcial {{ i }}</label>
-                                <input type="number" class="form-control" id="parcial{{ i }}" name="parcial{{ i }}"
-                                    value="{% if nota_parcial %}{{ nota_parcial['parcial' + i|string] if nota_parcial['parcial' + i|string] else '' }}{% endif %}"
-                                    min="0" max="20" step="0.1" placeholder="0-20" onchange="calcularPromedios()">
-                            </div>
-                            {% endfor %}
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label class="form-label">Promedio Parciales</label>
-                                <input type="number" class="form-control bg-light" id="promedio_parciales" readonly>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Promedio Final con pesos aplicados -->
-                    <div class="mb-4">
-                        <div class="card bg-light">
-                            <div class="card-body">
-                                <h6 class="card-title text-success mb-3">
-                                    <i class="fas fa-calculator me-2"></i>Promedio Final 
-                                    <small class="text-muted">(10% Actividades + 30% Prácticas + 60% Parciales)</small>
-                                </h6>
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="promedio_final" class="form-label fw-bold">Promedio Final</label>
-                                        <input type="number" class="form-control fs-3 fw-bold bg-success text-white text-center" 
-                                               id="promedio_final" name="promedio_final"
-                                               value="{{ nota.promedio_final if nota and nota.promedio_final else 0 }}" 
-                                               min="0" max="20" step="0.1" readonly>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="estado" class="form-label">Estado</label>
-                                        <select class="form-select" id="estado" name="estado">
-                                            <option value="borrador" {% if nota and nota.estado=='borrador' %}selected{% endif %}>Borrador
-                                            </option>
-                                            <option value="publicada" {% if nota and nota.estado=='publicada' %}selected{% endif %}>Publicada
-                                            </option>
-                                        </select>
-                                    </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Promedio Actividades</label>
+                                    <input type="number" class="form-control bg-light" id="promedio_actividades" readonly>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="mb-3">
-                        <label for="comentarios" class="form-label">Comentarios</label>
-                        <textarea class="form-control" id="comentarios" name="comentarios"
-                            rows="3">{{ nota.comentarios if nota and nota.comentarios else '' }}</textarea>
-                    </div>
+                        <!-- Prácticas -->
+                        <div class="mb-4">
+                            <h6 class="text-success">
+                                <i class="fas fa-flask me-2"></i>Prácticas
+                                <span class="badge bg-success ms-2">30%</span>
+                            </h6>
+                            <div class="row">
+                                {% for i in range(1, 5) %}
+                                <div class="col-md-3 mb-3">
+                                    <label for="practica{{ i }}" class="form-label">Práctica {{ i }}</label>
+                                    <input type="number" class="form-control" id="practica{{ i }}" name="practica{{ i }}"
+                                        value="{% if nota_practicas %}{{ nota_practicas['practica' + i|string] if nota_practicas['practica' + i|string] else '' }}{% endif %}"
+                                        min="0" max="20" step="0.1" placeholder="0-20" onchange="calcularPromedios()">
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Promedio Prácticas</label>
+                                    <input type="number" class="form-control bg-light" id="promedio_practicas" readonly>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="d-flex justify-content-between">
-                        <a href="{{ url_for('docente.gestionar_notas', curso_id=curso.id) }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left me-2"></i>Volver
-                        </a>
-                        <button type="button" class="btn btn-primary" onclick="guardarNota()">
-                            <i class="fas fa-save me-2"></i>Guardar Nota
-                        </button>
-                    </div>
-                </form>
+                        <!-- Parciales -->
+                        <div class="mb-4">
+                            <h6 class="text-warning">
+                                <i class="fas fa-file-alt me-2"></i>Parciales
+                                <span class="badge bg-warning text-dark ms-2">60%</span>
+                            </h6>
+                            <div class="row">
+                                {% for i in range(1, 3) %}
+                                <div class="col-md-3 mb-3">
+                                    <label for="parcial{{ i }}" class="form-label">Parcial {{ i }}</label>
+                                    <input type="number" class="form-control" id="parcial{{ i }}" name="parcial{{ i }}"
+                                        value="{% if nota_parcial %}{{ nota_parcial['parcial' + i|string] if nota_parcial['parcial' + i|string] else '' }}{% endif %}"
+                                        min="0" max="20" step="0.1" placeholder="0-20" onchange="calcularPromedios()">
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Promedio Parciales</label>
+                                    <input type="number" class="form-control bg-light" id="promedio_parciales" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Promedio Final -->
+                        <div class="card bg-primary text-white mb-4">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="fas fa-award me-2"></i>Promedio Final
+                                </h6>
+                                <div class="row align-items-center">
+                                    <div class="col-md-6">
+                                        <div class="display-4 fw-bold text-center" id="promedio_final_display">
+                                            {{ nota.promedio_final if nota and nota.promedio_final else 0 }}
+                                        </div>
+                                        <small class="d-block text-center">10% Actividades + 30% Prácticas + 60% Parciales</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="estado" class="form-label">Estado</label>
+                                        <select class="form-select" id="estado" name="estado">
+                                            <option value="borrador" {% if nota and nota.estado=='borrador' %}selected{% endif %}>Borrador</option>
+                                            <option value="publicada" {% if nota and nota.estado=='publicada' %}selected{% endif %}>Publicada</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="promedio_final" name="promedio_final"
+                                    value="{{ nota.promedio_final if nota and nota.promedio_final else 0 }}">
+                            </div>
+                        </div>
+
+                        <!-- Comentarios -->
+                        <div class="mb-4">
+                            <label for="comentarios" class="form-label">
+                                <i class="fas fa-comment me-2"></i>Comentarios
+                            </label>
+                            <textarea class="form-control" id="comentarios" name="comentarios"
+                                rows="3">{{ nota.comentarios if nota and nota.comentarios else '' }}</textarea>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('docente.gestionar_notas', curso_id=curso.id) }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Volver
+                            </a>
+                            <button type="button" class="btn btn-primary" onclick="guardarNota()">
+                                <i class="fas fa-save me-2"></i>Guardar Nota
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
+</div>
+
+<!-- Notificación de éxito (oculta por defecto) -->
+<div id="successNotification" class="alert alert-success alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 1055; display: none;">
+    <i class="fas fa-check-circle me-2"></i>
+    <strong>¡Éxito!</strong>
+    <span id="notificationMessage">La nota se ha guardado correctamente.</span>
+    <button type="button" class="btn-close" onclick="hideNotification()"></button>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    function calcularPromedios() {
-        // Calcular promedio de actividades
-        let sumaActividades = 0;
-        let contadorActividades = 0;
-        for (let i = 1; i <= 8; i++) {
-            const elemento = document.getElementById('actividad' + i);
-            if (elemento && elemento.value && elemento.value.trim() !== '') {
-                const valor = parseFloat(elemento.value);
-                if (!isNaN(valor) && valor >= 0 && valor <= 20) {
-                    sumaActividades += valor;
-                    contadorActividades++;
-                }
-            }
-        }
-        const promedioActividades = contadorActividades > 0 ? sumaActividades / contadorActividades : 0;
-        document.getElementById('promedio_actividades').value = promedioActividades.toFixed(1);
-
-        // Calcular promedio de prácticas
-        let sumaPracticas = 0;
-        let contadorPracticas = 0;
-        for (let i = 1; i <= 4; i++) {
-            const elemento = document.getElementById('practica' + i);
-            if (elemento && elemento.value && elemento.value.trim() !== '') {
-                const valor = parseFloat(elemento.value);
-                if (!isNaN(valor) && valor >= 0 && valor <= 20) {
-                    sumaPracticas += valor;
-                    contadorPracticas++;
-                }
-            }
-        }
-        const promedioPracticas = contadorPracticas > 0 ? sumaPracticas / contadorPracticas : 0;
-        document.getElementById('promedio_practicas').value = promedioPracticas.toFixed(1);
-
-        // Calcular promedio de parciales
-        let sumaParciales = 0;
-        let contadorParciales = 0;
-        for (let i = 1; i <= 2; i++) {
-            const elemento = document.getElementById('parcial' + i);
-            if (elemento && elemento.value && elemento.value.trim() !== '') {
-                const valor = parseFloat(elemento.value);
-                if (!isNaN(valor) && valor >= 0 && valor <= 20) {
-                    sumaParciales += valor;
-                    contadorParciales++;
-                }
-            }
-        }
-        const promedioParciales = contadorParciales > 0 ? sumaParciales / contadorParciales : 0;
-        document.getElementById('promedio_parciales').value = promedioParciales.toFixed(1);
-
-        // Calcular promedio final (10% actividades + 30% prácticas + 60% parciales)
-        let promedioFinal = 0;
-        if (contadorActividades > 0 || contadorPracticas > 0 || contadorParciales > 0) {
-            promedioFinal = (promedioActividades * 0.10) + (promedioPracticas * 0.30) + (promedioParciales * 0.60);
-        }
-        document.getElementById('promedio_final').value = promedioFinal.toFixed(1);
+function calcularPromedios() {
+  // Calcular promedio de actividades
+  let sumaActividades = 0;
+  let contadorActividades = 0;
+  for (let i = 1; i <= 8; i++) {
+    const elemento = document.getElementById('actividad' + i);
+    if (elemento && elemento.value && elemento.value.trim() !== '') {
+      const valor = parseFloat(elemento.value);
+      if (!isNaN(valor) && valor >= 0 && valor <= 20) {
+        sumaActividades += valor;
+        contadorActividades++;
+      }
     }
+  }
+  const promedioActividades = contadorActividades > 0 ? sumaActividades / contadorActividades : 0;
+  document.getElementById('promedio_actividades').value = promedioActividades.toFixed(1);
 
-    function guardarNota() {
-        const comentariosElement = document.getElementById('comentarios');
-        const estadoElement = document.getElementById('estado');
-
-        if (!comentariosElement) {
-            alert('Error: No se pueden encontrar los campos del formulario');
-            return;
-        }
-
-        // Recopilar y validar notas de actividades
-        const actividades = [];
-        const formData = new FormData();
-
-        for (let i = 1; i <= 8; i++) {
-            const elemento = document.getElementById('actividad' + i);
-            if (elemento) {
-                const valor = elemento.value.trim();
-                actividades.push(valor);
-                formData.append('actividad' + i, valor);
-            }
-        }
-
-        // Recopilar y validar notas de prácticas
-        const practicas = [];
-        for (let i = 1; i <= 4; i++) {
-            const elemento = document.getElementById('practica' + i);
-            if (elemento) {
-                const valor = elemento.value.trim();
-                practicas.push(valor);
-                formData.append('practica' + i, valor);
-            }
-        }
-
-        // Recopilar y validar notas de parciales
-        const parciales = [];
-        for (let i = 1; i <= 2; i++) {
-            const elemento = document.getElementById('parcial' + i);
-            if (elemento) {
-                const valor = elemento.value.trim();
-                parciales.push(valor);
-                formData.append('parcial' + i, valor);
-            }
-        }
-
-        // Validar que al menos una nota tenga valor
-        const todasLasNotas = [...actividades, ...practicas, ...parciales];
-        const tieneNotas = todasLasNotas.some(nota => nota && nota !== '');
-        if (!tieneNotas) {
-            alert('Debe ingresar al menos una nota.');
-            return;
-        }
-
-        // Validar rango de notas
-        for (let i = 0; i < todasLasNotas.length; i++) {
-            if (todasLasNotas[i] && (parseFloat(todasLasNotas[i]) < 0 || parseFloat(todasLasNotas[i]) > 20)) {
-                alert('Las notas deben estar entre 0 y 20.');
-                return;
-            }
-        }
-
-        formData.append('alumno_id', {{ alumno.id }});
-        formData.append('comentarios', comentariosElement.value);
-        formData.append('estado', estadoElement ? estadoElement.value : 'borrador');
-
-        // Mostrar indicador de carga
-        const botonGuardar = document.querySelector('button[onclick="guardarNota()"]');
-        const textoOriginal = botonGuardar.innerHTML;
-        botonGuardar.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Guardando...';
-        botonGuardar.disabled = true;
-
-        fetch('{{ url_for("docente.guardar_notas", curso_id=curso.id) }}', {
-            method: 'POST',
-            body: formData
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    // Actualizar el promedio final mostrado
-                    if (data.promedio_final !== undefined) {
-                        document.getElementById('promedio_final').value = data.promedio_final.toFixed(1);
-                    }
-
-                    // Mostrar mensaje de éxito
-                    const alert = document.createElement('div');
-                    alert.className = 'alert alert-success alert-dismissible fade show';
-                    alert.style.position = 'relative';
-                    alert.style.zIndex = '1055';
-                    alert.innerHTML = `
-                            <i class="fas fa-check-circle me-2"></i>${data.message}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        `;
-
-                    // Insertar el alert al inicio del contenido
-                    const container = document.querySelector('.container-fluid');
-                    if (container) {
-                        container.insertBefore(alert, container.firstChild);
-                    }
-
-                    // Auto-ocultar después de 3 segundos
-                    setTimeout(() => {
-                        if (alert.parentNode) {
-                            alert.remove();
-                        }
-                    }, 3000);
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al guardar la nota: ' + error.message);
-            })
-            .finally(() => {
-                // Restaurar botón
-                botonGuardar.innerHTML = textoOriginal;
-                botonGuardar.disabled = false;
-            });
+  // Calcular promedio de prácticas
+  let sumaPracticas = 0;
+  let contadorPracticas = 0;
+  for (let i = 1; i <= 4; i++) {
+    const elemento = document.getElementById('practica' + i);
+    if (elemento && elemento.value && elemento.value.trim() !== '') {
+      const valor = parseFloat(elemento.value);
+      if (!isNaN(valor) && valor >= 0 && valor <= 20) {
+        sumaPracticas += valor;
+        contadorPracticas++;
+      }
     }
+  }
+  const promedioPracticas = contadorPracticas > 0 ? sumaPracticas / contadorPracticas : 0;
+  document.getElementById('promedio_practicas').value = promedioPracticas.toFixed(1);
 
-    function crearNota() {
-        // Ocultar el mensaje y mostrar el formulario
-        const mensajeNoNota = document.getElementById('mensajeNoNota');
-        const formulario = document.getElementById('notaForm');
-        
-        if (mensajeNoNota) {
-            mensajeNoNota.style.display = 'none';
-        }
-        if (formulario) {
-            formulario.style.display = 'block';
-        }
-        
-        // Calcular promedios iniciales
-        calcularPromedios();
+  // Calcular promedio de parciales
+  let sumaParciales = 0;
+  let contadorParciales = 0;
+  for (let i = 1; i <= 2; i++) {
+    const elemento = document.getElementById('parcial' + i);
+    if (elemento && elemento.value && elemento.value.trim() !== '') {
+      const valor = parseFloat(elemento.value);
+      if (!isNaN(valor) && valor >= 0 && valor <= 20) {
+        sumaParciales += valor;
+        contadorParciales++;
+      }
     }
+  }
+  const promedioParciales = contadorParciales > 0 ? sumaParciales / contadorParciales : 0;
+  document.getElementById('promedio_parciales').value = promedioParciales.toFixed(1);
 
-    // Calcular promedios automáticamente al cargar la página y cuando cambien los valores
-    document.addEventListener('DOMContentLoaded', function () {
-        calcularPromedios();
-        
-        const inputs = document.querySelectorAll('input[type="number"]:not([readonly])');
-        inputs.forEach(input => {
-            input.addEventListener('input', calcularPromedios);
-        });
+  // Calcular promedio final (10% actividades + 30% prácticas + 60% parciales)
+  let promedioFinal = 0;
+  if (contadorActividades > 0 || contadorPracticas > 0 || contadorParciales > 0) {
+    promedioFinal = (promedioActividades * 0.10) + (promedioPracticas * 0.30) + (promedioParciales * 0.60);
+  }
+  document.getElementById('promedio_final').value = promedioFinal.toFixed(1);
+  document.getElementById('promedio_final_display').textContent = promedioFinal.toFixed(1);
+}
+
+function guardarNota() {
+  const comentariosElement = document.getElementById('comentarios');
+  const estadoElement = document.getElementById('estado');
+
+  if (!comentariosElement) {
+    alert('Error: No se pueden encontrar los campos del formulario');
+    return;
+  }
+
+  // Recopilar y validar notas de actividades
+  const actividades = [];
+  const formData = new FormData();
+
+  for (let i = 1; i <= 8; i++) {
+    const elemento = document.getElementById('actividad' + i);
+    if (elemento) {
+      const valor = elemento.value.trim();
+      actividades.push(valor);
+      formData.append('actividad' + i, valor);
+    }
+  }
+
+  // Recopilar y validar notas de prácticas
+  const practicas = [];
+  for (let i = 1; i <= 4; i++) {
+    const elemento = document.getElementById('practica' + i);
+    if (elemento) {
+      const valor = elemento.value.trim();
+      practicas.push(valor);
+      formData.append('practica' + i, valor);
+    }
+  }
+
+  // Recopilar y validar notas de parciales
+  const parciales = [];
+  for (let i = 1; i <= 2; i++) {
+    const elemento = document.getElementById('parcial' + i);
+    if (elemento) {
+      const valor = elemento.value.trim();
+      parciales.push(valor);
+      formData.append('parcial' + i, valor);
+    }
+  }
+
+  // Validar que al menos una nota tenga valor
+  const todasLasNotas = [...actividades, ...practicas, ...parciales];
+  const tieneNotas = todasLasNotas.some(nota => nota && nota !== '');
+  if (!tieneNotas) {
+    showNotification('Debe ingresar al menos una nota.', 'warning');
+    return;
+  }
+
+  // Validar rango de notas
+  for (let i = 0; i < todasLasNotas.length; i++) {
+    if (todasLasNotas[i] && (parseFloat(todasLasNotas[i]) < 0 || parseFloat(todasLasNotas[i]) > 20)) {
+      showNotification('Las notas deben estar entre 0 y 20.', 'warning');
+      return;
+    }
+  }
+
+  formData.append('alumno_id', {{ alumno.id }});
+  formData.append('comentarios', comentariosElement.value);
+  formData.append('estado', estadoElement ? estadoElement.value : 'borrador');
+
+  // Mostrar indicador de carga
+  const botonGuardar = document.querySelector('button[onclick="guardarNota()"]');
+  const textoOriginal = botonGuardar.innerHTML;
+  botonGuardar.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Guardando...';
+  botonGuardar.disabled = true;
+
+  fetch('{{ url_for("docente.guardar_notas", curso_id=curso.id) }}', {
+    method: 'POST',
+    body: formData
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.success) {
+        // Actualizar el promedio final mostrado
+        if (data.promedio_final !== undefined) {
+          document.getElementById('promedio_final').value = data.promedio_final.toFixed(1);
+          document.getElementById('promedio_final_display').textContent = data.promedio_final.toFixed(1);
+        }
+
+        // Mostrar notificación de éxito
+        showNotification(data.message, 'success');
+      } else {
+        showNotification('Error: ' + data.message, 'danger');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      showNotification('Error al guardar la nota: ' + error.message, 'danger');
+    })
+    .finally(() => {
+      // Restaurar botón
+      botonGuardar.innerHTML = textoOriginal;
+      botonGuardar.disabled = false;
     });
+}
+
+function crearNota() {
+  // Ocultar el mensaje y mostrar el formulario
+  const mensajeNoNota = document.getElementById('mensajeNoNota');
+  const formulario = document.getElementById('notaForm');
+  
+  if (mensajeNoNota) {
+    mensajeNoNota.style.display = 'none';
+  }
+  if (formulario) {
+    formulario.style.display = 'block';
+  }
+  
+  // Calcular promedios iniciales
+  calcularPromedios();
+}
+
+function showNotification(message, type = 'success') {
+  const notification = document.getElementById('successNotification');
+  const messageElement = document.getElementById('notificationMessage');
+  
+  // Actualizar mensaje
+  messageElement.textContent = message;
+  
+  // Actualizar estilo según el tipo
+  notification.className = 'alert alert-dismissible fade show position-fixed';
+  notification.style.top = '20px';
+  notification.style.right = '20px';
+  notification.style.zIndex = '1055';
+  
+  if (type === 'warning') {
+    notification.classList.add('alert-warning');
+    notification.querySelector('i').className = 'fas fa-exclamation-triangle me-2';
+  } else if (type === 'danger') {
+    notification.classList.add('alert-danger');
+    notification.querySelector('i').className = 'fas fa-times-circle me-2';
+  } else {
+    notification.classList.add('alert-success');
+    notification.querySelector('i').className = 'fas fa-check-circle me-2';
+  }
+  
+  // Mostrar notificación
+  notification.style.display = 'block';
+  
+  // Auto-ocultar después de 5 segundos
+  setTimeout(() => {
+    hideNotification();
+  }, 5000);
+}
+
+function hideNotification() {
+  const notification = document.getElementById('successNotification');
+  notification.style.display = 'none';
+}
+
+// Calcular promedios automáticamente al cargar la página y cuando cambien los valores
+document.addEventListener('DOMContentLoaded', function () {
+  calcularPromedios();
+  
+  const inputs = document.querySelectorAll('input[type="number"]:not([readonly])');
+  inputs.forEach(input => {
+    input.addEventListener('input', calcularPromedios);
+  });
+});
 </script>
 {% endblock %}

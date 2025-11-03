@@ -26,7 +26,17 @@ def dashboard():
     
     return render_template('alumno/dashboard.html', cursos=cursos)
 
-
+@alumno_bp.route('/notas')
+@login_required
+@alumno_required
+def ver_notas():
+    # Obtener todas las notas del alumno
+    notas = db.session.query(Nota, Curso).join(Curso).filter(
+        Nota.alumno_id == current_user.id,
+        Nota.estado == 'publicada'
+    ).all()
+    
+    return render_template('alumno/notas.html', notas=notas)
 
 @alumno_bp.route('/notas/curso/<int:curso_id>')
 @login_required

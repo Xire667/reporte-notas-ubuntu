@@ -1,28 +1,11 @@
-"""
-Módulo de rutas para el panel de administración.
-Este archivo contiene todas las rutas y funciones relacionadas con la gestión administrativa
-del sistema de notas, incluyendo la gestión de usuarios (docentes y alumnos), cursos,
-ciclos académicos, asignaciones, matrículas y configuración del sistema.
-"""
-
 from flask import render_template, request, redirect, url_for, flash, jsonify, make_response
 from flask_login import login_required, current_user
-from app import db  # Importación de la instancia de la base de datos
-from app.models import Usuario, Curso, CursoDocente, CursoAlumno, CicloAcademico, MatriculaAlumno, Nota, NotaActividades, NotaPracticas, NotaParcial, ThemeConfig  # Importación de todos los modelos necesarios
-from . import admin_bp  # Importación del Blueprint de administración
+from app import db
+from app.models import Usuario, Curso, CursoDocente, CursoAlumno, CicloAcademico, MatriculaAlumno, Nota, NotaActividades, NotaPracticas, NotaParcial, ThemeConfig
+from . import admin_bp
 
 def admin_required(f):
-    """
-    Decorator para requerir rol de administrador.
-    Verifica que el usuario actual esté autenticado y tenga el rol de administrador.
-    Si no cumple con estos requisitos, redirige al dashboard principal con un mensaje de error.
-    
-    Args:
-        f: La función a decorar
-        
-    Returns:
-        La función decorada que verifica los permisos de administrador
-    """
+    """Decorator para requerir rol de administrador"""
     from functools import wraps
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -36,11 +19,6 @@ def admin_required(f):
 @login_required
 @admin_required
 def dashboard():
-    """
-    Dashboard principal del administrador.
-    Muestra estadísticas generales del sistema: total de docentes, alumnos,
-    cursos, alumnos matriculados y notas registradas.
-    """
     total_docentes = Usuario.query.filter_by(rol='docente').count()
     total_alumnos = Usuario.query.filter_by(rol='alumno').count()
     total_cursos = Curso.query.count()
@@ -63,11 +41,6 @@ def dashboard():
 @login_required
 @admin_required
 def docentes():
-    """
-    Lista todos los docentes registrados en el sistema.
-    Muestra información sobre cursos asignados, notas registradas y
-    determina si cada docente puede ser desactivado o eliminado.
-    """
     docentes_data = []
     docentes = Usuario.query.filter_by(rol='docente').all()
     
@@ -94,10 +67,6 @@ def docentes():
 @login_required
 @admin_required
 def registrar_docente():
-    """
-    Registra un nuevo docente en el sistema.
-    Valida que el DNI y email no estén ya registrados.
-    """
     if request.method == 'POST':
         dni = request.form.get('dni')
         nombre = request.form.get('nombre')
@@ -105,17 +74,14 @@ def registrar_docente():
         email = request.form.get('email')
         password = request.form.get('password')
         
-        # Validación de DNI único
         if Usuario.query.filter_by(dni=dni).first():
             flash('El DNI ya está registrado.', 'error')
             return render_template('admin/registrar_docente.html')
         
-        # Validación de email único
         if Usuario.query.filter_by(email=email).first():
             flash('El email ya está registrado.', 'error')
             return render_template('admin/registrar_docente.html')
         
-        # Creación del nuevo usuario docente
         docente = Usuario(
             dni=dni,
             nombre=nombre,
@@ -141,11 +107,6 @@ def registrar_docente():
 @login_required
 @admin_required
 def cursos():
-    """
-    Lista todos los cursos registrados en el sistema.
-    Muestra información sobre docentes asignados, alumnos matriculados,
-    notas registradas y determina si cada curso puede ser desactivado o eliminado.
-    """
     cursos_data = []
     cursos = db.session.query(Curso, CicloAcademico).outerjoin(CicloAcademico).all()
     
@@ -175,11 +136,6 @@ def cursos():
 @login_required
 @admin_required
 def registrar_curso():
-    """
-    Registra un nuevo curso en el sistema.
-    Valida que el código del curso no esté ya registrado y permite
-    asociar el curso a un ciclo académico activo.
-    """
     if request.method == 'POST':
         nombre = request.form.get('nombre')
         codigo = request.form.get('codigo')
@@ -215,10 +171,6 @@ def registrar_curso():
 @login_required
 @admin_required
 def editar_curso(id):
-    """
-    Edita la información de un curso existente.
-    Valida que el código del curso no esté en uso por otro curso.
-    """
     curso = Curso.query.get_or_404(id)
     
     if request.method == 'POST':
@@ -248,11 +200,6 @@ def editar_curso(id):
 @login_required
 @admin_required
 def toggle_activo_curso(id):
-    """
-    Activa o desactiva un curso existente.
-    Verifica que no tenga docentes asignados, alumnos matriculados o notas registradas
-    antes de permitir la desactivación.
-    """
     curso = Curso.query.get_or_404(id)
     
     try:
@@ -1803,64 +1750,27 @@ def api_cursos_por_ciclo(ciclo_id):
 @login_required
 @admin_required
 def editar_estilos():
-    """
-    Vista para editar la configuración de colores del sistema.
-    Permite personalizar los colores de la interfaz (oscuro, claro, medio, etc.)
-    y guardar la configuración en la base de datos.
-    """
+    """Vista para editar la configuración de colores del sistema"""
     config = ThemeConfig.query.first()
     if not config:
         config = ThemeConfig()
         db.session.add(config)
         db.session.commit()
 
-    import os
-    from werkzeug.utils import secure_filename
-    
     if request.method == 'POST':
-        from flask import session
-        if request.form.get('reset_default'):
-            # Restaurar valores por defecto
-            config.nombre = 'Default'
-            config.color_oscuro = '#00378F'
-            config.color_claro = '#3775DA'
-            config.color_medio = '#1C56B5'
-            config.color_medio_oscuro = '#0E47A2'
-            config.color_medio_claro = '#2966C7'
-            config.logo_url = None
-            session.pop('logo_url', None)
-            try:
-                db.session.commit()
-                flash('Estilos y logo restaurados a valores por defecto.', 'success')
-                return redirect(url_for('admin.editar_estilos'))
-            except Exception:
-                db.session.rollback()
-                flash('Error al restaurar los valores por defecto.', 'error')
-        else:
-            config.nombre = request.form.get('nombre') or config.nombre
-            config.color_oscuro = request.form.get('color_oscuro') or config.color_oscuro
-            config.color_claro = request.form.get('color_claro') or config.color_claro
-            config.color_medio = request.form.get('color_medio') or config.color_medio
-            config.color_medio_oscuro = request.form.get('color_medio_oscuro') or config.color_medio_oscuro
-            config.color_medio_claro = request.form.get('color_medio_claro') or config.color_medio_claro
-
-            # Procesar logo si se sube (solo en caché/session, no en base de datos)
-            if 'logo' in request.files:
-                logo_file = request.files['logo']
-                if logo_file and logo_file.filename:
-                    filename = secure_filename(logo_file.filename)
-                    logo_path = os.path.join('static', 'main', 'assets', 'img', 'logo_custom_session.png')
-                    abs_logo_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), logo_path)
-                    logo_file.save(abs_logo_path)
-                    session['logo_url'] = url_for('static', filename='main/assets/img/logo_custom_session.png')
-
-            try:
-                db.session.commit()
-                flash('Estilos actualizados correctamente.', 'success')
-                return redirect(url_for('admin.editar_estilos'))
-            except Exception:
-                db.session.rollback()
-                flash('Error al actualizar los estilos.', 'error')
+        config.nombre = request.form.get('nombre') or config.nombre
+        config.color_oscuro = request.form.get('color_oscuro') or config.color_oscuro
+        config.color_claro = request.form.get('color_claro') or config.color_claro
+        config.color_medio = request.form.get('color_medio') or config.color_medio
+        config.color_medio_oscuro = request.form.get('color_medio_oscuro') or config.color_medio_oscuro
+        config.color_medio_claro = request.form.get('color_medio_claro') or config.color_medio_claro
+        try:
+            db.session.commit()
+            flash('Estilos actualizados correctamente.', 'success')
+            return redirect(url_for('admin.editar_estilos'))
+        except Exception:
+            db.session.rollback()
+            flash('Error al actualizar los estilos.', 'error')
 
     return render_template('admin/editar_estilos.html', config=config)
 

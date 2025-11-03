@@ -492,3 +492,331 @@ th:nth-child(2){
 .text-end{
     text-align: center !important;
 }
+
+/* Estilos adicionales para la página de notas del alumno */
+
+/* Avatar del alumno */
+.student-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0 auto 1rem;
+    box-shadow: 0 4px 10px rgba(10, 34, 113, 0.3);
+}
+
+/* Detalles del alumno */
+.student-details p {
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+/* Sección de calificaciones */
+.grade-category {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.grade-category:last-child {
+    border-bottom: none;
+}
+
+/* Campos de entrada de notas */
+.grade-input {
+    position: relative;
+}
+
+.grade-input input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(10, 34, 113, 0.25);
+}
+
+/* Tarjeta de promedio final */
+.final-grade-card {
+    background: var(--primary-color);
+    color: white;
+}
+
+.final-grade-card .form-select {
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.final-grade-card .form-select option {
+    background: var(--dark-color);
+}
+
+/* Notificaciones */
+.success-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1055;
+    min-width: 300px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border-radius: 0.5rem;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Animación para las notificaciones */
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.success-notification {
+    animation: slideIn 0.3s ease-out;
+}
+
+/* Responsive para la página de notas */
+@media (max-width: 768px) {
+    .student-avatar {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+    
+    .grade-category {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Estilos adicionales para el Dashboard del Alumno */
+
+/* Encabezado del dashboard */
+.dashboard-header {
+    background: linear-gradient(135deg, var(--primary-color), #1a3a8f);
+    color: white;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-card h2 {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.stats-card {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-top: 0.5rem;
+}
+
+/* Encabezado de sección */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 0.75rem;
+}
+
+.section-header h4 {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* Tarjetas de cursos */
+.course-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    overflow: hidden;
+}
+
+.course-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.course-header {
+    background: linear-gradient(135deg, var(--primary-color), #1a3a8f);
+    color: white;
+    border: none;
+    padding: 1rem;
+    position: relative;
+}
+
+.course-icon {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.course-info {
+    padding: 0.5rem 0;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.info-item i {
+    width: 20px;
+    margin-right: 0.75rem;
+    color: var(--primary-color);
+    margin-top: 2px;
+}
+
+.course-footer {
+    background: #f8f9fa;
+    border: none;
+    padding: 1rem;
+}
+
+/* Estado vacío */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    color: var(--primary-color);
+    opacity: 0.5;
+    margin-bottom: 1.5rem;
+}
+
+.empty-state-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--dark-color);
+}
+
+.empty-state-description {
+    color: var(--secondary-color);
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* Tarjetas de resumen */
+.summary-card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+}
+
+.summary-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.summary-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.summary-icon.bg-primary {
+    background: var(--primary-color);
+}
+
+.summary-icon.bg-success {
+    background: var(--success-color);
+}
+
+.summary-icon.bg-warning {
+    background: var(--warning-color);
+}
+
+.summary-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--secondary-color);
+}
+
+.summary-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--dark-color);
+}
+
+.summary-change {
+    font-size: 0.875rem;
+    color: var(--secondary-color);
+}
+
+.summary-change.positive {
+    color: var(--success-color);
+}
+
+.summary-change i {
+    margin-right: 0.25rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dashboard-header {
+        padding: 1.5rem;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .summary-value {
+        font-size: 1.25rem;
+    }
+}
