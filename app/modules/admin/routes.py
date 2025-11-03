@@ -1866,7 +1866,9 @@ def editar_estilos():
                         logo_file.save(save_path)
                         # Limpiar la caché del navegador agregando un timestamp a la URL
                         timestamp = int(time.time())
-                        session['logo_url'] = url_for('static', filename=f'uploads/logo.png?t={timestamp}')
+                        logo_url = url_for('static', filename=f'uploads/logo.png?t={timestamp}')
+                        session['logo_url'] = logo_url
+                        config.logo_url = logo_url
                         
                         flash('Logo actualizado correctamente.', 'success')
                     except Exception as e:

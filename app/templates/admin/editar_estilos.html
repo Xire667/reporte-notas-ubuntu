@@ -24,7 +24,7 @@
         <form method="POST" action="{{ url_for('admin.editar_estilos') }}" enctype="multipart/form-data">
           <!-- Campo para el nombre del tema -->
           <div class="mb-3">
-            <label class="form-label">Nombre del tema</label>
+            <label class="form-label">Nombre del tem</label>
             <input type="text" name="nombre" class="form-control" value="{{ config.nombre }}" placeholder="Ej: Azul corporativo">
           </div>
           
@@ -136,14 +136,17 @@
             <button type="submit" class="btn btn-primary">
               <i class="fas fa-save me-1"></i>Guardar cambios
             </button>
-            <button type="submit" name="reset_default" value="1" class="btn btn-warning">
-              <i class="fas fa-undo me-1"></i>Por defecto
-            </button>
             <!-- Botón para volver al dashboard -->
             <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
               <i class="fas fa-arrow-left me-1"></i>Volver al Dashboard
             </a>
           </div>
+        </form>
+        <!-- Formulario separado para restaurar valores por defecto -->
+        <form method="POST" action="{{ url_for('admin.editar_estilos') }}" class="d-inline">
+          <button type="submit" name="reset_default" value="1" class="btn btn-warning">
+            <i class="fas fa-undo me-1"></i>Por defecto
+          </button>
         </form>
       </div>
     </div>

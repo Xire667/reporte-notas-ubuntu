@@ -3,7 +3,6 @@ import time
 from flask import Flask, url_for, current_app
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-import os
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -32,8 +31,8 @@ def create_app(config_name=None):
     login_manager.login_message_category = 'info'
     
     # Configurar el cargador de usuarios
-    from app.models import Usuario
-    
+    from app.models import Usuario, ThemeConfig
+
     @login_manager.user_loader
     def load_user(user_id):
         return Usuario.query.get(int(user_id))
@@ -47,19 +46,26 @@ def create_app(config_name=None):
     @app.context_processor
     def inject_navbar_logo():
         try:
+            # Primero verificar si hay un logo personalizado
             uploads_dir = os.path.join(current_app.root_path, 'static', 'uploads')
             logo_file = os.path.join(uploads_dir, 'logo.png')
-            if os.path.exists(logo_file):
+            
+            # Verificar si existe un logo personalizado y si no estamos en modo "por defecto"
+            config = ThemeConfig.query.first()
+            if config and config.logo_url is not None and os.path.exists(logo_file):
                 # Generar una URL con timestamp para evitar el caché del navegador
                 timestamp = str(int(time.time()))
                 logo_url = url_for('static', filename=f'uploads/logo.png', v=timestamp)
                 return {'navbar_logo_url': logo_url}
             else:
-                # Si el archivo no existe, devolver None
-                return {'navbar_logo_url': None}
+                # Si no hay logo personalizado o estamos en modo "por defecto", usar el logo por defecto
+                default_logo_url = url_for('static', filename='main/assets/img/logo-dsi.png')
+                return {'navbar_logo_url': default_logo_url}
         except Exception as e:
             print(f"Error al cargar el logo: {str(e)}")
-            return {'navbar_logo_url': None}
+            # En caso de error, usar el logo por defecto
+            default_logo_url = url_for('static', filename='main/assets/img/logo-dsi.png')
+            return {'navbar_logo_url': default_logo_url}
 
     # Crear tablas de la base de datos
     with app.app_context():
