@@ -102,7 +102,11 @@
                 <div class="hero-divider my-4">
                     <div style="width: 550px; height: 2px; background: rgba(255,255,255,0.5); margin: 0 auto;"></div>
                 </div>
+                {% if navbar_logo_url %}
+                <img src="{{ navbar_logo_url }}" alt="Logo del sistema" style="height:150px; width:auto;">
+                {% else %}
                 <img src="{{ url_for('static', filename='main/assets/img/logo-dsi.png') }}" alt="Logo DSI" style="height:150px; width:auto;">
+                {% endif %}
                 <p class="hero-description">
                     Plataforma integral para la gestión académica, calificaciones y seguimiento estudiantil.
                 </p>
