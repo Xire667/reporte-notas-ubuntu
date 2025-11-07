@@ -1826,10 +1826,10 @@ def editar_estilos():
             # Restaurar valores por defecto
             config.nombre = 'Default'
             config.color_oscuro = '#00378F'
-            config.color_claro = '#3775DA'
+            config.color_claro = "#3775DA"
             config.color_medio = '#1C56B5'
             config.color_medio_oscuro = '#0E47A2'
-            config.color_medio_claro = '#2966C7'
+            config.color_medio_claro = "#FFFFFF"
             config.logo_url = None
             session.pop('logo_url', None)
             try:
