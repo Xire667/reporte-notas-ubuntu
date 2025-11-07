@@ -1,7 +1,15 @@
 :root{
     --color-oscuro: #00378f;
-    --color-claro: #3775DA;
-    --color-medio: #1C56B5;
-    --color-medio-oscuro: #0E47A2;
-    --color-medio-claro: #2966C7;
+    
+    --color-medio-oscuro: #05125f;
+
+    --color-medio: #0a2271;
+
+    --color-medio-claro: #0e3182;
+
+    --color-claro: #134093;
+
+    --color-texto-claro: #ffffff;
+
+    --color-texto-oscuro: #000000;
 }

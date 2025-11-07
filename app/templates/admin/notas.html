@@ -8,6 +8,12 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="fas fa-clipboard-list me-2"></i>Gestión de Notas</h2>
             <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalDescargarPlantilla">
+                    <i class="fas fa-file-excel me-2"></i>Descargar Plantilla Excel
+                </button>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalImportarNotas">
+                    <i class="fas fa-upload me-2"></i>Importar Notas
+                </button>
                 <a href="{{ url_for('admin.exportar_notas_pdf', ciclo_id=request.args.get('ciclo_id'), curso_id=request.args.get('curso_id'), estado=request.args.get('estado', 'todas')) }}" 
                    class="btn btn-outline-success">
                     <i class="fas fa-file-pdf me-2"></i>Exportar PDF
@@ -221,6 +227,143 @@
 </div>
 {% endif %}
 
+<!-- Modal Importar Notas -->
+<div class="modal fade" id="modalImportarNotas" tabindex="-1" aria-labelledby="modalImportarNotasLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalImportarNotasLabel"><i class="fas fa-upload me-2"></i>Importar Notas desde Excel</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted mb-3">
+          Selecciona un archivo <code>.xlsx</code> que siga la estructura de la plantilla: DNI, Nombre, Apellido y todas las notas. El curso, docente y estado se eligen aquí.
+        </p>
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle me-2"></i>
+          Columnas esperadas: <strong>DNI</strong>, <strong>Nombre</strong>, <strong>Apellido</strong>,
+          <strong>Actividad1..8</strong>, <strong>Practica1..4</strong>, <strong>Parcial1</strong>, <strong>Parcial2</strong>.
+          El <strong>Curso</strong>, <strong>Docente</strong> y <strong>Estado</strong> se aplican a todas las filas importadas.
+        </div>
+        <form method="POST" action="{{ url_for('admin.importar_notas_excel') }}" enctype="multipart/form-data">
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label for="curso_id" class="form-label">Curso</label>
+              <select class="form-select" id="curso_id" name="curso_id" required>
+                <option value="">-- Selecciona un curso --</option>
+                {% for curso in cursos %}
+                <option value="{{ curso.id }}">{{ curso.nombre }} ({{ curso.codigo }})</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label for="docente_id" class="form-label">Docente (opcional)</label>
+              <select class="form-select" id="docente_id" name="docente_id">
+                <option value="">-- Automático por asignación --</option>
+                {% for docente in docentes %}
+                <option value="{{ docente.id }}">{{ docente.nombre }} {{ docente.apellido }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label for="estado" class="form-label">Estado</label>
+              <select class="form-select" id="estado" name="estado">
+                <option value="borrador">Borrador</option>
+                <option value="publicada">Publicada</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" value="on" id="forzar_matricula" name="forzar_matricula">
+            <label class="form-check-label" for="forzar_matricula">
+              Forzar matrícula al curso si falta (evita errores por alumnos no matriculados).
+            </label>
+          </div>
+          <div class="mb-3">
+            <label for="archivo_excel" class="form-label">Archivo Excel (.xlsx)</label>
+            <input class="form-control" type="file" id="archivo_excel" name="archivo_excel" accept=".xlsx" required>
+          </div>
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-upload me-2"></i>Importar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  </div>
+
+<!-- Modal Descargar Plantilla por Ciclo -->
+<div class="modal fade" id="modalDescargarPlantilla" tabindex="-1" aria-labelledby="modalDescargarPlantillaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalDescargarPlantillaLabel"><i class="fas fa-file-excel me-2"></i>Descargar Plantilla por Ciclo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="get" action="{{ url_for('admin.descargar_plantilla_notas') }}">
+        <div class="modal-body">
+          <p class="text-muted mb-3">Elige el ciclo académico para incluir automáticamente los estudiantes activos.</p>
+          <div class="mb-3">
+            <label for="cicloPlantilla" class="form-label">Ciclo Académico</label>
+            <select id="cicloPlantilla" name="ciclo_id" class="form-select" required>
+              <option value="" disabled selected>Selecciona un ciclo</option>
+              {% for ciclo in ciclos %}
+                <option value="{{ ciclo.id }}">{{ ciclo.nombre }}</option>
+              {% endfor %}
+            </select>
+            <div class="form-text">La plantilla listará DNI, nombre y apellido de esos alumnos.</div>
+          </div>
+          <div class="mb-3">
+            <label for="cursoPlantilla" class="form-label">Curso (opcional)</label>
+            <select id="cursoPlantilla" name="curso_id" class="form-select" disabled>
+              <option value="" selected>Selecciona un curso del ciclo</option>
+            </select>
+            <div class="form-text">Si eliges un curso, solo incluirá alumnos matriculados en ese curso y prellenará notas existentes.</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success"><i class="fas fa-download me-2"></i>Descargar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const cicloSelect = document.getElementById('cicloPlantilla');
+  const cursoSelect = document.getElementById('cursoPlantilla');
+  if (cicloSelect && cursoSelect) {
+    cicloSelect.addEventListener('change', function() {
+      const cicloId = this.value;
+      cursoSelect.innerHTML = '<option value="" selected>Cargando cursos...</option>';
+      cursoSelect.disabled = true;
+      if (!cicloId) return;
+      fetch(`/admin/api/cursos-por-ciclo/${cicloId}`)
+        .then(res => res.json())
+        .then(data => {
+          cursoSelect.innerHTML = '<option value="" selected>Selecciona un curso del ciclo</option>';
+          if (data && data.success && Array.isArray(data.cursos)) {
+            data.cursos.forEach(c => {
+              const opt = document.createElement('option');
+              opt.value = c.id;
+              opt.textContent = `${c.nombre}`;
+              cursoSelect.appendChild(opt);
+            });
+            cursoSelect.disabled = false;
+          } else {
+            cursoSelect.innerHTML = '<option value="" selected>Sin cursos disponibles</option>';
+          }
+        })
+        .catch(() => {
+          cursoSelect.innerHTML = '<option value="" selected>Error al cargar cursos</option>';
+        });
+    });
+  }
+});
+</script>
 <!-- Lista de Notas -->
 <div class="row">
     <div class="col-12">
@@ -241,7 +384,7 @@
                                 <th>Curso</th>
                                 <th>Estudiante</th>
                                 <th>Docente</th>
-                                <th>Parciales</th>
+                                <th>Promedios</th>
                                 <th>Nota Final</th>
                                 <th>Estado</th>
                                 <th>Última Actualización</th>
@@ -279,14 +422,15 @@
                                 </td>
                                 <td>
                                     <div class="parciales-info">
-                                        {% for i in range(1, 5) %}
-                                        {% set parcial = nota|attr('parcial' + i|string) %}
-                                        {% if parcial and parcial > 0 %}
-                                        <span class="badge bg-light text-dark me-1">
-                                            P{{ i }}: {{ parcial }}
+                                        <span class="badge bg-{{ 'success' if (nota.promedio_actividades or 0) >= 10.5 else 'warning' if (nota.promedio_actividades or 0) >= 5 else 'danger' if (nota.promedio_actividades or 0) > 0 else 'secondary' }} me-1">
+                                            Act: {{ (nota.promedio_actividades or 0) if (nota.promedio_actividades or 0) > 0 else '-' }}
                                         </span>
-                                        {% endif %}
-                                        {% endfor %}
+                                        <span class="badge bg-{{ 'success' if (nota.promedio_practicas or 0) >= 10.5 else 'warning' if (nota.promedio_practicas or 0) >= 5 else 'danger' if (nota.promedio_practicas or 0) > 0 else 'secondary' }} me-1">
+                                            Prac: {{ (nota.promedio_practicas or 0) if (nota.promedio_practicas or 0) > 0 else '-' }}
+                                        </span>
+                                        <span class="badge bg-{{ 'success' if (nota.promedio_parciales or 0) >= 10.5 else 'warning' if (nota.promedio_parciales or 0) >= 5 else 'danger' if (nota.promedio_parciales or 0) > 0 else 'secondary' }}">
+                                            Parc: {{ (nota.promedio_parciales or 0) if (nota.promedio_parciales or 0) > 0 else '-' }}
+                                        </span>
                                     </div>
                                 </td>
                                 <td>
@@ -306,9 +450,9 @@
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a href="{{ url_for('admin.ver_notas_curso', curso_id=curso.id) }}" 
-                                           class="btn btn-sm btn-outline-info" title="Ver Curso">
-                                            <i class="fas fa-eye"></i>
+                                        <a href="{{ url_for('admin.ver_cursos_alumno', alumno_id=alumno.id) }}" 
+                                           class="btn btn-sm btn-outline-info" title="Ver Cursos">
+                                            <i class="fas fa-book"></i>
                                         </a>
                                         <a href="{{ url_for('admin.ver_notas_alumno', alumno_id=alumno.id) }}" 
                                            class="btn btn-sm btn-outline-primary" title="Ver Estudiante">
@@ -495,6 +639,9 @@
     .table th {
         border-top: none;
         font-weight: 600;
+    }
+    .modal .alert-info {
+        font-size: 0.9rem;
     }
     
     .badge {

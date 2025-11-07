@@ -1,8 +1,11 @@
-from flask import render_template, request, redirect, url_for, flash, jsonify, make_response
+from flask import render_template, request, redirect, url_for, flash, jsonify, make_response, current_app, session
 from flask_login import login_required, current_user
 from app import db
 from app.models import Usuario, Curso, CursoDocente, CursoAlumno, CicloAcademico, MatriculaAlumno, Nota, NotaActividades, NotaPracticas, NotaParcial, ThemeConfig
 from . import admin_bp
+from werkzeug.utils import secure_filename
+import os
+import time
 
 def admin_required(f):
     """Decorator para requerir rol de administrador"""
@@ -1116,6 +1119,53 @@ def ver_notas_alumno(alumno_id):
                          matricula_activa=matricula_activa,
                          promedio_general=promedio_general)
 
+@admin_bp.route('/alumnos/<int:alumno_id>/cursos')
+@login_required
+@admin_required
+def ver_cursos_alumno(alumno_id):
+    """Mostrar los cursos del alumno y el estado de matrícula"""
+    alumno = Usuario.query.get_or_404(alumno_id)
+
+    if alumno.rol != 'alumno':
+        flash('El usuario no es un alumno.', 'error')
+        return redirect(url_for('admin.ver_notas'))
+
+    matricula_activa = MatriculaAlumno.query.filter_by(
+        alumno_id=alumno_id,
+        estado='activa'
+    ).first()
+
+    # Cursos en los que el alumno está matriculado
+    cursos_matriculados = db.session.query(Curso, CicloAcademico).join(
+        CicloAcademico, Curso.ciclo_academico_id == CicloAcademico.id
+    ).join(
+        CursoAlumno, CursoAlumno.curso_id == Curso.id
+    ).filter(
+        CursoAlumno.alumno_id == alumno_id
+    ).order_by(Curso.nombre).all()
+
+    cursos_estado = []
+    if matricula_activa:
+        cursos_ciclo = db.session.query(Curso, CicloAcademico).join(
+            CicloAcademico, Curso.ciclo_academico_id == CicloAcademico.id
+        ).filter(
+            Curso.ciclo_academico_id == matricula_activa.ciclo_academico_id
+        ).order_by(Curso.nombre).all()
+
+        matriculados_ids = {curso.id for (curso, _ciclo) in cursos_matriculados}
+        for curso, ciclo in cursos_ciclo:
+            cursos_estado.append({
+                'curso': curso,
+                'ciclo': ciclo,
+                'matriculado': curso.id in matriculados_ids
+            })
+
+    return render_template('admin/cursos_alumno.html',
+                           alumno=alumno,
+                           matricula_activa=matricula_activa,
+                           cursos_matriculados=cursos_matriculados,
+                           cursos_estado=cursos_estado)
+
 @admin_bp.route('/notas/exportar')
 @login_required
 @admin_required
@@ -1287,6 +1337,326 @@ def exportar_notas_pdf():
         nombre += f"_doc_{docente_sel.id}"
     response.headers['Content-Disposition'] = f"attachment; filename={nombre}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
     return response
+
+# Descarga plantilla Excel para importar notas
+@admin_bp.route('/notas/plantilla')
+@login_required
+@admin_required
+def descargar_plantilla_notas():
+    """Genera y descarga la plantilla Excel para importar notas"""
+    from io import BytesIO
+    try:
+        import openpyxl
+        from openpyxl.styles import Font, Alignment
+    except ImportError:
+        flash('openpyxl no está disponible en el servidor. Contacta al administrador.', 'error')
+        return redirect(url_for('admin.ver_notas'))
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = 'PlantillaNotas'
+
+    # Encabezados
+    headers = [
+        'DNI', 'Nombre', 'Apellido',
+        'Actividad1', 'Actividad2', 'Actividad3', 'Actividad4', 'Actividad5', 'Actividad6', 'Actividad7', 'Actividad8',
+        'Practica1', 'Practica2', 'Practica3', 'Practica4',
+        'Parcial1', 'Parcial2'
+    ]
+    ws.append(headers)
+    for col in range(1, len(headers) + 1):
+        cell = ws.cell(row=1, column=col)
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal='center')
+    ws.freeze_panes = 'A2'
+
+    # Ancho de columnas sugerido
+    widths = [12, 18, 18] + [10]*8 + [10]*4 + [10, 10]
+    for idx, w in enumerate(widths, start=1):
+        ws.column_dimensions[openpyxl.utils.get_column_letter(idx)].width = w
+
+    # Prellenado por ciclo/curso y notas existentes
+    nombre_archivo = 'plantilla_notas.xlsx'
+    ciclo_id = request.args.get('ciclo_id', type=int)
+    curso_id = request.args.get('curso_id', type=int)
+    estudiantes = []
+    ciclo = None
+    curso = None
+
+    try:
+        if ciclo_id:
+            ciclo = CicloAcademico.query.get(ciclo_id)
+        if curso_id:
+            curso = Curso.query.get(curso_id)
+
+        if curso:
+            # Alumnos matriculados en el curso
+            estudiantes = db.session.query(Usuario).join(
+                CursoAlumno, CursoAlumno.alumno_id == Usuario.id
+            ).filter(
+                CursoAlumno.curso_id == curso.id,
+                Usuario.rol == 'alumno',
+                Usuario.activo == True
+            ).order_by(Usuario.apellido, Usuario.nombre).all()
+        elif ciclo:
+            # Alumnos activos del ciclo
+            estudiantes = db.session.query(Usuario).join(
+                MatriculaAlumno, Usuario.id == MatriculaAlumno.alumno_id
+            ).filter(
+                MatriculaAlumno.ciclo_academico_id == ciclo_id,
+                Usuario.rol == 'alumno',
+                Usuario.activo == True
+            ).order_by(Usuario.apellido, Usuario.nombre).all()
+    except Exception:
+        estudiantes = []
+
+    if estudiantes:
+        for est in estudiantes:
+            # Valores por defecto vacíos
+            act_vals = ['']*8
+            prac_vals = ['']*4
+            parciales = ['']*2
+
+            # Si hay curso, prellenar notas existentes del curso
+            if curso:
+                na = NotaActividades.query.filter_by(curso_id=curso.id, alumno_id=est.id).first()
+                np = NotaPracticas.query.filter_by(curso_id=curso.id, alumno_id=est.id).first()
+                npa = NotaParcial.query.filter_by(curso_id=curso.id, alumno_id=est.id).first()
+                if na:
+                    act_vals = [na.actividad1 or '', na.actividad2 or '', na.actividad3 or '', na.actividad4 or '',
+                                na.actividad5 or '', na.actividad6 or '', na.actividad7 or '', na.actividad8 or '']
+                if np:
+                    prac_vals = [np.practica1 or '', np.practica2 or '', np.practica3 or '', np.practica4 or '']
+                if npa:
+                    parciales = [npa.parcial1 or '', npa.parcial2 or '']
+
+            fila = [est.dni or '', est.nombre or '', est.apellido or ''] + act_vals + prac_vals + parciales
+            ws.append(fila)
+    else:
+        # Fila de ejemplo si no hay estudiantes
+        ws.append(['', '', ''] + ['']*8 + ['']*4 + ['']*2)
+
+    # Nombre de archivo
+    if curso and curso.codigo:
+        nombre_archivo = f"plantilla_notas_{curso.codigo}.xlsx"
+    elif ciclo:
+        nombre_archivo = f"plantilla_notas_ciclo_{ciclo.nombre.replace(' ', '_')}.xlsx"
+
+    # Preparar respuesta
+    mem = BytesIO()
+    wb.save(mem)
+    mem.seek(0)
+    resp = make_response(mem.getvalue())
+    resp.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    resp.headers['Content-Disposition'] = f'attachment; filename={nombre_archivo}'
+    return resp
+
+# Importar notas desde Excel
+@admin_bp.route('/notas/importar', methods=['POST'])
+@login_required
+@admin_required
+def importar_notas_excel():
+    """Procesa un archivo Excel .xlsx y crea/actualiza notas"""
+    file = request.files.get('archivo_excel')
+    if not file:
+        flash('No se adjuntó ningún archivo.', 'error')
+        return redirect(url_for('admin.ver_notas'))
+
+    filename = secure_filename(file.filename)
+    if not filename.lower().endswith('.xlsx'):
+        flash('Formato inválido. Solo se acepta .xlsx.', 'error')
+        return redirect(url_for('admin.ver_notas'))
+
+    try:
+        import openpyxl
+    except ImportError:
+        flash('openpyxl no está disponible en el servidor. Contacta al administrador.', 'error')
+        return redirect(url_for('admin.ver_notas'))
+
+    try:
+        wb = openpyxl.load_workbook(file, data_only=True)
+        ws = wb.active
+    except Exception:
+        flash('No se pudo leer el archivo Excel.', 'error')
+        return redirect(url_for('admin.ver_notas'))
+
+    # Curso/Docente/Estado desde formulario
+    curso_id = request.form.get('curso_id', type=int)
+    if not curso_id:
+        flash('Debes seleccionar un curso para importar.', 'error')
+        return redirect(url_for('admin.ver_notas'))
+    curso = Curso.query.get(curso_id)
+    if not curso:
+        flash('Curso no válido.', 'error')
+        return redirect(url_for('admin.ver_notas'))
+
+    docente_id = request.form.get('docente_id', type=int)
+    docente = Usuario.query.get(docente_id) if docente_id else None
+    if docente and docente.rol != 'docente':
+        docente = None
+    estado_form = request.form.get('estado', 'borrador').strip().lower()
+    # Permitir ajustar el comportamiento de matrícula durante importación
+    forzar_matricula = request.form.get('forzar_matricula') == 'on'
+
+    # Mapear encabezados
+    header_row = [str(c.value).strip() if c.value is not None else '' for c in ws[1]]
+    expected = {
+        'DNI': None, 'Nombre': None, 'Apellido': None,
+        'Actividad1': None, 'Actividad2': None, 'Actividad3': None, 'Actividad4': None,
+        'Actividad5': None, 'Actividad6': None, 'Actividad7': None, 'Actividad8': None,
+        'Practica1': None, 'Practica2': None, 'Practica3': None, 'Practica4': None,
+        'Parcial1': None, 'Parcial2': None
+    }
+    idx_map = {}
+    for i, h in enumerate(header_row):
+        if h in expected:
+            idx_map[h] = i
+
+    missing = [k for k in expected.keys() if k not in idx_map]
+    required_missing = [k for k in ['DNI'] if k not in idx_map]
+    if required_missing:
+        flash(f'Faltan columnas obligatorias en el Excel: {", ".join(required_missing)}', 'error')
+        return redirect(url_for('admin.ver_notas'))
+
+    registros_ok = 0
+    registros_error = 0
+    errores = []
+
+    def to_float(val):
+        try:
+            if val is None or str(val).strip() == '':
+                return 0.0
+            return float(val)
+        except Exception:
+            return 0.0
+
+    for row_idx in range(2, ws.max_row + 1):
+        dni = ws.cell(row=row_idx, column=idx_map.get('DNI') + 1).value if 'DNI' in idx_map else None
+        nombre = ws.cell(row=row_idx, column=idx_map.get('Nombre') + 1).value if 'Nombre' in idx_map else None
+        apellido = ws.cell(row=row_idx, column=idx_map.get('Apellido') + 1).value if 'Apellido' in idx_map else None
+
+        if not dni:
+            # Saltar filas vacías
+            continue
+
+        alumno = Usuario.query.filter_by(dni=str(dni).strip()).first()
+        if not alumno:
+            registros_error += 1
+            errores.append(f'Fila {row_idx}: Alumno con DNI {dni} no encontrado.')
+            continue
+
+        # Verificar matrícula; si falta, permitir si ya existen notas o forzar matrícula
+        matricula = CursoAlumno.query.filter_by(curso_id=curso.id, alumno_id=alumno.id).first()
+        if not matricula:
+            notas_previas = (
+                NotaActividades.query.filter_by(curso_id=curso.id, alumno_id=alumno.id).first() or
+                NotaPracticas.query.filter_by(curso_id=curso.id, alumno_id=alumno.id).first() or
+                NotaParcial.query.filter_by(curso_id=curso.id, alumno_id=alumno.id).first() or
+                Nota.query.filter_by(curso_id=curso.id, alumno_id=alumno.id).first()
+            )
+            if notas_previas:
+                # Continuar: ya hay relación de notas para este curso
+                pass
+            elif forzar_matricula:
+                try:
+                    nueva = CursoAlumno(curso_id=curso.id, alumno_id=alumno.id)
+                    db.session.add(nueva)
+                    db.session.flush()
+                except Exception as e:
+                    registros_error += 1
+                    errores.append(f'Fila {row_idx}: No se pudo matricular automáticamente ({str(e)[:90]}).')
+                    continue
+            else:
+                registros_error += 1
+                errores.append(f'Fila {row_idx}: Alumno con DNI {dni} no está matriculado en el curso seleccionado.')
+                continue
+
+        docente = None
+        if docente_id:
+            docente = Usuario.query.filter_by(id=docente_id, rol='docente').first()
+        if not docente:
+            # Tomar primer docente asignado al curso
+            asignacion = CursoDocente.query.filter_by(curso_id=curso.id).first()
+            docente = asignacion.docente if asignacion else None
+        if not docente:
+            registros_error += 1
+            errores.append(f'Fila {row_idx}: Docente no encontrado ni asignado para el curso seleccionado.')
+            continue
+
+        # Notas de actividades
+        act_vals = [to_float(ws.cell(row=row_idx, column=idx_map.get(f'Actividad{i}') + 1).value) if f'Actividad{i}' in idx_map else 0.0 for i in range(1, 9)]
+        # Notas de prácticas
+        prac_vals = [to_float(ws.cell(row=row_idx, column=idx_map.get(f'Practica{i}') + 1).value) if f'Practica{i}' in idx_map else 0.0 for i in range(1, 5)]
+        # Parciales
+        parcial1 = to_float(ws.cell(row=row_idx, column=idx_map.get('Parcial1') + 1).value) if 'Parcial1' in idx_map else 0.0
+        parcial2 = to_float(ws.cell(row=row_idx, column=idx_map.get('Parcial2') + 1).value) if 'Parcial2' in idx_map else 0.0
+
+        # Upsert NotaActividades
+        na = NotaActividades.query.filter_by(curso_id=curso.id, alumno_id=alumno.id).first()
+        if not na:
+            na = NotaActividades(curso_id=curso.id, alumno_id=alumno.id, docente_id=docente.id)
+            db.session.add(na)
+        na.actividad1, na.actividad2, na.actividad3, na.actividad4, na.actividad5, na.actividad6, na.actividad7, na.actividad8 = act_vals
+        na.calcular_promedio_actividades()
+
+        # Upsert NotaPracticas
+        np = NotaPracticas.query.filter_by(curso_id=curso.id, alumno_id=alumno.id).first()
+        if not np:
+            np = NotaPracticas(curso_id=curso.id, alumno_id=alumno.id, docente_id=docente.id)
+            db.session.add(np)
+        np.practica1, np.practica2, np.practica3, np.practica4 = prac_vals
+        np.calcular_promedio_practicas()
+
+        # Upsert NotaParcial
+        npa = NotaParcial.query.filter_by(curso_id=curso.id, alumno_id=alumno.id).first()
+        if not npa:
+            npa = NotaParcial(curso_id=curso.id, alumno_id=alumno.id, docente_id=docente.id)
+            db.session.add(npa)
+        npa.parcial1 = parcial1
+        npa.parcial2 = parcial2
+        npa.calcular_promedio_parciales()
+
+        # Upsert Nota agregada
+        nota = Nota.query.filter_by(curso_id=curso.id, alumno_id=alumno.id).first()
+        if not nota:
+            nota = Nota(curso_id=curso.id, alumno_id=alumno.id, docente_id=docente.id)
+            db.session.add(nota)
+
+        # Vincular IDs y promedios
+        nota.nota_actividades_id = na.id
+        nota.nota_practicas_id = np.id
+        nota.nota_parcial_id = npa.id
+        nota.promedio_actividades = na.promedio_actividades or 0.0
+        nota.promedio_practicas = np.promedio_practicas or 0.0
+        nota.promedio_parciales = npa.promedio_parciales or 0.0
+        nota.promedio_final = nota.calcular_promedio_final() or 0.0
+        est = estado_form if estado_form in ['borrador', 'publicada'] else 'borrador'
+        nota.estado = 'publicada' if est == 'publicada' else 'borrador'
+
+        try:
+            db.session.flush()  # asegurar IDs para relaciones
+            registros_ok += 1
+        except Exception as e:
+            registros_error += 1
+            errores.append(f'Fila {row_idx}: Error al guardar ({str(e)[:120]}).')
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        flash('Error general al guardar las notas importadas.', 'error')
+        return redirect(url_for('admin.ver_notas'))
+
+    if registros_error:
+        flash(f'Importación completada con {registros_ok} filas correctas y {registros_error} con errores.', 'warning')
+    else:
+        flash(f'Importación completada. {registros_ok} filas procesadas correctamente.', 'success')
+
+    if errores:
+        # Mostrar resumen de primeros errores
+        flash('Ejemplos de errores: ' + '; '.join(errores[:5]), 'warning')
+
+    return redirect(url_for('admin.ver_notas'))
 
 # Gestión de Ciclos Académicos
 @admin_bp.route('/ciclos')
@@ -1758,12 +2128,59 @@ def editar_estilos():
         db.session.commit()
 
     if request.method == 'POST':
-        config.nombre = request.form.get('nombre') or config.nombre
-        config.color_oscuro = request.form.get('color_oscuro') or config.color_oscuro
-        config.color_claro = request.form.get('color_claro') or config.color_claro
-        config.color_medio = request.form.get('color_medio') or config.color_medio
-        config.color_medio_oscuro = request.form.get('color_medio_oscuro') or config.color_medio_oscuro
-        config.color_medio_claro = request.form.get('color_medio_claro') or config.color_medio_claro
+        if request.form.get('reset_default'):
+            # Restaurar valores por defecto
+            config.nombre = 'Default'
+            config.color_oscuro = '#00378F'
+            config.color_claro = '#134093'
+            config.color_medio = '#0A2271'
+            config.color_medio_oscuro = '#05125F'
+            config.color_medio_claro = '#0E3182'
+            config.logo_url = None
+            session.pop('logo_url', None)
+            try:
+                db.session.commit()
+                flash('Estilos y logo restaurados a valores por defecto.', 'success')
+                return redirect(url_for('admin.editar_estilos'))
+            except Exception:
+                db.session.rollback()
+                flash('Error al restaurar los valores por defecto.', 'error')
+        else:
+            config.nombre = request.form.get('nombre') or config.nombre
+            config.color_oscuro = request.form.get('color_oscuro') or config.color_oscuro
+            config.color_claro = request.form.get('color_claro') or config.color_claro
+            config.color_medio = request.form.get('color_medio') or config.color_medio
+            config.color_medio_oscuro = request.form.get('color_medio_oscuro') or config.color_medio_oscuro
+            config.color_medio_claro = request.form.get('color_medio_claro') or config.color_medio_claro
+
+            # Manejar subida de logo (PNG, JPG, JPEG)
+            logo_file = request.files.get('logo')
+            if logo_file and logo_file.filename:
+                filename = secure_filename(logo_file.filename)
+                ext = os.path.splitext(filename)[1].lower()
+                allowed_extensions = {'.png', '.jpg', '.jpeg'}
+                
+                if ext not in allowed_extensions:
+                    flash('El logo debe ser un archivo PNG, JPG o JPEG.', 'error')
+                else:
+                    try:
+                        upload_dir = os.path.join(current_app.root_path, 'static', 'uploads')
+                        os.makedirs(upload_dir, exist_ok=True)
+                        save_path = os.path.join(upload_dir, 'logo.png')
+                        
+                        # Guardar el archivo directamente
+                        logo_file.save(save_path)
+                        # Limpiar la caché del navegador agregando un timestamp a la URL
+                        timestamp = int(time.time())
+                        logo_url = url_for('static', filename=f'uploads/logo.png?t={timestamp}')
+                        session['logo_url'] = logo_url
+                        config.logo_url = logo_url
+                        
+                        flash('Logo actualizado correctamente.', 'success')
+                    except Exception:
+                        flash('Error al subir el logo.', 'error')
+
+        # Guardar cambios de estilos
         try:
             db.session.commit()
             flash('Estilos actualizados correctamente.', 'success')
@@ -1780,10 +2197,10 @@ def theme_css():
     config = ThemeConfig.query.first()
     valores = {
         'color_oscuro': '#00378F',
-        'color_claro': '#3775DA',
-        'color_medio': '#1C56B5',
-        'color_medio_oscuro': '#0E47A2',
-        'color_medio_claro': '#2966C7'
+        'color_claro': '#134093',
+        'color_medio': '#0A2271',
+        'color_medio_oscuro': '#05125F',
+        'color_medio_claro': '#0E3182'
     }
     if config:
         valores.update({
@@ -1793,7 +2210,7 @@ def theme_css():
             'color_medio_oscuro': config.color_medio_oscuro,
             'color_medio_claro': config.color_medio_claro
         })
-    css = f":root{{\n    --color-oscuro: {valores['color_oscuro']};\n    --color-claro: {valores['color_claro']};\n    --color-medio: {valores['color_medio']};\n    --color-medio-oscuro: {valores['color_medio_oscuro']};\n    --color-medio-claro: {valores['color_medio_claro']};\n    --primary-color: {valores['color_oscuro']};\n}}"
+    css = f":root{{\n    --color-oscuro: {valores['color_oscuro']};\n    --color-claro: {valores['color_claro']};\n    --color-medio: {valores['color_medio']};\n    --color-medio-oscuro: {valores['color_medio_oscuro']};\n    --color-medio-claro: {valores['color_medio_claro']};\n    --color-texto-claro: #FFFFFF;\n    --color-texto-oscuro: #000000;\n    --primary-color: {valores['color_medio']};\n}}"
     resp = make_response(css)
     resp.headers['Content-Type'] = 'text/css'
     return resp

@@ -137,11 +137,10 @@
                             <tr>
                                 <th>Curso</th>
                                 <th>Docente</th>
-                                <th>Parcial 1</th>
-                                <th>Parcial 2</th>
-                                <th>Parcial 3</th>
-                                <th>Parcial 4</th>
-                                <th>Nota Final</th>
+                                <th>Promedio Actividades</th>
+                                <th>Promedio Prácticas</th>
+                                <th>Promedio Parciales</th>
+                                <th>Promedio Final</th>
                                 <th>Estado</th>
                                 <th>Última Actualización</th>
                                 <th>Acciones</th>
@@ -166,33 +165,23 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span
-                                        class="badge bg-{{ 'success' if nota.parcial1 >= 10.5 else 'warning' if nota.parcial1 >= 5 else 'danger' if nota.parcial1 > 0 else 'secondary' }}">
-                                        {{ nota.parcial1 if nota.parcial1 > 0 else '-' }}
+                                    <span class="badge bg-{{ 'success' if (nota.promedio_actividades or 0) >= 10.5 else 'warning' if (nota.promedio_actividades or 0) >= 5 else 'danger' if (nota.promedio_actividades or 0) > 0 else 'secondary' }}">
+                                        {{ (nota.promedio_actividades or 0) if (nota.promedio_actividades or 0) > 0 else '-' }}
                                     </span>
                                 </td>
                                 <td>
-                                    <span
-                                        class="badge bg-{{ 'success' if nota.parcial2 >= 10.5 else 'warning' if nota.parcial2 >= 5 else 'danger' if nota.parcial2 > 0 else 'secondary' }}">
-                                        {{ nota.parcial2 if nota.parcial2 > 0 else '-' }}
+                                    <span class="badge bg-{{ 'success' if (nota.promedio_practicas or 0) >= 10.5 else 'warning' if (nota.promedio_practicas or 0) >= 5 else 'danger' if (nota.promedio_practicas or 0) > 0 else 'secondary' }}">
+                                        {{ (nota.promedio_practicas or 0) if (nota.promedio_practicas or 0) > 0 else '-' }}
                                     </span>
                                 </td>
                                 <td>
-                                    <span
-                                        class="badge bg-{{ 'success' if nota.parcial3 >= 10.5 else 'warning' if nota.parcial3 >= 5 else 'danger' if nota.parcial3 > 0 else 'secondary' }}">
-                                        {{ nota.parcial3 if nota.parcial3 > 0 else '-' }}
+                                    <span class="badge bg-{{ 'success' if (nota.promedio_parciales or 0) >= 10.5 else 'warning' if (nota.promedio_parciales or 0) >= 5 else 'danger' if (nota.promedio_parciales or 0) > 0 else 'secondary' }}">
+                                        {{ (nota.promedio_parciales or 0) if (nota.promedio_parciales or 0) > 0 else '-' }}
                                     </span>
                                 </td>
                                 <td>
-                                    <span
-                                        class="badge bg-{{ 'success' if nota.parcial4 >= 10.5 else 'warning' if nota.parcial4 >= 5 else 'danger' if nota.parcial4 > 0 else 'secondary' }}">
-                                        {{ nota.parcial4 if nota.parcial4 > 0 else '-' }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span
-                                        class="badge bg-{{ 'success' if nota.nota_final >= 10.5 else 'warning' if nota.nota_final >= 5 else 'danger' if nota.nota_final > 0 else 'secondary' }}">
-                                        {{ nota.nota_final if nota.nota_final > 0 else '-' }}
+                                    <span class="badge bg-{{ 'success' if (nota.promedio_final or 0) >= 10.5 else 'warning' if (nota.promedio_final or 0) >= 5 else 'danger' if (nota.promedio_final or 0) > 0 else 'secondary' }}">
+                                        {{ (nota.promedio_final or 0) if (nota.promedio_final or 0) > 0 else '-' }}
                                     </span>
                                 </td>
                                 <td>
@@ -279,10 +268,10 @@
                     <div class="col-md-6">
                         <h6>Distribución de Notas</h6>
                         <div class="progress-stats">
-                            {% set notas_aprobadas = notas|selectattr('0.nota_final', 'ge', 10.5)|list %}
-                            {% set notas_desaprobadas = notas|selectattr('0.nota_final', 'lt',
-                            10.5)|selectattr('0.nota_final', 'gt', 0)|list %}
-                            {% set total_con_notas = notas|selectattr('0.nota_final', 'gt', 0)|list %}
+                            {% set notas_aprobadas = notas|selectattr('0.promedio_final', 'ge', 10.5)|list %}
+                            {% set notas_desaprobadas = notas|selectattr('0.promedio_final', 'lt',
+                            10.5)|selectattr('0.promedio_final', 'gt', 0)|list %}
+                            {% set total_con_notas = notas|selectattr('0.promedio_final', 'gt', 0)|list %}
 
                             <div class="progress-item">
                                 <div class="progress-label">
@@ -314,7 +303,7 @@
                         <div class="stats-list">
                             <div class="stat-item">
                                 <i class="fas fa-trophy text-warning"></i>
-                                <span>Mejor Nota: {{ notas|map(attribute='0.nota_final')|max if notas else 0 }}</span>
+                                <span>Mejor Nota: {{ notas|map(attribute='0.promedio_final')|max if notas else 0 }}</span>
                             </div>
                             <div class="stat-item">
                                 <i class="fas fa-chart-line text-info"></i>

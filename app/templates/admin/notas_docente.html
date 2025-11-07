@@ -74,11 +74,10 @@
                             <tr>
                                 <th>Curso</th>
                                 <th>Alumno</th>
-                                <th>Parcial 1</th>
-                                <th>Parcial 2</th>
-                                <th>Parcial 3</th>
-                                <th>Parcial 4</th>
-                                <th>Nota Final</th>
+                                <th>Prom. Actividades</th>
+                                <th>Prom. Prácticas</th>
+                                <th>Prom. Parciales</th>
+                                <th>Promedio Final</th>
                                 <th>Estado</th>
                                 <th>Fecha</th>
                                 <th>Acciones</th>
@@ -99,49 +98,28 @@
                                     <br><small class="text-muted">DNI: {{ alumno.dni }}</small>
                                 </td>
                                 <td>
-                                    {% if nota.parcial1 > 0 %}
-                                    <span class="badge bg-{% if nota.parcial1 >= 13 %}success{% elif nota.parcial1 >= 10 %}warning{% else %}danger{% endif %}">
-                                        {{ "%.1f"|format(nota.parcial1) }}
+                                    {% set pa = nota.promedio_actividades or 0 %}
+                                    <span class="badge bg-{{ 'success' if pa >= 13 else 'warning' if pa >= 10 else 'danger' if pa > 0 else 'secondary' }}">
+                                        {{ "%.1f"|format(pa) if pa > 0 else '-' }}
                                     </span>
-                                    {% else %}
-                                    <span class="text-muted">-</span>
-                                    {% endif %}
                                 </td>
                                 <td>
-                                    {% if nota.parcial2 > 0 %}
-                                    <span class="badge bg-{% if nota.parcial2 >= 13 %}success{% elif nota.parcial2 >= 10 %}warning{% else %}danger{% endif %}">
-                                        {{ "%.1f"|format(nota.parcial2) }}
+                                    {% set pp = nota.promedio_practicas or 0 %}
+                                    <span class="badge bg-{{ 'success' if pp >= 13 else 'warning' if pp >= 10 else 'danger' if pp > 0 else 'secondary' }}">
+                                        {{ "%.1f"|format(pp) if pp > 0 else '-' }}
                                     </span>
-                                    {% else %}
-                                    <span class="text-muted">-</span>
-                                    {% endif %}
                                 </td>
                                 <td>
-                                    {% if nota.parcial3 > 0 %}
-                                    <span class="badge bg-{% if nota.parcial3 >= 13 %}success{% elif nota.parcial3 >= 10 %}warning{% else %}danger{% endif %}">
-                                        {{ "%.1f"|format(nota.parcial3) }}
+                                    {% set ppar = nota.promedio_parciales or 0 %}
+                                    <span class="badge bg-{{ 'success' if ppar >= 13 else 'warning' if ppar >= 10 else 'danger' if ppar > 0 else 'secondary' }}">
+                                        {{ "%.1f"|format(ppar) if ppar > 0 else '-' }}
                                     </span>
-                                    {% else %}
-                                    <span class="text-muted">-</span>
-                                    {% endif %}
                                 </td>
                                 <td>
-                                    {% if nota.parcial4 > 0 %}
-                                    <span class="badge bg-{% if nota.parcial4 >= 13 %}success{% elif nota.parcial4 >= 10 %}warning{% else %}danger{% endif %}">
-                                        {{ "%.1f"|format(nota.parcial4) }}
+                                    {% set pf = nota.promedio_final or 0 %}
+                                    <span class="badge bg-{{ 'success' if pf >= 13 else 'warning' if pf >= 10 else 'danger' if pf > 0 else 'secondary' }} fs-6">
+                                        {{ "%.1f"|format(pf) if pf > 0 else '-' }}
                                     </span>
-                                    {% else %}
-                                    <span class="text-muted">-</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if nota.nota_final > 0 %}
-                                    <span class="badge bg-{% if nota.nota_final >= 13 %}success{% elif nota.nota_final >= 10 %}warning{% else %}danger{% endif %} fs-6">
-                                        {{ "%.1f"|format(nota.nota_final) }}
-                                    </span>
-                                    {% else %}
-                                    <span class="text-muted">-</span>
-                                    {% endif %}
                                 </td>
                                 <td>
                                     {% if nota.estado == 'publicada' %}

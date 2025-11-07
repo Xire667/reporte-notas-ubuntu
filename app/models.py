@@ -350,13 +350,14 @@ class ThemeConfig(db.Model):
     __tablename__ = 'theme_config'
 
     id = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(50), default='Default')
-    color_oscuro = db.Column(db.String(7), default='#00378F')
-    color_claro = db.Column(db.String(7), default='#3775DA')
-    color_medio = db.Column(db.String(7), default='#1C56B5')
-    color_medio_oscuro = db.Column(db.String(7), default='#0E47A2')
-    color_medio_claro = db.Column(db.String(7), default='#2966C7')
-    actualizado_en = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    nombre = db.Column(db.String(50), default='Default')  # Nombre del tema
+    color_oscuro = db.Column(db.String(7), default='#00378F')  # Color principal oscuro (formato hexadecimal)
+    color_claro = db.Column(db.String(7), default='#134093')  # Color principal claro
+    color_medio = db.Column(db.String(7), default='#0A2271')  # Color intermedio
+    color_medio_oscuro = db.Column(db.String(7), default='#05125F')  # Variante oscura del color intermedio
+    color_medio_claro = db.Column(db.String(7), default='#0E3182')  # Variante clara del color intermedio
+    actualizado_en = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)  # Fecha de última actualización
+    logo_url = db.Column(db.String(255), default=None)  # Ruta del logo personalizado
 
     def __repr__(self):
         return f'<ThemeConfig {self.nombre}>'

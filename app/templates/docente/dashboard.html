@@ -1,4 +1,4 @@
-﻿{% extends "global/base_sistema.html" %}
+{% extends "global/base_sistema.html" %}
 
 {% block title %}Mis Cursos - Docente{% endblock %}
 
@@ -10,9 +10,15 @@
         </h2>
     </div>
     <div class="col-auto">
-        <a href="{{ url_for('docente.reportes') }}" class="btn btn-secondary">
+        <a href="{{ url_for('docente.reportes') }}" class="btn btn-secondary me-2">
             <i class="fas fa-file-alt me-1"></i>Reportes
         </a>
+        <button type="button" class="btn btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#modalDescargarPlantillaDocente">
+            <i class="fas fa-file-download me-1"></i>Descargar Plantilla Excel
+        </button>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalImportarNotasDocente">
+            <i class="fas fa-file-upload me-1"></i>Importar Notas
+        </button>
     </div>
 </div>
 
@@ -57,5 +63,121 @@
             </div>
         </div>
     {% endif %}
+</div>
+
+<!-- Modal Descargar Plantilla (Docente) -->
+<div class="modal fade" id="modalDescargarPlantillaDocente" tabindex="-1" aria-labelledby="modalDescargarPlantillaDocenteLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalDescargarPlantillaDocenteLabel">Descargar Plantilla Excel</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <form action="{{ url_for('docente.descargar_plantilla_notas_docente') }}" method="get">
+        <div class="modal-body">
+          <p class="text-muted">Elige ciclo y curso para descargar una plantilla con estudiantes y notas existentes prellenadas.</p>
+          <div class="mb-3">
+            <label for="ciclo_select" class="form-label">Ciclo Académico</label>
+            <select id="ciclo_select" class="form-select">
+              <option value="" selected disabled>Selecciona un ciclo</option>
+              {% for ciclo in ciclos %}
+                <option value="{{ ciclo.id }}">{{ ciclo.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="curso_id" class="form-label">Curso</label>
+            <select id="curso_id" name="curso_id" class="form-select" required>
+              <option value="" selected disabled>Selecciona un curso</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Descargar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const cicloSelect = document.getElementById('ciclo_select');
+  const cursoSelect = document.getElementById('curso_id');
+  const resetCursos = () => {
+    cursoSelect.innerHTML = '<option value="" selected disabled>Selecciona un curso</option>';
+  };
+  if (cicloSelect) {
+    cicloSelect.addEventListener('change', async function() {
+      const cicloId = this.value;
+      resetCursos();
+      if (!cicloId) return;
+      try {
+        const resp = await fetch(`/docente/api/cursos_por_ciclo/${cicloId}`);
+        const data = await resp.json();
+        if (Array.isArray(data)) {
+          data.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = `${c.codigo} - ${c.nombre}`;
+            cursoSelect.appendChild(opt);
+          });
+        }
+      } catch (e) {
+        console.error('Error cargando cursos del ciclo', e);
+      }
+    });
+  }
+});
+</script>
+
+<!-- Modal Importar Notas (Docente) -->
+<div class="modal fade" id="modalImportarNotasDocente" tabindex="-1" aria-labelledby="modalImportarNotasDocenteLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalImportarNotasDocenteLabel">Importar Notas desde Excel</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <form action="{{ url_for('docente.importar_notas_excel') }}" method="post" enctype="multipart/form-data">
+        <div class="modal-body">
+          <p class="text-muted">Selecciona el curso y sube un archivo Excel (.xlsx) con las columnas: DNI, Nombre, Apellido, Actividad1–8, Practica1–4, Parcial1–2.</p>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="curso_id" class="form-label">Curso</label>
+              <select class="form-select" id="curso_id" name="curso_id" required>
+                <option value="" selected disabled>Selecciona un curso</option>
+                {% for curso in cursos %}
+                  <option value="{{ curso.id }}">{{ curso.codigo }} - {{ curso.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="estado" class="form-label">Estado</label>
+              <select class="form-select" id="estado" name="estado">
+                <option value="borrador">Borrador</option>
+                <option value="publicada">Publicada</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-check my-3">
+            <input class="form-check-input" type="checkbox" value="on" id="forzar_matricula" name="forzar_matricula">
+            <label class="form-check-label" for="forzar_matricula">
+              Forzar matrícula al curso si falta (evita errores por alumnos no matriculados).
+            </label>
+          </div>
+          <div class="mb-3">
+            <label for="archivo_excel" class="form-label">Archivo Excel (.xlsx)</label>
+            <input class="form-control" type="file" id="archivo_excel" name="archivo_excel" accept=".xlsx" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Importar</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 {% endblock %}

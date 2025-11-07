@@ -175,35 +175,23 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span
-                                        class="badge bg-{{ 'success' if nota.parcial1 >= 10.5 else 'warning' if nota.parcial1 >= 5 else 'danger' if nota.parcial1 > 0 else 'secondary' }}">
-                                        {{ nota.parcial1 if nota.parcial1 > 0 else '-' }}
+                                    <span class="badge bg-{{ 'success' if (nota.promedio_actividades or 0) >= 10.5 else 'warning' if (nota.promedio_actividades or 0) >= 5 else 'danger' if (nota.promedio_actividades or 0) > 0 else 'secondary' }}">
+                                        {{ (nota.promedio_actividades or 0) if (nota.promedio_actividades or 0) > 0 else '-' }}
                                     </span>
                                 </td>
                                 <td>
-                                    <span
-                                        class="badge bg-{{ 'success' if nota.parcial2 >= 10.5 else 'warning' if nota.parcial2 >= 5 else 'danger' if nota.parcial2 > 0 else 'secondary' }}">
-                                        {{ nota.parcial2 if nota.parcial2 > 0 else '-' }}
+                                    <span class="badge bg-{{ 'success' if (nota.promedio_practicas or 0) >= 10.5 else 'warning' if (nota.promedio_practicas or 0) >= 5 else 'danger' if (nota.promedio_practicas or 0) > 0 else 'secondary' }}">
+                                        {{ (nota.promedio_practicas or 0) if (nota.promedio_practicas or 0) > 0 else '-' }}
                                     </span>
                                 </td>
                                 <td>
-                                    <span
-                                        class="badge bg-{{ 'success' if nota.parcial3 >= 10.5 else 'warning' if nota.parcial3 >= 5 else 'danger' if nota.parcial3 > 0 else 'secondary' }}">
-                                        {{ nota.parcial3 if nota.parcial3 > 0 else '-' }}
+                                    <span class="badge bg-{{ 'success' if (nota.promedio_parciales or 0) >= 10.5 else 'warning' if (nota.promedio_parciales or 0) >= 5 else 'danger' if (nota.promedio_parciales or 0) > 0 else 'secondary' }}">
+                                        {{ (nota.promedio_parciales or 0) if (nota.promedio_parciales or 0) > 0 else '-' }}
                                     </span>
                                 </td>
-                                {% if curso.numero_parciales >= 4 %}
                                 <td>
-                                    <span
-                                        class="badge bg-{{ 'success' if nota.parcial4 >= 10.5 else 'warning' if nota.parcial4 >= 5 else 'danger' if nota.parcial4 > 0 else 'secondary' }}">
-                                        {{ nota.parcial4 if nota.parcial4 > 0 else '-' }}
-                                    </span>
-                                </td>
-                                {% endif %}
-                                <td>
-                                    <span
-                                        class="badge bg-{{ 'success' if nota.nota_final >= 10.5 else 'warning' if nota.nota_final >= 5 else 'danger' if nota.nota_final > 0 else 'secondary' }}">
-                                        {{ nota.nota_final if nota.nota_final > 0 else '-' }}
+                                    <span class="badge bg-{{ 'success' if (nota.promedio_final or 0) >= 10.5 else 'warning' if (nota.promedio_final or 0) >= 5 else 'danger' if (nota.promedio_final or 0) > 0 else 'secondary' }}">
+                                        {{ (nota.promedio_final or 0) if (nota.promedio_final or 0) > 0 else '-' }}
                                     </span>
                                 </td>
                                 <td>

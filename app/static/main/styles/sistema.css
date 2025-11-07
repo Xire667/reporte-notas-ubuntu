@@ -1,14 +1,14 @@
 /* Estilos para el Sistema de Gestión de Notas */
 
 :root {
-    --primary-color: #0a2271;
-    --secondary-color: #6c757d;
+    --primary-color: var(--color-medio);
+    --secondary-color: var(--color-claro);
     --success-color: #198754;
     --danger-color: #dc3545;
     --warning-color: #ffc107;
     --info-color: #0dcaf0;
-    --light-color: #f8f9fa;
-    --dark-color: #212529;
+    --light-color: var(--color-texto-claro);
+    --dark-color: var(--color-texto-oscuro);
 }
 
 body {
@@ -31,7 +31,87 @@ body {
 }
 
 .navbar-nav .nav-link:hover {
-    color: rgba(255, 255, 255, 0.8) !important;
+    color: var(--color-texto-claro) !important;
+    opacity: 0.85;
+}
+
+/* Logo en la barra de navegación */
+.navbar-logo {
+    height: 40px;
+    width: auto;
+    max-width: 160px;
+    display: inline-block;
+    object-fit: contain;
+    padding: 4px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.navbar-logo:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Estilos para la sección de subida de logo */
+.logo-upload-area {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.logo-upload-area:hover {
+    border-color: #0d6efd;
+    background-color: #e7f1ff;
+}
+
+.logo-upload-area.dragover {
+    border-color: #0d6efd;
+    background-color: #e7f1ff;
+    transform: scale(1.02);
+}
+
+.logo-thumbnail {
+    height: 50px;
+    width: auto;
+    max-width: 80px;
+    object-fit: contain;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+.upload-content {
+    transition: all 0.3s ease;
+}
+
+.logo-upload-area:hover .upload-content {
+    transform: translateY(-2px);
+}
+
+.new-logo-preview {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.logo-preview-container .current-logo {
+    transition: all 0.3s ease;
+}
+
+.logo-preview-container .current-logo:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 /* Cards personalizadas */
@@ -146,7 +226,7 @@ body {
 .sidebar-menu a {
     display: block;
     padding: 15px 20px;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--color-texto-claro, rgba(255, 255, 255, 0.9));
     text-decoration: none;
     transition: all 0.3s ease;
     position: relative;
@@ -201,7 +281,7 @@ body {
 }
 
 .sidebar-toggle:hover {
-    background: #0d47a1;
+    background: var(--color-medio-oscuro);
     transform: scale(1.05);
 }
 
@@ -462,7 +542,7 @@ footer {
 }
 
 .nav-link{
-    color: #fff !important;
+    color: var(--color-texto-claro) !important;
 }
 
 /* Tabla de notas del alumno */

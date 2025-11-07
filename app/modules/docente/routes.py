@@ -1,7 +1,7 @@
 from flask import render_template, request, redirect, url_for, flash, jsonify, make_response, abort
 from flask_login import login_required, current_user
 from app import db
-from app.models import Usuario, Curso, CursoDocente, CursoAlumno, Nota, NotaActividades, NotaPracticas, NotaParcial
+from app.models import Usuario, Curso, CursoDocente, CursoAlumno, Nota, NotaActividades, NotaPracticas, NotaParcial, CicloAcademico
 from . import docente_bp
 
 def docente_required(f):
@@ -23,8 +23,11 @@ def dashboard():
     cursos_asignados = db.session.query(Curso).join(CursoDocente).filter(
         CursoDocente.docente_id == current_user.id
     ).all()
+    # Ciclos presentes en los cursos del docente
+    ciclos_ids = {c.ciclo_academico_id for c in cursos_asignados if getattr(c, 'ciclo_academico_id', None)}
+    ciclos = CicloAcademico.query.filter(CicloAcademico.id.in_(list(ciclos_ids))).order_by(CicloAcademico.orden).all() if ciclos_ids else []
     
-    return render_template('docente/dashboard.html', cursos=cursos_asignados)
+    return render_template('docente/dashboard.html', cursos=cursos_asignados, ciclos=ciclos)
 
 @docente_bp.route('/cursos/<int:curso_id>/alumnos')
 @login_required
@@ -625,4 +628,254 @@ def reporte_curso_pdf(curso_id):
     response.headers['Content-Type'] = 'application/pdf'
     response.headers['Content-Disposition'] = f"attachment; filename=reporte_curso_{curso.codigo}.pdf"
     return response
+
+@docente_bp.route('/api/cursos_por_ciclo/<int:ciclo_id>')
+@login_required
+@docente_required
+def api_cursos_por_ciclo_docente(ciclo_id):
+    cursos = db.session.query(Curso).join(CursoDocente).filter(
+        CursoDocente.docente_id == current_user.id,
+        Curso.ciclo_academico_id == ciclo_id
+    ).order_by(Curso.codigo).all()
+    return jsonify([{'id': c.id, 'codigo': c.codigo, 'nombre': c.nombre} for c in cursos])
+
+@docente_bp.route('/notas/descargar_plantilla', methods=['GET'])
+@login_required
+@docente_required
+def descargar_plantilla_notas_docente():
+    """Genera una plantilla Excel con alumnos del curso y notas existentes prellenadas"""
+    from io import BytesIO
+    try:
+        import openpyxl
+    except ImportError:
+        flash('openpyxl no está disponible en el servidor. Contacta al administrador.', 'error')
+        return redirect(url_for('docente.dashboard'))
+
+    curso_id = request.args.get('curso_id', type=int)
+    if not curso_id:
+        flash('Debes seleccionar un curso.', 'error')
+        return redirect(url_for('docente.dashboard'))
+    curso = Curso.query.get(curso_id)
+    if not curso:
+        flash('Curso no válido.', 'error')
+        return redirect(url_for('docente.dashboard'))
+    # Validar que el curso pertenece al docente
+    if not CursoDocente.query.filter_by(curso_id=curso.id, docente_id=current_user.id).first():
+        flash('No tienes asignado este curso.', 'error')
+        return redirect(url_for('docente.dashboard'))
+
+    # Crear workbook y headers
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = 'Notas'
+    headers = ['DNI', 'Nombre', 'Apellido'] + [f'Actividad{i}' for i in range(1, 9)] + [f'Practica{i}' for i in range(1, 5)] + ['Parcial1', 'Parcial2']
+    ws.append(headers)
+
+    # Alumnos del curso (solo rol alumno activo)
+    estudiantes = db.session.query(Usuario).join(CursoAlumno).filter(
+        CursoAlumno.curso_id == curso.id,
+        Usuario.rol == 'alumno',
+        Usuario.activo == True
+    ).order_by(Usuario.apellido, Usuario.nombre).all()
+
+    for est in estudiantes:
+        act_vals = ['']*8
+        prac_vals = ['']*4
+        parciales = ['']*2
+        na = NotaActividades.query.filter_by(curso_id=curso.id, alumno_id=est.id).first()
+        np = NotaPracticas.query.filter_by(curso_id=curso.id, alumno_id=est.id).first()
+        npa = NotaParcial.query.filter_by(curso_id=curso.id, alumno_id=est.id).first()
+        if na:
+            act_vals = [na.actividad1 or '', na.actividad2 or '', na.actividad3 or '', na.actividad4 or '', na.actividad5 or '', na.actividad6 or '', na.actividad7 or '', na.actividad8 or '']
+        if np:
+            prac_vals = [np.practica1 or '', np.practica2 or '', np.practica3 or '', np.practica4 or '']
+        if npa:
+            parciales = [npa.parcial1 or '', npa.parcial2 or '']
+        ws.append([est.dni or '', est.nombre or '', est.apellido or ''] + act_vals + prac_vals + parciales)
+
+    if not estudiantes:
+        ws.append(['', '', ''] + ['']*8 + ['']*4 + ['']*2)
+
+    nombre_archivo = f"plantilla_notas_{curso.codigo}.xlsx" if curso and curso.codigo else 'plantilla_notas.xlsx'
+    mem = BytesIO()
+    wb.save(mem)
+    mem.seek(0)
+    resp = make_response(mem.getvalue())
+    resp.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    resp.headers['Content-Disposition'] = f'attachment; filename={nombre_archivo}'
+    return resp
+@docente_bp.route('/notas/importar', methods=['POST'])
+@login_required
+@docente_required
+def importar_notas_excel():
+    """Importa notas desde Excel para cursos del docente actual"""
+    file = request.files.get('archivo_excel')
+    if not file:
+        flash('No se adjuntó ningún archivo.', 'error')
+        return redirect(url_for('docente.dashboard'))
+
+    from werkzeug.utils import secure_filename
+    filename = secure_filename(file.filename)
+    if not filename.lower().endswith('.xlsx'):
+        flash('Formato inválido. Solo se acepta .xlsx.', 'error')
+        return redirect(url_for('docente.dashboard'))
+
+    try:
+        import openpyxl
+        wb = openpyxl.load_workbook(file, data_only=True)
+        ws = wb.active
+    except Exception:
+        flash('No se pudo leer el archivo Excel.', 'error')
+        return redirect(url_for('docente.dashboard'))
+
+    # Curso desde formulario, validar que pertenece al docente
+    curso_id = request.form.get('curso_id', type=int)
+    if not curso_id:
+        flash('Debes seleccionar un curso para importar.', 'error')
+        return redirect(url_for('docente.dashboard'))
+    curso = Curso.query.get(curso_id)
+    if not curso:
+        flash('Curso no válido.', 'error')
+        return redirect(url_for('docente.dashboard'))
+    if not CursoDocente.query.filter_by(curso_id=curso.id, docente_id=current_user.id).first():
+        flash('No tienes asignado este curso.', 'error')
+        return redirect(url_for('docente.dashboard'))
+
+    estado_form = request.form.get('estado', 'borrador').strip().lower()
+    forzar_matricula = request.form.get('forzar_matricula') == 'on'
+
+    # Mapear encabezados
+    header_row = [str(c.value).strip() if c.value is not None else '' for c in ws[1]]
+    expected = {
+        'DNI': None, 'Nombre': None, 'Apellido': None,
+        'Actividad1': None, 'Actividad2': None, 'Actividad3': None, 'Actividad4': None,
+        'Actividad5': None, 'Actividad6': None, 'Actividad7': None, 'Actividad8': None,
+        'Practica1': None, 'Practica2': None, 'Practica3': None, 'Practica4': None,
+        'Parcial1': None, 'Parcial2': None
+    }
+    idx_map = {}
+    for i, h in enumerate(header_row):
+        if h in expected:
+            idx_map[h] = i
+
+    required_missing = [k for k in ['DNI'] if k not in idx_map]
+    if required_missing:
+        flash(f'Faltan columnas obligatorias en el Excel: {", ".join(required_missing)}', 'error')
+        return redirect(url_for('docente.dashboard'))
+
+    registros_ok = 0
+    registros_error = 0
+    errores = []
+
+    def to_float(val):
+        try:
+            if val is None or str(val).strip() == '':
+                return 0.0
+            return float(val)
+        except Exception:
+            return 0.0
+
+    for row_idx in range(2, ws.max_row + 1):
+        dni = ws.cell(row=row_idx, column=idx_map.get('DNI') + 1).value if 'DNI' in idx_map else None
+        if not dni:
+            continue
+
+        alumno = Usuario.query.filter_by(dni=str(dni).strip()).first()
+        if not alumno:
+            registros_error += 1
+            errores.append(f'Fila {row_idx}: Alumno con DNI {dni} no encontrado.')
+            continue
+
+        # Validar matrícula; si falta, permitir si existen notas o forzar
+        matricula = CursoAlumno.query.filter_by(curso_id=curso.id, alumno_id=alumno.id).first()
+        if not matricula:
+            notas_previas = (
+                NotaActividades.query.filter_by(curso_id=curso.id, alumno_id=alumno.id).first() or
+                NotaPracticas.query.filter_by(curso_id=curso.id, alumno_id=alumno.id).first() or
+                NotaParcial.query.filter_by(curso_id=curso.id, alumno_id=alumno.id).first() or
+                Nota.query.filter_by(curso_id=curso.id, alumno_id=alumno.id).first()
+            )
+            if notas_previas:
+                pass
+            elif forzar_matricula:
+                try:
+                    nueva = CursoAlumno(curso_id=curso.id, alumno_id=alumno.id)
+                    db.session.add(nueva)
+                    db.session.flush()
+                except Exception as e:
+                    registros_error += 1
+                    errores.append(f'Fila {row_idx}: No se pudo matricular automáticamente ({str(e)[:90]}).')
+                    continue
+            else:
+                registros_error += 1
+                errores.append(f'Fila {row_idx}: Alumno con DNI {dni} no está matriculado en el curso seleccionado.')
+                continue
+
+        # Docente es el usuario actual
+        docente = current_user
+
+        # Notas
+        act_vals = [to_float(ws.cell(row=row_idx, column=idx_map.get(f'Actividad{i}') + 1).value) if f'Actividad{i}' in idx_map else 0.0 for i in range(1, 9)]
+        prac_vals = [to_float(ws.cell(row=row_idx, column=idx_map.get(f'Practica{i}') + 1).value) if f'Practica{i}' in idx_map else 0.0 for i in range(1, 5)]
+        parcial1 = to_float(ws.cell(row=row_idx, column=idx_map.get('Parcial1') + 1).value) if 'Parcial1' in idx_map else 0.0
+        parcial2 = to_float(ws.cell(row=row_idx, column=idx_map.get('Parcial2') + 1).value) if 'Parcial2' in idx_map else 0.0
+
+        na = NotaActividades.query.filter_by(curso_id=curso.id, alumno_id=alumno.id).first()
+        if not na:
+            na = NotaActividades(curso_id=curso.id, alumno_id=alumno.id, docente_id=docente.id)
+            db.session.add(na)
+        na.actividad1, na.actividad2, na.actividad3, na.actividad4, na.actividad5, na.actividad6, na.actividad7, na.actividad8 = act_vals
+        na.calcular_promedio_actividades()
+
+        np = NotaPracticas.query.filter_by(curso_id=curso.id, alumno_id=alumno.id).first()
+        if not np:
+            np = NotaPracticas(curso_id=curso.id, alumno_id=alumno.id, docente_id=docente.id)
+            db.session.add(np)
+        np.practica1, np.practica2, np.practica3, np.practica4 = prac_vals
+        np.calcular_promedio_practicas()
+
+        npa = NotaParcial.query.filter_by(curso_id=curso.id, alumno_id=alumno.id).first()
+        if not npa:
+            npa = NotaParcial(curso_id=curso.id, alumno_id=alumno.id, docente_id=docente.id)
+            db.session.add(npa)
+        npa.parcial1 = parcial1
+        npa.parcial2 = parcial2
+        npa.calcular_promedio_parciales()
+
+        nota = Nota.query.filter_by(curso_id=curso.id, alumno_id=alumno.id).first()
+        if not nota:
+            nota = Nota(curso_id=curso.id, alumno_id=alumno.id, docente_id=docente.id)
+            db.session.add(nota)
+
+        nota.nota_actividades_id = na.id
+        nota.nota_practicas_id = np.id
+        nota.nota_parcial_id = npa.id
+        nota.promedio_actividades = na.promedio_actividades or 0.0
+        nota.promedio_practicas = np.promedio_practicas or 0.0
+        nota.promedio_parciales = npa.promedio_parciales or 0.0
+        nota.promedio_final = nota.calcular_promedio_final() or 0.0
+        est = estado_form if estado_form in ['borrador', 'publicada'] else 'borrador'
+        nota.estado = 'publicada' if est == 'publicada' else 'borrador'
+
+        try:
+            db.session.flush()
+            registros_ok += 1
+        except Exception as e:
+            registros_error += 1
+            errores.append(f'Fila {row_idx}: Error al guardar ({str(e)[:120]}).')
+
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        flash('Error general al guardar las notas importadas.', 'error')
+        return redirect(url_for('docente.dashboard'))
+
+    if registros_error:
+        flash(f'Importación completada con {registros_ok} filas correctas y {registros_error} con errores.', 'warning')
+    else:
+        flash(f'Importación completada. {registros_ok} filas procesadas correctamente.', 'success')
+    if errores:
+        flash('Ejemplos de errores: ' + '; '.join(errores[:5]), 'warning')
+    return redirect(url_for('docente.dashboard'))
 

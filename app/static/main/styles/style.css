@@ -1,13 +1,13 @@
 /* Variables de diseño */
 :root {
-    --color-primario: #1a4b8c;
-    --color-primario-oscuro: #0d3a6e;
-    --color-primario-claro: #2a6ec6;
-    --color-secundario: #f8f9fa;
+    --color-primario: var(--primary-color);
+    --color-primario-oscuro: var(--color-medio-oscuro);
+    --color-primario-claro: var(--color-medio-claro);
+    --color-secundario: var(--color-claro);
     --color-accento: #ff6b35;
-    --color-texto: #333;
-    --color-texto-claro: #6c757d;
-    --color-blanco: #ffffff;
+    --color-texto: var(--color-texto-oscuro);
+    --color-texto-claro: var(--color-texto-claro);
+    --color-blanco: var(--color-texto-claro);
     --color-gris-claro: #e9ecef;
     --radio-borde: 8px;
     --sombra-caja: 0 4px 12px rgba(0, 0, 0, 0.1);
