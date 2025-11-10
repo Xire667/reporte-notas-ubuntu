@@ -21,7 +21,8 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('main.index') }}">
-                <img src="{{ url_for('static', filename='main/assets/img/logo-dsi.png') }}" alt="Logo DSI" style="height:38px; width:auto; margin-right:8px;">
+                {% set logo_default = url_for('static', filename='main/assets/img/logo-dsi.png') %}
+                <img src="{{ session_logo_url or (theme_config.logo_url if theme_config and theme_config.logo_url else logo_default) }}" alt="Logo DSI" style="height:38px; width:auto; margin-right:8px;">
                 Sistema de Gestion de Academica
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">

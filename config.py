@@ -3,10 +3,22 @@ Archivo de configuración para el Sistema de Gestión de Notas
 """
 
 import os
+import sys
 from dotenv import load_dotenv
 
 # Cargar variables de entorno desde .env
-load_dotenv()
+# 1) Si existe .env en el directorio actual, usarlo.
+# 2) En ejecutable one-file, usar el directorio de extracción (_MEIPASS) si existe.
+cwd_env = os.path.join(os.getcwd(), '.env')
+if os.path.exists(cwd_env):
+    load_dotenv(cwd_env)
+else:
+    base_dir = getattr(sys, '_MEIPASS', None)
+    if base_dir:
+        load_dotenv(os.path.join(base_dir, '.env'))
+    else:
+        # Fallback a búsqueda estándar si no hay archivo específico
+        load_dotenv()
 
 class Config:
     """Configuración base"""

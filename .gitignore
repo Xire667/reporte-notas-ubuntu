@@ -1,5 +1,7 @@
-# Ignora el entorno virtual
+# Entornos virtuales (no se suben)
 venv/
+venv311/
+.venv/
 
 # Archivos de Python compilados
 __pycache__/
@@ -8,5 +10,19 @@ __pycache__/
 # Configuración de entorno
 .env
 
-# Archivos de logs
+# Artefactos de build y distribución
+dist/
+build/
+
+# Logs locales
+logs/
 *.log
+log.txt
+
+# IDE/editor
+.vscode/
+.idea/
+
+# Sistema operativos
+.DS_Store
+Thumbs.db

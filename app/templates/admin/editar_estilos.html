@@ -16,7 +16,7 @@
       </div>
       <div class="card-body">
         <!-- Formulario para modificar los colores del tema -->
-        <form method="POST" action="{{ url_for('admin.editar_estilos') }}">
+<form method="POST" action="{{ url_for('admin.editar_estilos') }}" enctype="multipart/form-data">
           <!-- Campo para el nombre del tema -->
           <div class="mb-3">
             <label class="form-label">Nombre del tema</label>
@@ -65,6 +65,7 @@
                 <img src="{{ url_for('static', filename='main/assets/img/logo-dsi.png') }}" alt="Logo por defecto" style="max-width:80px; max-height:40px; display:block; margin-bottom:8px;">
               {% endif %}
               <input type="file" name="logo" accept="image/*">
+              <div class="form-text">Formatos permitidos: PNG, JPG, JPEG. Tamaño máximo recomendado: 5 MB.</div>
             </div>
           </div>
           

@@ -36,7 +36,7 @@ Sistema web desarrollado en Flask para la gestión académica del Instituto Supe
 
 ## 📋 Requisitos del Sistema
 
-- Python 3.8+
+- Python 3.11 (recomendado)
 - MySQL 5.7+ o MariaDB 10.3+
 - XAMPP (recomendado para desarrollo)
 
@@ -48,20 +48,28 @@ git clone <url-del-repositorio>
 cd reporte-notas-ubuntu
 ```
 
-### 2. Crear entorno virtual
+### 2. Crear entorno virtual (venv311)
 ```bash
-python -m venv venv
+# Crear el entorno virtual con Python 3.11
+python -m venv venv311
 
 # En Windows
-venv\Scripts\activate
+venv311\Scripts\activate
 
 # En Linux/Mac
-source venv/bin/activate
+source venv311/bin/activate
 ```
+
+> Nota: el entorno virtual no se sube a GitHub. Cada colaborador crea su propio `venv311` local y ejecuta `pip install -r requirements.txt`. El archivo `.gitignore` ya excluye `venv/`, `venv311/` y `.venv/`.
 
 ### 3. Instalar dependencias
 ```bash
 pip install -r requirements.txt
+```
+
+Para construir el ejecutable en desarrollo, instala además las dependencias de build:
+```bash
+pip install -r requirements-dev.txt
 ```
 
 ### 4. Configurar la base de datos
@@ -82,18 +90,82 @@ USE sistema_academico;
 
 ### 5. Configurar la aplicación
 
-Editar `app/__init__.py` y actualizar la configuración de la base de datos:
+Configura tu `.env` a partir de `.env.example` (no se sube a GitHub):
 
-```python
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://usuario:contraseña@localhost/sistema_academico'
+```ini
+SECRET_KEY=tu_clave_secreta_muy_segura_aqui
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=sistema_academico
+FLASK_ENV=development
 ```
 
-### 6. Ejecutar la aplicación
+La aplicación lee variables desde `.env` usando `config.py`.
+
+### 6. Ejecutar la aplicación (desarrollo)
 ```bash
-python app.py
+python run_server.py
 ```
 
-La aplicación estará disponible en: `http://localhost:5000`
+La aplicación estará disponible en: `http://127.0.0.1:5000/`
+
+## 🚀 Distribución como ejecutable en Windows
+
+Sigue estos pasos para crear un ejecutable que arranque el servidor local y abra el navegador automáticamente.
+
+### 1) Preparar entorno
+- Activa tu entorno virtual y luego instala dependencias:
+  ```powershell
+  venv\Scripts\activate
+  pip install -r requirements.txt
+  pip install pyinstaller
+  ```
+- Configura tu `.env` (puedes copiar desde `.env.example`):
+  ```ini
+  SECRET_KEY=tu_clave_secreta_muy_segura_aqui
+  DB_HOST=localhost
+  DB_USER=root
+  DB_PASSWORD=
+  DB_NAME=sistema_academico
+  FLASK_ENV=development
+  ```
+
+### 2) Script de arranque
+- Usa `run_server.py` (incluido) que:
+  - Conecta a MySQL (XAMPP) usando `config.py` y tu `.env`.
+  - Verifica conectividad a MySQL antes de iniciar.
+  - Arranca el servidor WSGI con `waitress` en `http://127.0.0.1:5000/`.
+  - Abre el navegador automáticamente.
+
+### 3) Generar el ejecutable
+- Opción A (recomendada): usa el script `build_exe.bat`:
+  ```powershell
+  .\build_exe.bat
+  ```
+- Opción B: comando PyInstaller manual (usa `;` en `--add-data` en Windows):
+  ```powershell
+  pyinstaller --noconfirm --clean ^
+    --add-data "app/templates;app/templates" ^
+    --add-data "app/static;app/static" ^
+    --add-data ".env;." ^
+    --name "SistemaNotas" run_server.py
+  ```
+
+### 4) Primera ejecución y base de datos
+- Enciende XAMPP y activa `MySQL`.
+- Ajusta `.env` con tus credenciales.
+- El `.exe` verifica el servidor MySQL y credenciales; si la base `DB_NAME` no existe, la crea, crea tablas y hace seed inicial.
+
+### 5) Opcional: Instalador MSI/EXE
+- Usa Inno Setup o NSIS para crear un instalador que:
+  - Copie `dist/SistemaNotas/`.
+  - Cree accesos directos.
+  - Incluya `.env` y archivos necesarios.
+
+### 6) Notas
+- `waitress` es adecuado para Windows y entorno local.
+- Comprueba firewall/antivirus si hay bloqueos.
 
 ## 📁 Estructura del Proyecto
 
@@ -118,9 +190,17 @@ reporte-notas-ubuntu/
 │   └── static/                  # Archivos estáticos
 │       └── main/
 │           └── styles/          # CSS personalizado
-├── app.py                       # Punto de entrada de la aplicación
+├── run_server.py                # Punto de entrada recomendado
 ├── requirements.txt             # Dependencias de Python
+├── build_exe.bat                # Script para empaquetar con PyInstaller
 └── README.md                    # Este archivo
+
+## 🧰 Buenas prácticas para subir a GitHub
+
+- No subas: `venv/`, `venv311/`, `.venv/`, `dist/`, `build/`, `logs/`, `.env`.
+- Asegúrate de que `requirements.txt` esté actualizado (`pip freeze > requirements.txt`).
+- Usa `.env.example` para compartir la forma de configurar variables sin exponer credenciales.
+- Documenta versiones recomendadas (Python 3.11) y comandos de setup (crear venv, instalar dependencias).
 ```
 
 ## 🗄️ Estructura de la Base de Datos

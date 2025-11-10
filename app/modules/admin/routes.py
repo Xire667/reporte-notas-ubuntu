@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from app import db
 from app.models import Usuario, Curso, CursoDocente, CursoAlumno, CicloAcademico, MatriculaAlumno, Nota, NotaActividades, NotaPracticas, NotaParcial, ThemeConfig
 from . import admin_bp
+from app.modules.uploads import get_persistent_upload_dir
 from werkzeug.utils import secure_filename
 import os
 import time
@@ -2125,7 +2126,12 @@ def editar_estilos():
     if not config:
         config = ThemeConfig()
         db.session.add(config)
-        db.session.commit()
+        try:
+            db.session.commit()
+            current_app.logger.info('ThemeConfig creado por primera vez')
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.exception('Error creando ThemeConfig inicial: %s', e)
 
     if request.method == 'POST':
         if request.form.get('reset_default'):
@@ -2140,10 +2146,12 @@ def editar_estilos():
             session.pop('logo_url', None)
             try:
                 db.session.commit()
+                current_app.logger.info('Valores por defecto restaurados (incluye logo_url=None)')
                 flash('Estilos y logo restaurados a valores por defecto.', 'success')
                 return redirect(url_for('admin.editar_estilos'))
-            except Exception:
+            except Exception as e:
                 db.session.rollback()
+                current_app.logger.exception('Error al restaurar valores por defecto: %s', e)
                 flash('Error al restaurar los valores por defecto.', 'error')
         else:
             config.nombre = request.form.get('nombre') or config.nombre
@@ -2153,40 +2161,73 @@ def editar_estilos():
             config.color_medio_oscuro = request.form.get('color_medio_oscuro') or config.color_medio_oscuro
             config.color_medio_claro = request.form.get('color_medio_claro') or config.color_medio_claro
 
-            # Manejar subida de logo (PNG, JPG, JPEG)
+            # Manejar subida de logo (PNG, JPG, JPEG) guardándolo en carpeta persistente
             logo_file = request.files.get('logo')
             if logo_file and logo_file.filename:
                 filename = secure_filename(logo_file.filename)
                 ext = os.path.splitext(filename)[1].lower()
                 allowed_extensions = {'.png', '.jpg', '.jpeg'}
-                
+                current_app.logger.info('Intento de subir logo: filename=%s ext=%s mimetype=%s', filename, ext, getattr(logo_file, 'mimetype', None))
+
                 if ext not in allowed_extensions:
+                    current_app.logger.warning('Extensión no permitida para logo: %s', ext)
                     flash('El logo debe ser un archivo PNG, JPG o JPEG.', 'error')
                 else:
                     try:
-                        upload_dir = os.path.join(current_app.root_path, 'static', 'uploads')
-                        os.makedirs(upload_dir, exist_ok=True)
-                        save_path = os.path.join(upload_dir, 'logo.png')
-                        
-                        # Guardar el archivo directamente
-                        logo_file.save(save_path)
-                        # Limpiar la caché del navegador agregando un timestamp a la URL
-                        timestamp = int(time.time())
-                        logo_url = url_for('static', filename=f'uploads/logo.png?t={timestamp}')
-                        session['logo_url'] = logo_url
-                        config.logo_url = logo_url
-                        
-                        flash('Logo actualizado correctamente.', 'success')
-                    except Exception:
+                        # Validar tamaño del archivo (límite razonable 5 MB)
+                        logo_bytes = logo_file.read()
+                        size = len(logo_bytes) if logo_bytes else 0
+                        current_app.logger.debug('Bytes recibidos del logo: %d', size)
+                        if size == 0:
+                            flash('El archivo de logo está vacío.', 'error')
+                        elif size > 5 * 1024 * 1024:
+                            flash('El logo supera 5 MB. Reduce su tamaño o comprímelo.', 'error')
+                        else:
+                            # Generar nombre único y guardar en carpeta persistente junto al ejecutable/CWD
+                            upload_dir = get_persistent_upload_dir()
+                            unique_name = f"logo-{int(time.time())}{ext}"
+                            save_path = os.path.join(upload_dir, unique_name)
+                            try:
+                                with open(save_path, 'wb') as f:
+                                    f.write(logo_bytes)
+                            except Exception as e_save:
+                                current_app.logger.exception('No se pudo guardar el logo en disco: %s', e_save)
+                                flash('No se pudo guardar el logo en disco. Motivo: error de escritura.', 'error')
+                            else:
+                                # Si había un logo anterior en uploads, intentar limpiar
+                                try:
+                                    if config.logo_url and isinstance(config.logo_url, str) and config.logo_url.startswith('/uploads/'):
+                                        old_name = config.logo_url.split('/uploads/', 1)[1]
+                                        old_path = os.path.join(upload_dir, old_name)
+                                        if os.path.isfile(old_path):
+                                            os.remove(old_path)
+                                            current_app.logger.info('Logo anterior eliminado: %s', old_name)
+                                except Exception as e_del:
+                                    current_app.logger.warning('No se pudo eliminar logo anterior: %s', e_del)
+
+                                # Persistir ruta accesible vía blueprint uploads
+                                session.pop('logo_url', None)
+                                config.logo_url = f"/uploads/{unique_name}"
+                                flash('Logo actualizado correctamente.', 'success')
+                    except Exception as e:
+                        current_app.logger.exception('Error procesando logo subido: %s', e)
                         flash('Error al subir el logo.', 'error')
 
         # Guardar cambios de estilos
         try:
             db.session.commit()
+            # Verificación post-commit
+            try:
+                ver_cfg = ThemeConfig.query.order_by(ThemeConfig.actualizado_en.desc()).first()
+                current_app.logger.debug('Post-commit ThemeConfig id=%s len(logo_url)=%s', getattr(ver_cfg, 'id', None), (len(ver_cfg.logo_url) if ver_cfg and ver_cfg.logo_url else 0))
+            except Exception as e:
+                current_app.logger.warning('No se pudo verificar ThemeConfig tras commit: %s', e)
+            current_app.logger.info('Estilos/Logo guardados en BD correctamente')
             flash('Estilos actualizados correctamente.', 'success')
             return redirect(url_for('admin.editar_estilos'))
-        except Exception:
+        except Exception as e:
             db.session.rollback()
+            current_app.logger.exception('Error al confirmar cambios de estilos en BD: %s', e)
             flash('Error al actualizar los estilos.', 'error')
 
     return render_template('admin/editar_estilos.html', config=config)
