@@ -103,7 +103,8 @@
                     <div style="width: 550px; height: 2px; background: rgba(255,255,255,0.5); margin: 0 auto;"></div>
                 </div>
                 {% set logo_default = url_for('static', filename='main/assets/img/logo-dsi.png') %}
-                <img src="{{ session_logo_url or (theme_config.logo_url if theme_config and theme_config.logo_url else logo_default) }}" alt="Logo DSI" style="height:150px; width:auto;">
+                {% set logo_src = session_logo_url or (theme_config.logo_url if theme_config and theme_config.logo_url else logo_default) %}
+                <img src="{{ logo_src }}" alt="Logo DSI" style="height:150px; width:auto;">
                 <p class="hero-description">
                     Plataforma integral para la gestión académica, calificaciones y seguimiento estudiantil.
                 </p>

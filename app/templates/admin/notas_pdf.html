@@ -1,58 +1,120 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-  <meta charset="utf-8" />
-  <style>
-    body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; }
-    h1 { font-size: 18px; margin: 0 0 6px 0; }
-    .sub { margin: 0 0 10px 0; font-size: 12px; color: #333; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { border: 1px solid #333; padding: 4px; text-align: center; }
-    th { background: #f0f0f0; }
-    .left { text-align: left; }
-    .small { font-size: 11px; }
-  </style>
+    <meta charset="UTF-8">
+    <title>Reporte de Notas</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 1.5cm 1cm;
+        }
+        body { 
+            font-family: Arial, sans-serif; 
+            font-size: 8pt;
+            margin: 0;
+            padding: 0;
+        }
+        h1 { 
+            text-align: center; 
+            color: #00378F;
+            font-size: 14pt;
+            margin-bottom: 8px;
+        }
+        .info { 
+            margin-bottom: 12px;
+            font-size: 7pt;
+        }
+        .info p {
+            margin: 2px 0;
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 8px;
+            font-size: 7pt;
+        }
+        th, td { 
+            border: 1px solid #ddd; 
+            padding: 4px 2px;
+            text-align: left;
+            word-wrap: break-word;
+            overflow: hidden;
+        }
+        th { 
+            background-color: #00378F; 
+            color: white;
+            font-weight: bold;
+            font-size: 7pt;
+        }
+        /* Anchos específicos para cada columna en vertical */
+        th:nth-child(1), td:nth-child(1) { width: 22%; } /* Curso */
+        th:nth-child(2), td:nth-child(2) { width: 20%; } /* Alumno */
+        th:nth-child(3), td:nth-child(3) { width: 18%; } /* Docente */
+        th:nth-child(4), td:nth-child(4) { width: 9%; text-align: center; } /* Actividades */
+        th:nth-child(5), td:nth-child(5) { width: 9%; text-align: center; } /* Prácticas */
+        th:nth-child(6), td:nth-child(6) { width: 9%; text-align: center; } /* Parciales */
+        th:nth-child(7), td:nth-child(7) { width: 8%; text-align: center; } /* Final */
+        th:nth-child(8), td:nth-child(8) { width: 5%; text-align: center; font-size: 6pt; } /* Estado */
+        
+        .final-nota {
+            font-weight: bold;
+            color: #00378F;
+        }
+        .estado-publicada {
+            color: #198754;
+            font-weight: bold;
+        }
+        .estado-borrador {
+            color: #6c757d;
+        }
+    </style>
 </head>
 <body>
-  <h1>Reporte de Notas</h1>
-  <p class="sub">
-    {% if ciclo %}Ciclo: {{ ciclo.nombre }}. {% endif %}
-    {% if curso %}Curso: {{ curso.nombre }} ({{ curso.codigo }}). {% endif %}
-    {% if docente %}Docente: {{ docente.nombre }} {{ docente.apellido }}. {% endif %}
-    Estado: {{ estado|title if estado else 'Todas' }}. 
-    Fecha: {{ generado.strftime('%d/%m/%Y %H:%M') }}
-  </p>
-  <table>
-    <thead>
-      <tr>
-        <th class="left">Alumno</th>
-        <th>DNI</th>
-        <th class="left">Curso</th>
-        <th class="left">Docente</th>
-        <th>Prom. Act.</th>
-        <th>Prom. Prac.</th>
-        <th>Prom. Par.</th>
-        <th>Prom. Final</th>
-        <th>Estado</th>
-        <th>Últ. Actualización</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for f in filas %}
-      <tr>
-        <td class="left">{{ f.alumno.nombre }} {{ f.alumno.apellido }}</td>
-        <td class="small">{{ f.alumno.dni }}</td>
-        <td class="left">{{ f.curso.nombre }} ({{ f.curso.codigo }})</td>
-        <td class="left">{{ f.docente.nombre }} {{ f.docente.apellido }}</td>
-        <td>{{ f.promedio_actividades|round(2) }}</td>
-        <td>{{ f.promedio_practicas|round(2) }}</td>
-        <td>{{ f.promedio_parciales|round(2) }}</td>
-        <td><strong>{{ f.promedio_final|round(2) }}</strong></td>
-        <td>{{ f.estado if f.estado else '-' }}</td>
-        <td class="small">{{ f.fecha.strftime('%d/%m/%Y %H:%M') if f.fecha else '' }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    <h1>Reporte de Notas</h1>
+    
+    <div class="info">
+        {% if ciclo %}
+        <p><strong>Ciclo:</strong> {{ ciclo.nombre }}</p>
+        {% endif %}
+        {% if curso %}
+        <p><strong>Curso:</strong> {{ curso.nombre }} ({{ curso.codigo }})</p>
+        {% endif %}
+        {% if docente %}
+        <p><strong>Docente:</strong> {{ docente.nombre }} {{ docente.apellido }}</p>
+        {% endif %}
+        <p><strong>Estado:</strong> {{ estado }}</p>
+        <p><strong>Generado:</strong> {{ generado.strftime('%d/%m/%Y %H:%M') }}</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Curso</th>
+                <th>Alumno</th>
+                <th>Docente</th>
+                <th>Act.</th>
+                <th>Prác.</th>
+                <th>Parc.</th>
+                <th>Final</th>
+                <th>Est.</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fila in filas %}
+            <tr>
+                <td>{{ fila.curso.nombre }}</td>
+                <td>{{ fila.alumno.apellido }}, {{ fila.alumno.nombre }}</td>
+                <td>{{ fila.docente.apellido }}, {{ fila.docente.nombre }}</td>
+                <td>{{ "%.2f"|format(fila.promedio_actividades) }}</td>
+                <td>{{ "%.2f"|format(fila.promedio_practicas) }}</td>
+                <td>{{ "%.2f"|format(fila.promedio_parciales) }}</td>
+                <td class="final-nota">{{ "%.2f"|format(fila.promedio_final) }}</td>
+                <td class="{% if fila.estado == 'publicada' %}estado-publicada{% else %}estado-borrador{% endif %}">
+                    {{ fila.estado|capitalize }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </body>
 </html>

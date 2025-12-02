@@ -3,42 +3,64 @@
 {% block title %}Nota del Alumno - {{ alumno.nombre }} {{ alumno.apellido }}{% endblock %}
 
 {% block content %}
-<!-- Encabezado de página -->
-<div class="container-fluid mt-4">
+<div class="container-fluid" style="max-width: 1400px;">
+    <!-- Encabezado de página -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2>
                 <i class="fas fa-user-graduate me-2"></i>Nota del Alumno: {{ alumno.nombre }} {{ alumno.apellido }}
             </h2>
-            <p class="text-muted mb-0">Curso: {{ curso.nombre }} ({{ curso.codigo }})</p>
+            <p class="text-muted mb-0">
+                <i class="fas fa-book me-1"></i>{{ curso.nombre }} 
+                <span class="badge bg-primary ms-2">{{ curso.codigo }}</span>
+            </p>
         </div>
-        <a href="{{ url_for('docente.dashboard') }}" class="btn btn-outline-primary">
-            <i class="fas fa-arrow-left me-2"></i>Volver a Mis Cursos
-        </a>
+        <div>
+            <a href="{{ url_for('docente.ver_alumnos_curso', curso_id=curso.id) }}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-users me-1"></i>Ver Alumnos
+            </a>
+            <a href="{{ url_for('docente.dashboard') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-1"></i>Volver al Dashboard
+            </a>
+        </div>
     </div>
-</div>
 
-<div class="container-fluid">
     <div class="row">
         <!-- Información del alumno -->
         <div class="col-lg-4 mb-4">
-            <div class="card h-100">
+            <div class="card h-100 shadow-sm border-0">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Información del Alumno</h5>
+                    <h5 class="mb-0"><i class="fas fa-user me-2"></i>Información del Alumno</h5>
                 </div>
                 <div class="card-body">
-                    <div class="text-center mb-3">
-                        <div class="student-avatar">
+                    <div class="text-center mb-4">
+                        <div class="student-avatar bg-primary text-white mx-auto mb-3" style="width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold;">
                             {{ alumno.nombre[0] }}{{ alumno.apellido[0] }}
                         </div>
-                        <h5>{{ alumno.nombre }} {{ alumno.apellido }}</h5>
+                        <h5 class="mb-0">{{ alumno.apellido }}, {{ alumno.nombre }}</h5>
                     </div>
                     <div class="student-details">
-                        <p><i class="fas fa-id-card me-2"></i> DNI: {{ alumno.dni }}</p>
-                        <p><i class="fas fa-envelope me-2"></i> {{ alumno.email }}</p>
-                        <p><i class="fas fa-book me-2"></i> {{ curso.nombre }}</p>
-                        <p><i class="fas fa-code me-2"></i> {{ curso.codigo }}</p>
-                        <p><i class="fas fa-star me-2"></i> {{ curso.creditos }} créditos</p>
+                        <div class="mb-2">
+                            <small class="text-muted"><i class="fas fa-id-card me-2"></i>DNI:</small>
+                            <div class="fw-bold">{{ alumno.dni }}</div>
+                        </div>
+                        <div class="mb-2">
+                            <small class="text-muted"><i class="fas fa-envelope me-2"></i>Email:</small>
+                            <div class="fw-bold small">{{ alumno.email }}</div>
+                        </div>
+                        <hr>
+                        <div class="mb-2">
+                            <small class="text-muted"><i class="fas fa-book me-2"></i>Curso:</small>
+                            <div class="fw-bold">{{ curso.nombre }}</div>
+                        </div>
+                        <div class="mb-2">
+                            <small class="text-muted"><i class="fas fa-code me-2"></i>Código:</small>
+                            <div class="fw-bold">{{ curso.codigo }}</div>
+                        </div>
+                        <div class="mb-2">
+                            <small class="text-muted"><i class="fas fa-star me-2"></i>Créditos:</small>
+                            <div class="fw-bold">{{ curso.creditos }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -46,9 +68,9 @@
 
         <!-- Calificaciones -->
         <div class="col-lg-8 mb-4">
-            <div class="card">
+            <div class="card shadow-sm border-0">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Calificaciones</h5>
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Calificaciones</h5>
                 </div>
                 <div class="card-body">
                     <!-- Mensaje cuando no hay nota -->

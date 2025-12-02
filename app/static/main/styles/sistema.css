@@ -188,6 +188,10 @@ body {
     transition: left 0.3s ease;
     z-index: 4050;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .sidebar.active {
@@ -217,6 +221,8 @@ body {
     padding: 0;
     margin: 0;
     list-style: none;
+    flex: 1;
+    overflow-y: auto;
 }
 
 .sidebar-menu li {

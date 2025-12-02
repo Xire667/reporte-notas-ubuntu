@@ -11,8 +11,8 @@ IF EXIST "venv311\Scripts\activate.bat" (
 REM Generar icono multiresolución desde PNG
 python tools\generate_ico.py
 
-REM Generar ejecutable (one-file) incluyendo plantillas, estáticos y .env
-pyinstaller --noconfirm --clean --onefile --log-level INFO ^
+REM Generar ejecutable (one-file) SIN CONSOLA incluyendo plantillas, estáticos y .env
+pyinstaller --noconfirm --clean --onefile --noconsole --log-level INFO ^
   --add-data "app/templates;app/templates" ^
   --add-data "app/static;app/static" ^
   --add-data ".env;." ^
@@ -26,7 +26,9 @@ pyinstaller --noconfirm --clean --onefile --log-level INFO ^
   --hidden-import reportlab ^
   --hidden-import openpyxl ^
   --hidden-import waitress ^
-  --name "SistemaNotas" run_server.py
+  --hidden-import tkinter ^
+  --hidden-import pystray ^
+  --name "SistemaNotas" run_server_new.py
 
 echo.
 echo Ejecutable generado en: dist\SistemaNotas.exe

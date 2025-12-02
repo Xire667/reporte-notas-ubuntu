@@ -1,5 +1,6 @@
 from flask import render_template, request, redirect, url_for, flash, jsonify, make_response, abort
 from flask_login import login_required, current_user
+from datetime import datetime
 from app import db
 from app.models import Usuario, Curso, CursoDocente, CursoAlumno, Nota, NotaActividades, NotaPracticas, NotaParcial, CicloAcademico
 from . import docente_bp
@@ -216,10 +217,21 @@ def guardar_notas(curso_id):
         nota.comentarios = comentarios
         nota.estado = estado
         
+        # Actualizar promedios directamente desde las tablas relacionadas
+        nota.promedio_actividades = nota_actividades.promedio_actividades
+        nota.promedio_practicas = nota_practicas.promedio_practicas
+        nota.promedio_parciales = nota_parcial.promedio_parciales
+        
         # Calcular promedio final
         nota.calcular_promedio_final()
         
+        # Forzar actualización de fecha
+        nota.fecha_actualizacion = datetime.utcnow()
+        
         db.session.commit()
+        
+        # Refrescar para obtener los valores actualizados
+        db.session.refresh(nota)
         
         return jsonify({
             'success': True, 

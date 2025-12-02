@@ -15,3 +15,6 @@ openpyxl==3.1.5
 
 # Imágenes (icono y compatibilidad con xhtml2pdf)
 Pillow>=8.1.1,<11.0
+
+# System Tray Icon
+pystray==0.19.5

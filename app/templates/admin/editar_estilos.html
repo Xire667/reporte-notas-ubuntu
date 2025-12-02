@@ -1,86 +1,159 @@
 {% extends "admin/base_admin.html" %}
-{# Extiende la plantilla base de administrador para mantener la estructura común #}
 
 {% block title %}Editar Estilos - Sistema de Notas{% endblock %}
-{# Define el título específico de esta página #}
 
 {% block admin_content %}
-{# Contenido principal específico para la página de edición de estilos #}
 <div class="row">
   <!-- Panel principal: Formulario de edición de estilos -->
-  <div class="col-lg-8 mb-4">
+  <div class="col-lg-7 mb-4">
     <div class="card">
-      <div class="card-header">
-        <i class="fas fa-paint-brush me-2"></i>Editar esquema de colores
-        {# Icono y título del panel de edición #}
+      <div class="card-header bg-primary text-white">
+        <i class="fas fa-palette me-2"></i>Personalización de Colores del Sistema
       </div>
       <div class="card-body">
-        <!-- Formulario para modificar los colores del tema -->
-<form method="POST" action="{{ url_for('admin.editar_estilos') }}" enctype="multipart/form-data">
-          <!-- Campo para el nombre del tema -->
-          <div class="mb-3">
-            <label class="form-label">Nombre del tema</label>
-            <input type="text" name="nombre" class="form-control" value="{{ config.nombre }}" placeholder="Ej: Azul corporativo">
-          </div>
+        <form method="POST" action="{{ url_for('admin.editar_estilos') }}" enctype="multipart/form-data" id="formEstilos">
           
-          <!-- Selección de colores para el tema -->
-          <div class="row g-3">
-            <!-- Color principal oscuro -->
+          <!-- Nombre del tema -->
+          <div class="mb-4">
+            <label class="form-label fw-bold">
+              <i class="fas fa-tag me-1"></i>Nombre del Tema
+            </label>
+            <input type="text" name="nombre" class="form-control" value="{{ config.nombre }}" placeholder="Ej: Tema Institucional 2024">
+            <small class="form-text text-muted">Dale un nombre descriptivo a tu esquema de colores</small>
+          </div>
+
+          <hr class="my-4">
+          
+          <!-- Sección de colores con descripciones claras -->
+          <h6 class="mb-3 text-primary"><i class="fas fa-swatchbook me-2"></i>Configuración de Colores</h6>
+          
+          <div class="row g-4">
+            
+            <!-- Color Oscuro -->
             <div class="col-md-6">
-              <label class="form-label">Color oscuro</label>
-              <input type="color" name="color_oscuro" class="form-control form-control-color" value="{{ config.color_oscuro }}">
+              <div class="color-input-group">
+                <label class="form-label fw-bold">
+                  <i class="fas fa-circle text-dark me-1"></i>Color Principal Oscuro
+                </label>
+                <div class="d-flex align-items-center gap-2">
+                  <input type="color" name="color_oscuro" id="color_oscuro" class="form-control form-control-color" value="{{ config.color_oscuro }}" style="width: 60px; height: 40px;">
+                  <input type="text" class="form-control" id="color_oscuro_hex" value="{{ config.color_oscuro }}" readonly style="font-family: monospace;">
+                </div>
+                <small class="form-text text-muted d-block mt-1">
+                  <strong>Se usa en:</strong> Barra de navegación superior, encabezados principales
+                </small>
+              </div>
             </div>
             
-            <!-- Color principal claro -->
+            <!-- Color Claro -->
             <div class="col-md-6">
-              <label class="form-label">Color claro</label>
-              <input type="color" name="color_claro" class="form-control form-control-color" value="{{ config.color_claro }}">
+              <div class="color-input-group">
+                <label class="form-label fw-bold">
+                  <i class="fas fa-circle text-info me-1"></i>Color Principal Claro
+                </label>
+                <div class="d-flex align-items-center gap-2">
+                  <input type="color" name="color_claro" id="color_claro" class="form-control form-control-color" value="{{ config.color_claro }}" style="width: 60px; height: 40px;">
+                  <input type="text" class="form-control" id="color_claro_hex" value="{{ config.color_claro }}" readonly style="font-family: monospace;">
+                </div>
+                <small class="form-text text-muted d-block mt-1">
+                  <strong>Se usa en:</strong> Botones primarios, enlaces destacados, badges
+                </small>
+              </div>
             </div>
             
-            <!-- Color intermedio (tono medio) -->
+            <!-- Color Medio -->
             <div class="col-md-6">
-              <label class="form-label">Color medio</label>
-              <input type="color" name="color_medio" class="form-control form-control-color" value="{{ config.color_medio }}">
+              <div class="color-input-group">
+                <label class="form-label fw-bold">
+                  <i class="fas fa-circle text-primary me-1"></i>Color Medio
+                </label>
+                <div class="d-flex align-items-center gap-2">
+                  <input type="color" name="color_medio" id="color_medio" class="form-control form-control-color" value="{{ config.color_medio }}" style="width: 60px; height: 40px;">
+                  <input type="text" class="form-control" id="color_medio_hex" value="{{ config.color_medio }}" readonly style="font-family: monospace;">
+                </div>
+                <small class="form-text text-muted d-block mt-1">
+                  <strong>Se usa en:</strong> Menú lateral, tarjetas secundarias, fondos de secciones
+                </small>
+              </div>
             </div>
             
-            <!-- Variante oscura del color intermedio -->
+            <!-- Color Medio Oscuro -->
             <div class="col-md-6">
-              <label class="form-label">Medio oscuro</label>
-              <input type="color" name="color_medio_oscuro" class="form-control form-control-color" value="{{ config.color_medio_oscuro }}">
+              <div class="color-input-group">
+                <label class="form-label fw-bold">
+                  <i class="fas fa-circle text-secondary me-1"></i>Color Medio Oscuro
+                </label>
+                <div class="d-flex align-items-center gap-2">
+                  <input type="color" name="color_medio_oscuro" id="color_medio_oscuro" class="form-control form-control-color" value="{{ config.color_medio_oscuro }}" style="width: 60px; height: 40px;">
+                  <input type="text" class="form-control" id="color_medio_oscuro_hex" value="{{ config.color_medio_oscuro }}" readonly style="font-family: monospace;">
+                </div>
+                <small class="form-text text-muted d-block mt-1">
+                  <strong>Se usa en:</strong> Hover en menús, bordes de elementos activos
+                </small>
+              </div>
             </div>
             
-            <!-- Variante clara del color intermedio -->
+            <!-- Color Medio Claro -->
             <div class="col-md-6">
-              <label class="form-label">Medio claro</label>
-              <input type="color" name="color_medio_claro" class="form-control form-control-color" value="{{ config.color_medio_claro }}">
+              <div class="color-input-group">
+                <label class="form-label fw-bold">
+                  <i class="fas fa-circle" style="color: #6c757d;" me-1></i>Color Medio Claro
+                </label>
+                <div class="d-flex align-items-center gap-2">
+                  <input type="color" name="color_medio_claro" id="color_medio_claro" class="form-control form-control-color" value="{{ config.color_medio_claro }}" style="width: 60px; height: 40px;">
+                  <input type="text" class="form-control" id="color_medio_claro_hex" value="{{ config.color_medio_claro }}" readonly style="font-family: monospace;">
+                </div>
+                <small class="form-text text-muted d-block mt-1">
+                  <strong>Se usa en:</strong> Fondos de página, áreas de contenido, separadores
+                </small>
+              </div>
             </div>
             
-            <!-- Selector de archivo para logo -->
+            <!-- Logo -->
             <div class="col-md-6">
-              <label class="form-label">Logo</label>
-              <br>
-              {% if config.logo_url %}
-                <img src="{{ config.logo_url }}" alt="Logo actual" style="max-width:80px; max-height:40px; display:block; margin-bottom:8px;">
-              {% else %}
-                <img src="{{ url_for('static', filename='main/assets/img/logo-dsi.png') }}" alt="Logo por defecto" style="max-width:80px; max-height:40px; display:block; margin-bottom:8px;">
-              {% endif %}
-              <input type="file" name="logo" accept="image/*">
-              <div class="form-text">Formatos permitidos: PNG, JPG, JPEG. Tamaño máximo recomendado: 5 MB.</div>
+              <div class="color-input-group">
+                <label class="form-label fw-bold">
+                  <i class="fas fa-image me-1"></i>Logo Institucional
+                </label>
+                <div class="mb-2">
+                  {% if config.logo_url %}
+                    <img src="{{ config.logo_url }}" alt="Logo actual" class="border rounded p-2 bg-light" style="max-width:120px; max-height:60px; display:block;">
+                    <small class="text-success d-block mt-1">
+                      <i class="fas fa-check-circle me-1"></i>Logo personalizado cargado ({{ "%.2f"|format(config.get_logo_size_kb()) }} KB)
+                    </small>
+                  {% else %}
+                    <img src="{{ url_for('static', filename='main/assets/img/logo-dsi.png') }}" alt="Logo por defecto" class="border rounded p-2 bg-light" style="max-width:120px; max-height:60px; display:block;">
+                    <small class="text-muted d-block mt-1">
+                      <i class="fas fa-info-circle me-1"></i>Usando logo por defecto
+                    </small>
+                  {% endif %}
+                </div>
+                <input type="file" name="logo" class="form-control" accept="image/png,image/jpeg,image/jpg" id="logo-input">
+                <small class="form-text text-muted d-block mt-1">
+                  <strong>Se usa en:</strong> Barra superior, página de login, sidebar<br>
+                  <strong>Formatos:</strong> PNG, JPG, JPEG | <strong>Tamaño:</strong> Cualquiera (se optimiza automáticamente)<br>
+                  <strong>Optimización automática:</strong> ✓ Redimensiona si es muy grande | ✓ Comprime para reducir tamaño | ✓ Elige mejor formato<br>
+                  <strong>Almacenamiento:</strong> Se guarda en la base de datos (no crea archivos)
+                </small>
+                <div class="alert alert-info mt-2 mb-0" style="font-size: 0.85rem; padding: 0.5rem;">
+                  <i class="fas fa-magic me-1"></i><strong>Optimización inteligente:</strong> El sistema redimensiona y comprime automáticamente tu logo para el mejor rendimiento. ¡Solo sube tu imagen y listo!
+                </div>
+              </div>
             </div>
+            
           </div>
           
           <!-- Botones de acción -->
-          <div class="mt-4 d-flex gap-2">
-            <!-- Botón para guardar cambios -->
-            <button type="submit" class="btn btn-primary">
-              <i class="fas fa-save me-1"></i>Guardar cambios
+          <hr class="my-4">
+          <div class="d-flex gap-2 flex-wrap">
+            <button type="submit" class="btn btn-primary btn-lg">
+              <i class="fas fa-save me-2"></i>Guardar Cambios
             </button>
-            <button type="submit" name="reset_default" value="1" class="btn btn-warning">
-              <i class="fas fa-undo me-1"></i>Por defecto
+            <button type="submit" name="reset_default" value="1" class="btn btn-warning btn-lg" onclick="return confirm('¿Estás seguro de restaurar los colores por defecto? Se perderán los cambios actuales.')">
+              <i class="fas fa-undo me-2"></i>Restaurar Valores por Defecto
             </button>
-            <!-- Botón para volver al dashboard -->
-            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
-              <i class="fas fa-arrow-left me-1"></i>Volver al Dashboard
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-lg">
+              <i class="fas fa-arrow-left me-2"></i>Cancelar
             </a>
           </div>
         </form>
@@ -88,37 +161,175 @@
     </div>
   </div>
   
-  <!-- Panel lateral: Vista previa del tema -->
-  <div class="col-lg-4 mb-4">
-    <div class="card">
-      <div class="card-header">
-        <i class="fas fa-eye me-2"></i>Vista previa
-        {# Icono y título del panel de vista previa #}
+  <!-- Panel lateral: Vista previa en tiempo real -->
+  <div class="col-lg-5 mb-4">
+    <div class="card preview-sticky">
+      <div class="card-header bg-success text-white">
+        <i class="fas fa-eye me-2"></i>Vista Previa en Tiempo Real
       </div>
       <div class="card-body">
-        <!-- Contenedor de vista previa que muestra cómo se verá el tema -->
-        <div class="preview-box" style="border-radius: 10px; overflow: hidden;">
-          <!-- Simulación de la barra superior -->
-          <div style="background: var(--color-oscuro); color: white; padding: 12px;">Barra superior</div>
+        
+        <!-- Vista previa interactiva -->
+        <div id="preview-container" class="border rounded overflow-hidden shadow-sm">
           
-          <!-- Simulación del contenido principal -->
-          <div style="padding: 16px; background: var(--color-medio-claro);">
-            <!-- Simulación de una tarjeta o panel -->
-            <div style="background: white; border-radius: 8px; padding: 12px;">
-              <!-- Elementos decorativos para mostrar los colores -->
-              <div style="height: 8px; background: var(--color-claro); border-radius: 4px; margin-bottom: 12px;"></div>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                <div style="height: 40px; background: var(--color-medio); border-radius: 6px;"></div>
-                <div style="height: 40px; background: var(--color-medio-oscuro); border-radius: 6px;"></div>
+          <!-- Barra de navegación -->
+          <div id="preview-navbar" class="text-white p-3 d-flex align-items-center justify-content-between" style="background-color: {{ config.color_oscuro }};">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fas fa-graduation-cap"></i>
+              <span class="fw-bold">Sistema de Notas</span>
+            </div>
+            <div>
+              <i class="fas fa-user-circle"></i>
+            </div>
+          </div>
+          
+          <!-- Contenido principal -->
+          <div id="preview-content" class="p-3" style="background-color: {{ config.color_medio_claro }};">
+            
+            <!-- Tarjeta de ejemplo -->
+            <div class="bg-white rounded p-3 mb-3 shadow-sm">
+              <h6 class="mb-2">Panel de Control</h6>
+              <div id="preview-badge" class="badge mb-2" style="background-color: {{ config.color_claro }};">Activo</div>
+              <p class="text-muted small mb-0">Ejemplo de contenido</p>
+            </div>
+            
+            <!-- Botones de ejemplo -->
+            <div class="d-flex gap-2 mb-3">
+              <button id="preview-btn-primary" class="btn btn-sm text-white" style="background-color: {{ config.color_medio }};">
+                <i class="fas fa-check me-1"></i>Guardar
+              </button>
+              <button class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-times me-1"></i>Cancelar
+              </button>
+            </div>
+            
+            <!-- Menú lateral simulado -->
+            <div id="preview-sidebar" class="rounded p-2" style="background-color: {{ config.color_medio }};">
+              <div id="preview-menu-item" class="text-white p-2 rounded mb-1" style="background-color: {{ config.color_medio_oscuro }};">
+                <i class="fas fa-home me-2"></i>Inicio
+              </div>
+              <div class="text-white p-2 rounded opacity-75">
+                <i class="fas fa-users me-2"></i>Usuarios
               </div>
             </div>
+            
           </div>
         </div>
         
-        <!-- Nota informativa sobre la aplicación de cambios -->
-        <p class="text-muted mt-3">Los cambios guardados se aplicarán inmediatamente al sistema.</p>
+        <!-- Leyenda de colores -->
+        <div class="mt-3">
+          <h6 class="text-muted small mb-2"><i class="fas fa-info-circle me-1"></i>Leyenda:</h6>
+          <ul class="small text-muted mb-0" style="line-height: 1.8;">
+            <li><strong>Barra superior:</strong> Color Oscuro</li>
+            <li><strong>Badge "Activo":</strong> Color Claro</li>
+            <li><strong>Botón "Guardar":</strong> Color Medio</li>
+            <li><strong>Menú activo:</strong> Color Medio Oscuro</li>
+            <li><strong>Fondo general:</strong> Color Medio Claro</li>
+          </ul>
+        </div>
+        
+        <div class="alert alert-info mt-3 mb-0">
+          <i class="fas fa-lightbulb me-2"></i>
+          <small><strong>Tip:</strong> Los cambios se reflejan en tiempo real en la vista previa. Guarda cuando estés satisfecho con el resultado.</small>
+        </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Script para actualizar vista previa en tiempo real -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Obtener todos los inputs de color
+  const colorInputs = {
+    oscuro: document.getElementById('color_oscuro'),
+    claro: document.getElementById('color_claro'),
+    medio: document.getElementById('color_medio'),
+    medio_oscuro: document.getElementById('color_medio_oscuro'),
+    medio_claro: document.getElementById('color_medio_claro')
+  };
+  
+  // Obtener elementos de la vista previa
+  const previewElements = {
+    navbar: document.getElementById('preview-navbar'),
+    content: document.getElementById('preview-content'),
+    badge: document.getElementById('preview-badge'),
+    btnPrimary: document.getElementById('preview-btn-primary'),
+    sidebar: document.getElementById('preview-sidebar'),
+    menuItem: document.getElementById('preview-menu-item')
+  };
+  
+  // Función para actualizar vista previa
+  function updatePreview() {
+    previewElements.navbar.style.backgroundColor = colorInputs.oscuro.value;
+    previewElements.content.style.backgroundColor = colorInputs.medio_claro.value;
+    previewElements.badge.style.backgroundColor = colorInputs.claro.value;
+    previewElements.btnPrimary.style.backgroundColor = colorInputs.medio.value;
+    previewElements.sidebar.style.backgroundColor = colorInputs.medio.value;
+    previewElements.menuItem.style.backgroundColor = colorInputs.medio_oscuro.value;
+    
+    // Actualizar campos de texto hexadecimal
+    document.getElementById('color_oscuro_hex').value = colorInputs.oscuro.value.toUpperCase();
+    document.getElementById('color_claro_hex').value = colorInputs.claro.value.toUpperCase();
+    document.getElementById('color_medio_hex').value = colorInputs.medio.value.toUpperCase();
+    document.getElementById('color_medio_oscuro_hex').value = colorInputs.medio_oscuro.value.toUpperCase();
+    document.getElementById('color_medio_claro_hex').value = colorInputs.medio_claro.value.toUpperCase();
+  }
+  
+  // Agregar event listeners a todos los inputs de color
+  Object.values(colorInputs).forEach(input => {
+    input.addEventListener('input', updatePreview);
+  });
+  
+  // Inicializar vista previa
+  updatePreview();
+});
+</script>
+
+<style>
+.color-input-group {
+  padding: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+.color-input-group:hover {
+  border-color: #0d6efd;
+  box-shadow: 0 2px 8px rgba(13, 110, 253, 0.1);
+}
+
+.form-control-color {
+  cursor: pointer;
+  border: 2px solid #dee2e6;
+}
+
+.form-control-color:hover {
+  border-color: #0d6efd;
+}
+
+#preview-container {
+  transition: all 0.3s ease;
+}
+
+/* Vista previa sticky que respeta la barra de navegación */
+.preview-sticky {
+  position: sticky;
+  top: 80px; /* Espacio para la barra de navegación superior */
+  z-index: 100; /* Menor que la navbar (que suele ser 1030-1050) */
+  max-height: calc(100vh - 100px); /* Altura máxima para evitar que se salga de la pantalla */
+  overflow-y: auto; /* Scroll si el contenido es muy largo */
+}
+
+/* En pantallas pequeñas, desactivar sticky */
+@media (max-width: 991px) {
+  .preview-sticky {
+    position: relative;
+    top: 0;
+    max-height: none;
+  }
+}
+</style>
+
 {% endblock %}

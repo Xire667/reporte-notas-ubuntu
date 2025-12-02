@@ -1,0 +1,206 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{{ log_data.filename }} - Logs del Sistema{% endblock %}
+
+{% block admin_content %}
+<div class="row">
+  <!-- Encabezado -->
+  <div class="col-12 mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h2><i class="fas fa-file-alt me-2"></i>{{ log_data.filename }}</h2>
+        <p class="text-muted">
+          Mostrando {{ log_data.filtered_lines }} de {{ log_data.total_lines }} líneas
+        </p>
+      </div>
+      <div>
+        <a href="{{ url_for('admin.ver_logs') }}" class="btn btn-secondary">
+          <i class="fas fa-arrow-left me-1"></i>Volver
+        </a>
+        <a href="{{ url_for('admin.descargar_log', filename=log_data.filename) }}" 
+           class="btn btn-success">
+          <i class="fas fa-download me-1"></i>Descargar
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="col-12 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <i class="fas fa-filter me-2"></i>Filtros
+      </div>
+      <div class="card-body">
+        <form method="GET" action="{{ url_for('admin.ver_log_detalle', filename=log_data.filename) }}">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label">Número de líneas</label>
+              <select name="lines" class="form-select">
+                <option value="100" {% if lines == 100 %}selected{% endif %}>100</option>
+                <option value="500" {% if lines == 500 %}selected{% endif %}>500</option>
+                <option value="1000" {% if lines == 1000 %}selected{% endif %}>1000</option>
+                <option value="5000" {% if lines == 5000 %}selected{% endif %}>5000</option>
+              </select>
+            </div>
+            
+            <div class="col-md-3">
+              <label class="form-label">Nivel</label>
+              <select name="level" class="form-select">
+                <option value="">Todos</option>
+                <option value="DEBUG" {% if level_filter == 'DEBUG' %}selected{% endif %}>DEBUG</option>
+                <option value="INFO" {% if level_filter == 'INFO' %}selected{% endif %}>INFO</option>
+                <option value="WARNING" {% if level_filter == 'WARNING' %}selected{% endif %}>WARNING</option>
+                <option value="ERROR" {% if level_filter == 'ERROR' %}selected{% endif %}>ERROR</option>
+                <option value="CRITICAL" {% if level_filter == 'CRITICAL' %}selected{% endif %}>CRITICAL</option>
+              </select>
+            </div>
+            
+            <div class="col-md-4">
+              <label class="form-label">Buscar</label>
+              <input type="text" name="search" class="form-control" 
+                     placeholder="Término de búsqueda..." 
+                     value="{{ search_term or '' }}">
+            </div>
+            
+            <div class="col-md-2 d-flex align-items-end">
+              <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-search me-1"></i>Filtrar
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="col-12 mb-4">
+    <div class="row g-3">
+      <div class="col-md-2">
+        <div class="card text-center">
+          <div class="card-body">
+            <h3 class="mb-0">{{ log_data.stats.total }}</h3>
+            <small class="text-muted">Total</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="card text-center border-info">
+          <div class="card-body">
+            <h3 class="mb-0 text-info">{{ log_data.stats.info }}</h3>
+            <small class="text-muted">INFO</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="card text-center border-warning">
+          <div class="card-body">
+            <h3 class="mb-0 text-warning">{{ log_data.stats.warning }}</h3>
+            <small class="text-muted">WARNING</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="card text-center border-danger">
+          <div class="card-body">
+            <h3 class="mb-0 text-danger">{{ log_data.stats.error }}</h3>
+            <small class="text-muted">ERROR</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="card text-center border-danger">
+          <div class="card-body">
+            <h3 class="mb-0 text-danger">{{ log_data.stats.critical }}</h3>
+            <small class="text-muted">CRITICAL</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="card text-center border-secondary">
+          <div class="card-body">
+            <h3 class="mb-0 text-secondary">{{ log_data.stats.debug }}</h3>
+            <small class="text-muted">DEBUG</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenido del Log -->
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-list me-2"></i>Entradas de Log</span>
+        <button class="btn btn-sm btn-outline-secondary" onclick="toggleWrap()">
+          <i class="fas fa-text-width me-1"></i>Ajustar Texto
+        </button>
+      </div>
+      <div class="card-body p-0">
+        {% if log_data.entries %}
+        <div class="log-container" id="logContainer" style="max-height: 600px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 0.85rem;">
+          <table class="table table-sm table-hover mb-0">
+            <tbody>
+              {% for entry in log_data.entries %}
+              <tr class="log-entry">
+                <td style="width: 180px; white-space: nowrap;" class="text-muted">
+                  {{ entry.timestamp }}
+                </td>
+                <td style="width: 100px;">
+                  <span class="badge bg-{{ entry.color }}">{{ entry.level }}</span>
+                </td>
+                <td class="log-message" style="word-break: break-word;">
+                  {{ entry.message }}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Auto-scroll al final -->
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            var container = document.getElementById('logContainer');
+            container.scrollTop = container.scrollHeight;
+          });
+          
+          function toggleWrap() {
+            var messages = document.querySelectorAll('.log-message');
+            messages.forEach(function(msg) {
+              if (msg.style.whiteSpace === 'nowrap') {
+                msg.style.whiteSpace = 'normal';
+              } else {
+                msg.style.whiteSpace = 'nowrap';
+                msg.style.overflow = 'hidden';
+                msg.style.textOverflow = 'ellipsis';
+              }
+            });
+          }
+        </script>
+        {% else %}
+        <div class="p-4 text-center text-muted">
+          <i class="fas fa-inbox fa-3x mb-3"></i>
+          <p>No hay entradas que coincidan con los filtros</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.log-entry:hover {
+  background-color: #f8f9fa;
+}
+
+.log-container {
+  background-color: #f8f9fa;
+}
+
+.log-message {
+  font-family: 'Courier New', monospace;
+}
+</style>
+{% endblock %}

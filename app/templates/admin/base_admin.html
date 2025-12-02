@@ -58,7 +58,6 @@
             </a>
             <ul class="submenu">
                 <li><a href="{{ url_for('admin.ver_notas') }}"><i class="fas fa-list-alt"></i>Ver Notas</a></li>
-                <li><a href="{{ url_for('admin.exportar_notas_pdf') }}"><i class="fas fa-file-pdf"></i>Exportar Notas (PDF)</a></li>
             </ul>
         </li>
         <li class="menu-item">
@@ -68,17 +67,29 @@
             </a>
         </li>
         <li class="menu-item">
+            <a href="{{ url_for('admin.ver_logs') }}" class="menu-link">
+                <i class="fas fa-file-alt"></i>
+                <span>Logs del Sistema</span>
+            </a>
+        </li>
+        <li class="menu-item">
             <a href="{{ url_for('auth.logout') }}" class="menu-link">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Cerrar Sesión</span>
             </a>
         </li>
+        <li class="menu-item">
+            <a href="#" onclick="shutdownServer(event)" class="menu-link" style="color: #dc3545;">
+                <i class="fas fa-power-off"></i>
+                <span>Apagar Servidor</span>
+            </a>
+        </li>
     </ul>
-    <div class="sidebar-logo" style="margin-top:auto; padding: 24px 0 12px 0; text-align:center;">
+    <div class="sidebar-logo">
         {% if config.logo_url %}
-            <img src="{{ config.logo_url }}" alt="Logo DSI" style="max-width:220px; max-height:160px; opacity:0.92;">
+            <img src="{{ config.logo_url }}" alt="Logo DSI">
         {% else %}
-            <img src="{{ url_for('static', filename='main/assets/img/logo-dsi.png') }}" alt="Logo DSI" style="max-width:220px; max-height:160px; opacity:0.92;">
+            <img src="{{ url_for('static', filename='main/assets/img/logo-dsi.png') }}" alt="Logo DSI">
         {% endif %}
     </div>
 </div>
@@ -130,5 +141,33 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// Función para apagar el servidor
+function shutdownServer(event) {
+    event.preventDefault();
+    
+    if (!confirm('¿Estás seguro de que deseas apagar el servidor?\n\nEsto cerrará la aplicación completamente.')) {
+        return;
+    }
+    
+    fetch('{{ url_for("main.shutdown") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert('Servidor apagándose...\n\nPuedes cerrar esta ventana.');
+        // Cerrar la ventana después de 2 segundos
+        setTimeout(() => {
+            window.close();
+        }, 2000);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('El servidor se está cerrando...');
+    });
+}
 </script>
 {% endblock %}

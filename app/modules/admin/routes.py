@@ -1,8 +1,9 @@
-from flask import render_template, request, redirect, url_for, flash, jsonify, make_response, current_app, session
+from flask import render_template, request, redirect, url_for, flash, jsonify, make_response, current_app, session, send_file
 from flask_login import login_required, current_user
 from app import db
 from app.models import Usuario, Curso, CursoDocente, CursoAlumno, CicloAcademico, MatriculaAlumno, Nota, NotaActividades, NotaPracticas, NotaParcial, ThemeConfig
 from . import admin_bp
+from .log_viewer import LogViewer
 from app.modules.uploads import get_persistent_upload_dir
 from werkzeug.utils import secure_filename
 import os
@@ -566,7 +567,7 @@ def estadisticas_docente(id):
         notas_publicadas_curso = Nota.query.filter_by(curso_id=curso.id, docente_id=id, estado='publicada').count()
         
         # Calcular promedio del curso
-        notas_finales = [nota.nota_final for nota in Nota.query.filter_by(curso_id=curso.id, docente_id=id).all() if nota.nota_final > 0]
+        notas_finales = [nota.promedio_final for nota in Nota.query.filter_by(curso_id=curso.id, docente_id=id).all() if nota.promedio_final > 0]
         promedio_curso = sum(notas_finales) / len(notas_finales) if notas_finales else 0
         
         cursos_estadisticas.append({
@@ -1338,6 +1339,36 @@ def exportar_notas_pdf():
         nombre += f"_doc_{docente_sel.id}"
     response.headers['Content-Disposition'] = f"attachment; filename={nombre}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
     return response
+
+@admin_bp.route('/api/cursos-por-docente/<int:docente_id>')
+@login_required
+@admin_required
+def api_cursos_por_docente(docente_id):
+    """API para obtener cursos asignados a un docente específico"""
+    try:
+        cursos = db.session.query(Curso).join(CursoDocente, CursoDocente.curso_id == Curso.id).filter(
+            CursoDocente.docente_id == docente_id,
+            Curso.activo == True
+        ).order_by(Curso.nombre).all()
+        
+        cursos_data = [
+            {
+                'id': curso.id,
+                'nombre': curso.nombre,
+                'codigo': curso.codigo
+            }
+            for curso in cursos
+        ]
+        
+        return jsonify({
+            'success': True,
+            'cursos': cursos_data
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Error al obtener cursos: {str(e)}'
+        })
 
 # Descarga plantilla Excel para importar notas
 @admin_bp.route('/notas/plantilla')
@@ -2142,11 +2173,11 @@ def editar_estilos():
             config.color_medio = '#0A2271'
             config.color_medio_oscuro = '#05125F'
             config.color_medio_claro = '#0E3182'
-            config.logo_url = None
+            config.logo_url = None  # Eliminar logo personalizado
             session.pop('logo_url', None)
             try:
                 db.session.commit()
-                current_app.logger.info('Valores por defecto restaurados (incluye logo_url=None)')
+                current_app.logger.info('Valores por defecto restaurados (logo eliminado)')
                 flash('Estilos y logo restaurados a valores por defecto.', 'success')
                 return redirect(url_for('admin.editar_estilos'))
             except Exception as e:
@@ -2161,54 +2192,122 @@ def editar_estilos():
             config.color_medio_oscuro = request.form.get('color_medio_oscuro') or config.color_medio_oscuro
             config.color_medio_claro = request.form.get('color_medio_claro') or config.color_medio_claro
 
-            # Manejar subida de logo (PNG, JPG, JPEG) guardándolo en carpeta persistente
+            # Manejar subida de logo (PNG, JPG, JPEG) con optimización automática
             logo_file = request.files.get('logo')
             if logo_file and logo_file.filename:
                 filename = secure_filename(logo_file.filename)
                 ext = os.path.splitext(filename)[1].lower()
                 allowed_extensions = {'.png', '.jpg', '.jpeg'}
-                current_app.logger.info('Intento de subir logo: filename=%s ext=%s mimetype=%s', filename, ext, getattr(logo_file, 'mimetype', None))
+                
+                current_app.logger.info('Intento de subir logo: filename=%s ext=%s', filename, ext)
 
                 if ext not in allowed_extensions:
                     current_app.logger.warning('Extensión no permitida para logo: %s', ext)
                     flash('El logo debe ser un archivo PNG, JPG o JPEG.', 'error')
                 else:
                     try:
-                        # Validar tamaño del archivo (límite razonable 5 MB)
+                        # Leer archivo original
                         logo_bytes = logo_file.read()
-                        size = len(logo_bytes) if logo_bytes else 0
-                        current_app.logger.debug('Bytes recibidos del logo: %d', size)
-                        if size == 0:
+                        original_size_kb = len(logo_bytes) / 1024
+                        current_app.logger.info('Logo original: %.2f KB', original_size_kb)
+                        
+                        if len(logo_bytes) == 0:
                             flash('El archivo de logo está vacío.', 'error')
-                        elif size > 5 * 1024 * 1024:
-                            flash('El logo supera 5 MB. Reduce su tamaño o comprímelo.', 'error')
                         else:
-                            # Generar nombre único y guardar en carpeta persistente junto al ejecutable/CWD
-                            upload_dir = get_persistent_upload_dir()
-                            unique_name = f"logo-{int(time.time())}{ext}"
-                            save_path = os.path.join(upload_dir, unique_name)
+                            # Optimizar imagen automáticamente
+                            from PIL import Image
+                            from io import BytesIO
+                            
                             try:
-                                with open(save_path, 'wb') as f:
-                                    f.write(logo_bytes)
-                            except Exception as e_save:
-                                current_app.logger.exception('No se pudo guardar el logo en disco: %s', e_save)
-                                flash('No se pudo guardar el logo en disco. Motivo: error de escritura.', 'error')
-                            else:
-                                # Si había un logo anterior en uploads, intentar limpiar
-                                try:
-                                    if config.logo_url and isinstance(config.logo_url, str) and config.logo_url.startswith('/uploads/'):
-                                        old_name = config.logo_url.split('/uploads/', 1)[1]
-                                        old_path = os.path.join(upload_dir, old_name)
-                                        if os.path.isfile(old_path):
-                                            os.remove(old_path)
-                                            current_app.logger.info('Logo anterior eliminado: %s', old_name)
-                                except Exception as e_del:
-                                    current_app.logger.warning('No se pudo eliminar logo anterior: %s', e_del)
-
-                                # Persistir ruta accesible vía blueprint uploads
+                                # Abrir imagen
+                                img = Image.open(BytesIO(logo_bytes))
+                                original_format = img.format
+                                original_size = img.size
+                                current_app.logger.info('Imagen original: %s, %dx%d', original_format, img.width, img.height)
+                                
+                                # Convertir a RGB si es necesario (para JPEG)
+                                if img.mode in ('RGBA', 'LA', 'P'):
+                                    # Mantener transparencia para PNG
+                                    if img.mode == 'P':
+                                        img = img.convert('RGBA')
+                                elif img.mode != 'RGB':
+                                    img = img.convert('RGB')
+                                
+                                # Redimensionar si es muy grande (máximo 800x800)
+                                max_dimension = 800
+                                if img.width > max_dimension or img.height > max_dimension:
+                                    current_app.logger.info('Redimensionando imagen de %dx%d', img.width, img.height)
+                                    img.thumbnail((max_dimension, max_dimension), Image.Resampling.LANCZOS)
+                                    current_app.logger.info('Nueva dimensión: %dx%d', img.width, img.height)
+                                
+                                # Determinar mejor formato y calidad
+                                output = BytesIO()
+                                has_transparency = img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info)
+                                
+                                if has_transparency:
+                                    # PNG para imágenes con transparencia
+                                    img.save(output, format='PNG', optimize=True, compress_level=9)
+                                    mimetype = 'image/png'
+                                    format_used = 'PNG'
+                                else:
+                                    # Probar ambos formatos y usar el más pequeño
+                                    # Intentar PNG
+                                    output_png = BytesIO()
+                                    img.save(output_png, format='PNG', optimize=True, compress_level=9)
+                                    size_png = len(output_png.getvalue())
+                                    
+                                    # Intentar JPEG
+                                    output_jpg = BytesIO()
+                                    img_rgb = img.convert('RGB') if img.mode != 'RGB' else img
+                                    img_rgb.save(output_jpg, format='JPEG', quality=85, optimize=True)
+                                    size_jpg = len(output_jpg.getvalue())
+                                    
+                                    # Usar el más pequeño
+                                    if size_jpg < size_png * 0.8:  # JPEG debe ser al menos 20% más pequeño
+                                        output = output_jpg
+                                        mimetype = 'image/jpeg'
+                                        format_used = 'JPEG'
+                                        current_app.logger.info('Usando JPEG (más pequeño): %d KB vs PNG: %d KB', size_jpg/1024, size_png/1024)
+                                    else:
+                                        output = output_png
+                                        mimetype = 'image/png'
+                                        format_used = 'PNG'
+                                        current_app.logger.info('Usando PNG (mejor calidad): %d KB vs JPEG: %d KB', size_png/1024, size_jpg/1024)
+                                
+                                optimized_bytes = output.getvalue()
+                                optimized_size_kb = len(optimized_bytes) / 1024
+                                
+                                # Verificar que la optimización no haya fallado
+                                if len(optimized_bytes) == 0:
+                                    raise ValueError("La optimización resultó en un archivo vacío")
+                                
+                                # Calcular reducción
+                                reduction_percent = ((original_size_kb - optimized_size_kb) / original_size_kb) * 100 if original_size_kb > 0 else 0
+                                
+                                current_app.logger.info('Optimización completada: %.2f KB → %.2f KB (%.1f%% reducción, formato: %s)', 
+                                                      original_size_kb, optimized_size_kb, reduction_percent, format_used)
+                                
+                                # Convertir a base64 y guardar en BD
+                                config.set_logo_from_file(optimized_bytes, mimetype)
+                                
+                                # Limpiar sesión
                                 session.pop('logo_url', None)
-                                config.logo_url = f"/uploads/{unique_name}"
-                                flash('Logo actualizado correctamente.', 'success')
+                                
+                                # Mensaje de éxito con detalles
+                                if reduction_percent > 5:
+                                    flash(f'✓ Logo optimizado y guardado. Original: {original_size_kb:.1f} KB → Optimizado: {optimized_size_kb:.1f} KB ({reduction_percent:.0f}% reducción)', 'success')
+                                else:
+                                    flash(f'✓ Logo guardado correctamente. Tamaño: {optimized_size_kb:.1f} KB', 'success')
+                                
+                            except Exception as e_img:
+                                current_app.logger.exception('Error al optimizar imagen: %s', e_img)
+                                # Si falla la optimización, intentar guardar el original
+                                current_app.logger.warning('Guardando imagen original sin optimizar')
+                                mimetype = logo_file.mimetype or 'image/png'
+                                config.set_logo_from_file(logo_bytes, mimetype)
+                                session.pop('logo_url', None)
+                                flash('Logo guardado (sin optimización). Tamaño: {:.1f} KB'.format(original_size_kb), 'warning')
+                            
                     except Exception as e:
                         current_app.logger.exception('Error procesando logo subido: %s', e)
                         flash('Error al subir el logo.', 'error')
@@ -2291,32 +2390,103 @@ def api_estudiantes_por_ciclo(ciclo_id):
             'message': f'Error al obtener estudiantes: {str(e)}'
         })
 
-@admin_bp.route('/api/cursos-por-docente/<int:docente_id>')
+# ============================================================================
+# GESTIÓN DE LOGS
+# ============================================================================
+
+@admin_bp.route('/logs')
 @login_required
 @admin_required
-def api_cursos_por_docente(docente_id):
-    """API para obtener cursos asignados a un docente específico"""
+def ver_logs():
+    """Vista principal de logs"""
+    print("DEBUG: Ejecutando ver_logs()")  # DEBUG
+    log_files = LogViewer.get_log_files()
+    recent_errors = LogViewer.get_recent_errors(hours=24, limit=10)
+    
+    return render_template('admin/logs.html', 
+                         log_files=log_files,
+                         recent_errors=recent_errors)
+
+@admin_bp.route('/logs/view/<filename>')
+@login_required
+@admin_required
+def ver_log_detalle(filename):
+    """Ver detalle de un archivo de log"""
+    # Parámetros de filtro
+    lines = request.args.get('lines', 500, type=int)
+    level_filter = request.args.get('level', None)
+    search_term = request.args.get('search', None)
+    
+    # Leer log
+    result = LogViewer.read_log_file(filename, lines=lines, 
+                                     level_filter=level_filter, 
+                                     search_term=search_term)
+    
+    if not result['success']:
+        flash(f"Error al leer log: {result.get('error', 'Desconocido')}", 'error')
+        return redirect(url_for('admin.ver_logs'))
+    
+    return render_template('admin/log_detalle.html',
+                         log_data=result,
+                         lines=lines,
+                         level_filter=level_filter,
+                         search_term=search_term)
+
+@admin_bp.route('/logs/download/<filename>')
+@login_required
+@admin_required
+def descargar_log(filename):
+    """Descargar archivo de log"""
+    log_dir = LogViewer.get_log_directory()
+    filepath = os.path.join(log_dir, filename)
+    
+    if not os.path.exists(filepath):
+        flash('Archivo de log no encontrado', 'error')
+        return redirect(url_for('admin.ver_logs'))
+    
     try:
-        cursos = db.session.query(Curso).join(CursoDocente, CursoDocente.curso_id == Curso.id).filter(
-            CursoDocente.docente_id == docente_id,
-            Curso.activo == True
-        ).order_by(Curso.nombre).all()
-        
-        cursos_data = [
-            {
-                'id': curso.id,
-                'nombre': curso.nombre,
-                'codigo': curso.codigo
-            }
-            for curso in cursos
-        ]
-        
-        return jsonify({
-            'success': True,
-            'cursos': cursos_data
-        })
+        return send_file(filepath, 
+                        as_attachment=True,
+                        download_name=filename,
+                        mimetype='text/plain')
     except Exception as e:
-        return jsonify({
-            'success': False,
-            'message': f'Error al obtener cursos: {str(e)}'
-        })
+        flash(f'Error al descargar log: {e}', 'error')
+        return redirect(url_for('admin.ver_logs'))
+
+@admin_bp.route('/logs/clear', methods=['POST'])
+@login_required
+@admin_required
+def limpiar_logs():
+    """Limpiar logs antiguos"""
+    days = request.form.get('days', 30, type=int)
+    
+    result = LogViewer.clear_old_logs(days=days)
+    
+    if result['success']:
+        if result['deleted'] > 0:
+            flash(f"✓ Se eliminaron {result['deleted']} archivo(s) de log más antiguos que {days} días", 'success')
+        else:
+            flash(f"No hay logs más antiguos que {days} días para eliminar", 'info')
+        
+        if result['errors']:
+            flash(f"Advertencia: {len(result['errors'])} archivo(s) no se pudieron eliminar", 'warning')
+    else:
+        flash(f"Error al limpiar logs: {result.get('error', 'Desconocido')}", 'error')
+    
+    return redirect(url_for('admin.ver_logs'))
+
+@admin_bp.route('/logs/api/recent-errors')
+@login_required
+@admin_required
+def api_errores_recientes():
+    """API para obtener errores recientes (para dashboard)"""
+    hours = request.args.get('hours', 24, type=int)
+    limit = request.args.get('limit', 10, type=int)
+    
+    errors = LogViewer.get_recent_errors(hours=hours, limit=limit)
+    
+    return jsonify({
+        'success': True,
+        'count': len(errors),
+        'errors': errors
+    })

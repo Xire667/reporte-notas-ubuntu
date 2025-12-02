@@ -357,8 +357,29 @@ class ThemeConfig(db.Model):
     color_medio_oscuro = db.Column(db.String(7), default='#05125F')  # Variante oscura del color intermedio
     color_medio_claro = db.Column(db.String(7), default='#0E3182')  # Variante clara del color intermedio
     actualizado_en = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)  # Fecha de última actualización
-    # Usar Text para permitir data URIs largos o URLs completas
-    logo_url = db.Column(db.Text, default=None)  # Ruta/URI del logo personalizado
+    # Usar LONGTEXT para permitir data URIs largos (base64) - soporta hasta 4GB
+    logo_url = db.Column(db.Text(length=4294967295), default=None)  # Data URI del logo en formato base64 (data:image/png;base64,...)
 
     def __repr__(self):
         return f'<ThemeConfig {self.nombre}>'
+    
+    def set_logo_from_file(self, file_data, mimetype='image/png'):
+        """
+        Convierte archivo de imagen a base64 y lo guarda en logo_url
+        
+        Args:
+            file_data: bytes del archivo de imagen
+            mimetype: tipo MIME de la imagen (image/png, image/jpeg, etc.)
+        """
+        import base64
+        encoded = base64.b64encode(file_data).decode('utf-8')
+        self.logo_url = f"data:{mimetype};base64,{encoded}"
+        # Forzar actualización del timestamp para evitar caché
+        self.actualizado_en = datetime.utcnow()
+    
+    def get_logo_size_kb(self):
+        """Retorna el tamaño del logo en KB"""
+        if self.logo_url and self.logo_url.startswith('data:'):
+            # Calcular tamaño aproximado del base64
+            return len(self.logo_url) / 1024
+        return 0

@@ -3,7 +3,7 @@ from PyInstaller.utils.hooks import collect_all
 
 datas = [('app/templates', 'app/templates'), ('app/static', 'app/static'), ('.env', '.')]
 binaries = []
-hiddenimports = ['dotenv', 'flask_login', 'xhtml2pdf', 'reportlab', 'openpyxl', 'waitress']
+hiddenimports = ['dotenv', 'flask_login', 'xhtml2pdf', 'reportlab', 'openpyxl', 'waitress', 'tkinter', 'pystray']
 tmp_ret = collect_all('mysql.connector')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 tmp_ret = collect_all('sqlalchemy')
@@ -13,7 +13,7 @@ datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 
 a = Analysis(
-    ['run_server.py'],
+    ['run_server_new.py'],
     pathex=[],
     binaries=binaries,
     datas=datas,
@@ -40,7 +40,7 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=True,
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,

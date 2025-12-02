@@ -3,119 +3,144 @@
 {% block title %}Notas del Curso - {{ curso.nombre }}{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>
-                <i class="fas fa-chart-line me-2"></i>Notas del Curso: {{ curso.nombre }}
-            </h2>
-            <a href="{{ url_for('alumno.dashboard') }}" class="btn btn-outline-primary">
-                <i class="fas fa-arrow-left me-2"></i>Volver a Dashboard
-            </a>
+<div class="container-fluid" style="max-width: 1400px;">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i class="fas fa-chart-line me-2"></i>Notas del Curso: {{ curso.nombre }}
+                </h2>
+                <a href="{{ url_for('alumno.dashboard') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Volver a Dashboard
+                </a>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-md-8">
+    <div class="row">
+        <div class="col-lg-8">
         <div class="card">
             <div class="card-header bg-primary text-white">
                 <h5><i class="fas fa-chart-line me-2"></i>Detalle de Notas</h5>
             </div>
             <div class="card-body">
                 {% if nota %}
-                <div class="table-responsive notas-curso">
-                    <table class="table table-striped table-bordered align-middle tabla-notas">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th>Sección</th>
-                                <th class="text-end">Evaluación</th>
-                                <th class="text-end">Nota</th>
+                                <th style="width: 40%;">Evaluación</th>
+                                <th class="text-center" style="width: 30%;">Número</th>
+                                <th class="text-center" style="width: 30%;">Nota</th>
                             </tr>
                         </thead>
                         <tbody>
                             <!-- Actividades -->
-                            <tr class="table-primary seccion-titulo seccion-actividades">
-                                <th colspan="3">Actividades (10%)</th>
+                            <tr class="table-primary">
+                                <th colspan="3"><i class="fas fa-tasks me-2"></i>Actividades (10%)</th>
                             </tr>
                             {% if nota_actividades %}
-                            {% for i in range(1, 9) %}
-                            <tr>
-                                <td>Actividad</td>
-                                <td>#{{ i }}</td>
-                                <td class="text-end nota-valor {% if actividad_valor is none %}no-data{% endif %}">
-                                    {% set actividad_valor = nota_actividades['actividad' + i|string] %}
-                                    {{ actividad_valor if actividad_valor is not none else '—' }}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                            <tr class="fw-semibold promedio-row promedio-actividades">
-                                <td colspan="2">Promedio Actividades</td>
-                                <td class="text-end">{{ promedio_actividades or 0 }}</td>
-                            </tr>
+                                {% for i in range(1, 9) %}
+                                {% set actividad_valor = nota_actividades['actividad' + i|string] %}
+                                <tr>
+                                    <td>Actividad</td>
+                                    <td class="text-center">#{{ i }}</td>
+                                    <td class="text-center">
+                                        {% if actividad_valor is not none and actividad_valor > 0 %}
+                                            <span class="badge {% if actividad_valor >= 13 %}bg-success{% elif actividad_valor >= 10 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                                {{ "%.2f"|format(actividad_valor) }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                <tr class="table-light fw-bold">
+                                    <td colspan="2">Promedio Actividades</td>
+                                    <td class="text-center text-primary">{{ "%.2f"|format(promedio_actividades or 0) }}</td>
+                                </tr>
                             {% else %}
-                            <tr>
-                                <td colspan="3" class="text-muted">No hay actividades registradas</td>
-                            </tr>
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">No hay actividades registradas</td>
+                                </tr>
                             {% endif %}
 
                             <!-- Prácticas -->
-                            <tr class="table-success seccion-titulo seccion-practicas">
-                                <th colspan="3">Prácticas (30%)</th>
+                            <tr class="table-success">
+                                <th colspan="3"><i class="fas fa-file-alt me-2"></i>Prácticas (30%)</th>
                             </tr>
                             {% if nota_practicas %}
-                            {% for i in range(1, 5) %}
-                            <tr>
-                                <td>Práctica</td>
-                                <td>#{{ i }}</td>
-                                <td class="text-end nota-valor {% if practica_valor is none %}no-data{% endif %}">
-                                    {% set practica_valor = nota_practicas['practica' + i|string] %}
-                                    {{ practica_valor if practica_valor is not none else '—' }}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                            <tr class="fw-semibold promedio-row promedio-practicas">
-                                <td colspan="2">Promedio Prácticas</td>
-                                <td class="text-end">{{ promedio_practicas or 0 }}</td>
-                            </tr>
+                                {% for i in range(1, 5) %}
+                                {% set practica_valor = nota_practicas['practica' + i|string] %}
+                                <tr>
+                                    <td>Práctica</td>
+                                    <td class="text-center">#{{ i }}</td>
+                                    <td class="text-center">
+                                        {% if practica_valor is not none and practica_valor > 0 %}
+                                            <span class="badge {% if practica_valor >= 13 %}bg-success{% elif practica_valor >= 10 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                                {{ "%.2f"|format(practica_valor) }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                <tr class="table-light fw-bold">
+                                    <td colspan="2">Promedio Prácticas</td>
+                                    <td class="text-center text-success">{{ "%.2f"|format(promedio_practicas or 0) }}</td>
+                                </tr>
                             {% else %}
-                            <tr>
-                                <td colspan="3" class="text-muted">No hay prácticas registradas</td>
-                            </tr>
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">No hay prácticas registradas</td>
+                                </tr>
                             {% endif %}
 
                             <!-- Parciales -->
-                            <tr class="table-warning seccion-titulo seccion-parciales">
-                                <th colspan="3">Parciales (60%)</th>
+                            <tr class="table-warning">
+                                <th colspan="3"><i class="fas fa-graduation-cap me-2"></i>Parciales (60%)</th>
                             </tr>
                             {% if nota_parcial %}
-                            {% for i in range(1, 3) %}
-                            <tr>
-                                <td>Parcial</td>
-                                <td>#{{ i }}</td>
-                                <td class="text-end nota-valor {% if parcial_valor is none %}no-data{% endif %}">
-                                    {% set parcial_valor = nota_parcial['parcial' + i|string] %}
-                                    {{ parcial_valor if parcial_valor is not none else '—' }}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                            <tr class="fw-semibold promedio-row promedio-parciales">
-                                <td colspan="2">Promedio Parciales</td>
-                                <td class="text-end">{{ promedio_parciales or 0 }}</td>
-                            </tr>
+                                {% for i in range(1, 3) %}
+                                {% set parcial_valor = nota_parcial['parcial' + i|string] %}
+                                <tr>
+                                    <td>Parcial</td>
+                                    <td class="text-center">#{{ i }}</td>
+                                    <td class="text-center">
+                                        {% if parcial_valor is not none and parcial_valor > 0 %}
+                                            <span class="badge {% if parcial_valor >= 13 %}bg-success{% elif parcial_valor >= 10 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                                {{ "%.2f"|format(parcial_valor) }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                <tr class="table-light fw-bold">
+                                    <td colspan="2">Promedio Parciales</td>
+                                    <td class="text-center text-warning">{{ "%.2f"|format(promedio_parciales or 0) }}</td>
+                                </tr>
                             {% else %}
-                            <tr>
-                                <td colspan="3" class="text-muted">No hay parciales registrados</td>
-                            </tr>
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">No hay parciales registrados</td>
+                                </tr>
                             {% endif %}
 
-                            <!-- Resumen -->
-                            <tr class="table-secondary seccion-titulo seccion-resumen">
-                                <th colspan="3">Resumen</th>
+                            <!-- Promedio Final -->
+                            <tr class="table-info">
+                                <th colspan="3" class="text-center">
+                                    <i class="fas fa-trophy me-2"></i>PROMEDIO FINAL
+                                </th>
                             </tr>
-                            <tr class="resumen-row">
-                                <td colspan="2">Promedio Final</td>
-                                <td class="text-end fs-5 fw-bold nota-valor">{{ nota.promedio_final or 0 }}</td>
+                            <tr class="table-light">
+                                <td colspan="2" class="fw-bold fs-5">Nota Final</td>
+                                <td class="text-center">
+                                    <span class="badge {% if nota.promedio_final >= 13 %}bg-success{% elif nota.promedio_final >= 10 %}bg-warning text-dark{% else %}bg-danger{% endif %} fs-4">
+                                        {{ "%.2f"|format(nota.promedio_final or 0) }}
+                                    </span>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -151,7 +176,7 @@
         </div>
     </div>
 
-    <div class="col-md-4">
+    <div class="col-lg-4">
         <div class="card">
             <div class="card-header bg-info text-white">
                 <h5><i class="fas fa-info-circle me-2"></i>Información del Curso</h5>
@@ -188,5 +213,6 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 {% endblock %}

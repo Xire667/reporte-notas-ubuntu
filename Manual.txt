@@ -1,0 +1,175 @@
+Sistema de Gestión de Notas - Manual de Usuario
+Instituto Superior Tecnológico Público Suiza
+
+1. Descripción General
+- Sistema web para administrar docentes, cursos, alumnos y calificaciones.
+- Roles: Administrador, Docente y Alumno.
+- Funciona con MySQL y se puede ejecutar en modo desarrollo (Python) o como ejecutable para Windows (.exe).
+
+2. Requisitos
+- Windows 10/11 con Python 3.11 (para desarrollo).
+- MySQL (XAMPP recomendado) activo en localhost:3306.
+- Navegador moderno (Chrome/Edge/Firefox).
+- Variables en archivo .env: SECRET_KEY, DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, FLASK_ENV.
+
+3. Instalación y Arranque
+3.1 Modo Desarrollo (programadores)
+- Crear y activar entorno: venv311
+  - Windows: python -m venv venv311
+            venv311\Scripts\activate
+  - Linux/Mac: python -m venv venv311
+               source venv311/bin/activate
+- Instalar dependencias:
+  - pip install -r requirements.txt
+  - (Opcional, para construir .exe): pip install -r requirements-dev.txt
+- Configurar .env (copiar desde .env.example y completar DB_USER/DB_PASSWORD).
+- Enciende MySQL (XAMPP) y verifica que esté activo en localhost:3306.
+- Iniciar el servidor:
+  - python run_server.py
+  - Se abre el navegador en http://127.0.0.1:5000/
+
+3.2 Modo Ejecutable (usuarios finales)
+- Ejecuta SistemaNotas.exe (requiere MySQL activo).
+- Si la base no existe, el sistema la crea automáticamente (utf8mb4) y genera usuarios de ejemplo.
+- Si MySQL no está activo o credenciales incorrectas, se muestra un mensaje y se espera que presiones Enter para cerrar.
+
+4. Primer Inicio y Credenciales de Ejemplo
+- Si la base está vacía, se crean usuarios iniciales:
+  - Administrador:
+    - DNI: 12345678
+    - Contraseña: admin123
+  - Docente:
+    - DNI: 87654321
+    - Contraseña: docente123
+  - Alumno:
+    - DNI: 11223344
+    - Contraseña: alumno123
+- Puedes cambiar las contraseñas desde la interfaz de administración.
+
+5. Roles y Navegación
+5.1 Administrador
+- Dashboard: vista general del sistema.
+- Gestión de Docentes: crear, editar, eliminar docentes.
+- Gestión de Cursos: crear cursos y asignarlos a docentes.
+- Gestión de Alumnos: registrar y editar alumnos.
+- Matrícula de Alumnos: asignar alumnos a cursos.
+- Notas: supervisar calificaciones, exportar reportes (PDF/Excel).
+- Estilos del Sistema (Editar Estilos):
+  - Cambiar colores y tema.
+  - Subir logo institucional.
+  - Ver ayudas y límites de archivos.
+
+5.2 Docente
+- Cursos Asignados: lista de cursos que imparte.
+- Alumnos por Curso: ver lista y estado.
+- Gestión de Notas:
+  - Registrar notas por parcial y calcular nota final.
+  - Exportar reporte del curso a PDF.
+  - Exportar/Importar Excel (si está habilitado).
+- Observaciones: registrar comentarios por alumno/curso.
+
+5.3 Alumno
+- Inicio de sesión con DNI y contraseña.
+- Visualizar todas sus notas por curso y parcial.
+- Seguimiento de rendimiento académico.
+
+6. Flujos Comunes
+6.1 Inicio de Sesión
+- Accede con tu DNI y contraseña.
+- Si no tienes cuenta, el administrador debe crearte una.
+
+6.2 Subir o Cambiar el Logo (Administrador)
+- Ir a: Administración > Editar Estilos.
+- Seleccionar archivo de imagen (PNG/JPG/JPEG).
+- Tamaño máximo recomendado: hasta 5 MB.
+- Al guardar:
+  - El sistema valida formato y tamaño.
+  - Si había un logo anterior, se reemplaza.
+  - El logo se almacena como archivo en “uploads/” y se referencia desde la BD.
+
+6.3 Edición de Estilos
+- Ajusta colores del tema (oscuro, claro, medio).
+- Guarda los cambios; se aplican globalmente en las vistas.
+- Las notificaciones aparecen como “toasts” (mensajes emergentes) y se ocultan solos.
+
+6.4 Exportar a PDF (Administrador/Docente)
+- Botón “Exportar a PDF” en la vista de notas.
+- Se usa xhtml2pdf para generar el archivo PDF.
+- El PDF incluye cabeceras, curso, lista de alumnos y notas.
+
+6.5 Exportar/Importar Excel (Administrador/Docente)
+- Exportar: genera una plantilla o reporte con openpyxl.
+- Importar: carga un archivo Excel existente para actualizar notas.
+  - Revisa que el formato de columnas coincida con el esperado por el sistema.
+  - El sistema valida datos y muestra errores si hay celdas inválidas.
+
+7. Mensajes y Notificaciones
+- Se usan “toasts” (Bootstrap) para feedback:
+  - Éxito, Información, Advertencia, Error.
+- En el login y páginas base, se leen mensajes por categoría:
+  - get_flashed_messages(with_categories=true)
+- Si hay errores (formato de archivo, tamaño, permisos), verás un toast con el detalle.
+
+8. Archivos y Límites
+- Logo: PNG/JPG/JPEG, hasta 5 MB, recomendado 256x256 o mayor.
+- Carga de notas por Excel: respeta la plantilla y tipos en cada columna.
+- Carpeta “uploads/”: los archivos subidos se guardan aquí. Haz respaldo periódico si migras de servidor.
+
+9. Base de Datos
+- Auto-creación (en .exe):
+  - Si DB_NAME no existe, se crea con utf8mb4.
+  - Se generan tablas y usuarios por defecto si está vacía.
+- Variables en .env:
+  - DB_HOST (ej. localhost), DB_USER (ej. root), DB_PASSWORD, DB_NAME (ej. sistema_academico).
+- Permisos:
+  - El usuario debe tener permisos para CREATE DATABASE/CREATE TABLE en el servidor.
+
+10. Seguridad
+- Sesiones y login con Flask-Login.
+- Cerrar sesión desde el menú para proteger tu cuenta.
+- Mantén “SECRET_KEY” seguro en .env (no compartas .env).
+- Asigna roles correctos (admin/docente/alumno) y usa contraseñas fuertes.
+
+11. Logs y Soporte
+- En modo .exe: se guardan en “logs/app.log” junto al ejecutable.
+- En modo desarrollo: ver consola y “logs/app.log” (si configurado).
+- Ante errores, revisa:
+  - Conexión MySQL (XAMPP encendido).
+  - Credenciales del .env.
+  - Mensajes de error en toasts y en logs.
+
+12. Solución de Problemas
+- MySQL apagado:
+  - Enciende XAMPP, activa MySQL, reintenta.
+- “Unknown database”:
+  - El .exe la crea automáticamente si tienes permisos.
+  - Verifica DB_USER/DB_PASSWORD/DB_NAME en .env.
+- Icono del ejecutable:
+  - Usa el build que genera un .ico multiresolución desde PNG.
+  - Si ves iconos raros en algunas vistas de Windows, reconstruye y limpia caché de iconos.
+- Puerto 5000 ocupado:
+  - Cierra otras apps que usen ese puerto o cambia el puerto en run_server.py.
+- Problemas de permisos de archivos:
+  - Ejecuta el .exe en una carpeta donde tengas permisos de escritura (para logs y uploads).
+
+13. Respaldo y Migración
+- Respaldar BD:
+  - Exporta la base desde phpMyAdmin o usa mysqldump.
+- Migrar archivos:
+  - Copia la carpeta “uploads/” y cualquier configuración local (tu .env).
+- Restaurar en nuevo equipo:
+  - Instala MySQL, importa la BD, ajusta .env, copia “uploads/”, ejecuta el .exe o el servidor de desarrollo.
+
+14. Buenas Prácticas
+- No subir “.env” a GitHub.
+- No subir “venv”, “dist”, “build”, “logs”.
+- Documenta qué usuarios/roles existen y asigna permisos razonables.
+- Usa contraseñas robustas y cámbialas periódicamente.
+
+15. Contacto y Mantenimiento
+- Si hay dudas o fallos, revisa “logs/app.log”.
+- Para cambios de estilos o logo, usa “Editar Estilos” en el panel de administración.
+- Actualiza “requirements.txt” solo cuando el código realmente use nuevas librerías.
+- Para generar el .exe, usa “build_exe.bat” y asegúrate de tener instalado “requirements-dev.txt”.
+
+Fin del documento.
