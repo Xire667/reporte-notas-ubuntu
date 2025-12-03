@@ -38,6 +38,97 @@ def ver_notas():
     
     return render_template('alumno/notas.html', notas=notas)
 
+@alumno_bp.route('/notas/curso/<int:curso_id>/pdf')
+@login_required
+@alumno_required
+def descargar_notas_pdf(curso_id):
+    """Genera y descarga un PDF con las notas del alumno en un curso específico"""
+    from io import BytesIO
+    from xhtml2pdf import pisa
+    from flask import make_response
+    from datetime import datetime
+    
+    # Verificar que el alumno esté matriculado en el curso
+    matricula = CursoAlumno.query.filter_by(
+        curso_id=curso_id, 
+        alumno_id=current_user.id
+    ).first()
+    
+    if not matricula:
+        flash('No estás matriculado en este curso.', 'error')
+        return redirect(url_for('alumno.dashboard'))
+    
+    # Obtener nota del curso (solo si está publicada)
+    nota = Nota.query.filter_by(
+        curso_id=curso_id, 
+        alumno_id=current_user.id,
+        estado='publicada'
+    ).first()
+    
+    if not nota:
+        flash('No hay notas publicadas para este curso.', 'warning')
+        return redirect(url_for('alumno.ver_notas_curso', curso_id=curso_id))
+    
+    # Obtener curso
+    curso_obj = Curso.query.get(curso_id)
+    
+    if not curso_obj:
+        flash('Curso no encontrado.', 'error')
+        return redirect(url_for('alumno.dashboard'))
+    
+    # Obtener docente del curso
+    curso_docente = CursoDocente.query.filter_by(curso_id=curso_id).first()
+    docente = None
+    if curso_docente:
+        docente = Usuario.query.get(curso_docente.docente_id)
+    
+    # Obtener detalles de las notas
+    nota_actividades = None
+    nota_practicas = None
+    nota_parcial = None
+    
+    if nota.nota_actividades_id:
+        nota_actividades = NotaActividades.query.get(nota.nota_actividades_id)
+    
+    if nota.nota_practicas_id:
+        nota_practicas = NotaPracticas.query.get(nota.nota_practicas_id)
+    
+    if nota.nota_parcial_id:
+        nota_parcial = NotaParcial.query.get(nota.nota_parcial_id)
+    
+    # Preparar datos para el template
+    datos = {
+        'alumno': current_user,
+        'curso': curso_obj,
+        'docente': docente,
+        'nota': nota,
+        'nota_actividades': nota_actividades,
+        'nota_practicas': nota_practicas,
+        'nota_parcial': nota_parcial,
+        'fecha_generacion': datetime.now().strftime('%d/%m/%Y %H:%M')
+    }
+    
+    # Renderizar template HTML
+    html = render_template('alumno/notas_curso_pdf.html', **datos)
+    
+    # Generar PDF
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html.encode('utf-8')), result)
+    
+    if pdf.err:
+        flash('Error al generar el PDF.', 'error')
+        return redirect(url_for('alumno.ver_notas_curso', curso_id=curso_id))
+    
+    # Preparar respuesta
+    response = make_response(result.getvalue())
+    response.headers['Content-Type'] = 'application/pdf'
+    
+    # Nombre del archivo
+    filename = f"Notas_{current_user.apellido}_{current_user.nombre}_{curso_obj.nombre.replace(' ', '_')}.pdf"
+    response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    return response
+
 @alumno_bp.route('/notas/curso/<int:curso_id>')
 @login_required
 @alumno_required
@@ -116,6 +207,7 @@ def ver_notas_curso(curso_id):
     return render_template('alumno/notas_curso.html', 
                          nota=nota, 
                          curso=curso,
+                         curso_id=curso_id,
                          nota_actividades=nota_actividades,
                          nota_practicas=nota_practicas,
                          nota_parcial=nota_parcial,
@@ -137,3 +229,69 @@ def ver_cursos():
     ).join(CursoAlumno).filter(CursoAlumno.alumno_id == current_user.id).all()
     
     return render_template('alumno/cursos.html', cursos_notas=cursos_notas)
+
+@alumno_bp.route('/cursos/pdf')
+@login_required
+@alumno_required
+def descargar_resumen_cursos_pdf():
+    """Genera y descarga un PDF con el resumen de todos los cursos del alumno"""
+    from io import BytesIO
+    from xhtml2pdf import pisa
+    from flask import make_response
+    from datetime import datetime
+    
+    # Obtener cursos del alumno con información de notas (solo publicadas)
+    cursos_notas = db.session.query(Curso, Nota).outerjoin(Nota, 
+        db.and_(
+            Nota.curso_id == Curso.id, 
+            Nota.alumno_id == current_user.id,
+            Nota.estado == 'publicada'
+        )
+    ).join(CursoAlumno).filter(CursoAlumno.alumno_id == current_user.id).all()
+    
+    if not cursos_notas:
+        flash('No tienes cursos matriculados.', 'warning')
+        return redirect(url_for('alumno.dashboard'))
+    
+    # Calcular estadísticas
+    total_cursos = len(cursos_notas)
+    cursos_con_notas = sum(1 for _, nota in cursos_notas if nota and nota.promedio_final)
+    cursos_aprobados = sum(1 for _, nota in cursos_notas if nota and nota.promedio_final and nota.promedio_final >= 10.5)
+    cursos_desaprobados = sum(1 for _, nota in cursos_notas if nota and nota.promedio_final and nota.promedio_final < 10.5)
+    
+    # Calcular promedio general
+    promedios = [nota.promedio_final for _, nota in cursos_notas if nota and nota.promedio_final]
+    promedio_general = sum(promedios) / len(promedios) if promedios else 0
+    
+    # Preparar datos para el template
+    datos = {
+        'alumno': current_user,
+        'cursos_notas': cursos_notas,
+        'total_cursos': total_cursos,
+        'cursos_con_notas': cursos_con_notas,
+        'cursos_aprobados': cursos_aprobados,
+        'cursos_desaprobados': cursos_desaprobados,
+        'promedio_general': promedio_general,
+        'fecha_generacion': datetime.now().strftime('%d/%m/%Y %H:%M')
+    }
+    
+    # Renderizar template HTML
+    html = render_template('alumno/resumen_cursos_pdf.html', **datos)
+    
+    # Generar PDF
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html.encode('utf-8')), result)
+    
+    if pdf.err:
+        flash('Error al generar el PDF.', 'error')
+        return redirect(url_for('alumno.ver_cursos'))
+    
+    # Preparar respuesta
+    response = make_response(result.getvalue())
+    response.headers['Content-Type'] = 'application/pdf'
+    
+    # Nombre del archivo
+    filename = f"Resumen_Cursos_{current_user.apellido}_{current_user.nombre}.pdf"
+    response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    return response

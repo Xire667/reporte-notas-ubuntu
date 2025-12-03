@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte de Notas - {{ alumno.nombre }} {{ alumno.apellido }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 9pt;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #00378F;
+            padding-bottom: 10px;
+        }
+        
+        .header h1 {
+            color: #00378F;
+            font-size: 16pt;
+            margin: 0 0 3px 0;
+        }
+        
+        .header h2 {
+            color: #666;
+            font-size: 11pt;
+            margin: 0;
+            font-weight: normal;
+        }
+        
+        .info-section {
+            margin-bottom: 12px;
+            background-color: #f8f9fa;
+            padding: 8px 10px;
+            border-radius: 3px;
+        }
+        
+        .info-row {
+            margin-bottom: 4px;
+            font-size: 8pt;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #00378F;
+            display: inline-block;
+            width: 120px;
+        }
+        
+        .info-value {
+            color: #333;
+        }
+        
+        .section-title {
+            background-color: #00378F;
+            color: white;
+            padding: 6px 8px;
+            margin-top: 12px;
+            margin-bottom: 8px;
+            font-size: 10pt;
+            font-weight: bold;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            font-size: 8pt;
+        }
+        
+        th {
+            background-color: #00378F;
+            color: white;
+            padding: 5px 6px;
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        td {
+            padding: 4px 6px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .nota-valor {
+            text-align: center;
+            font-weight: bold;
+            color: #00378F;
+        }
+        
+        .nota-vacia {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+        }
+        
+        .promedio-row {
+            background-color: #e7f1ff !important;
+            font-weight: bold;
+        }
+        
+        .promedio-row td {
+            border-top: 2px solid #00378F;
+            padding: 6px;
+        }
+        
+        .resumen-final {
+            margin-top: 15px;
+            padding: 12px;
+            background-color: #00378F;
+            color: white;
+            text-align: center;
+            border-radius: 3px;
+        }
+        
+        .resumen-final h3 {
+            margin: 0 0 5px 0;
+            font-size: 12pt;
+        }
+        
+        .promedio-final-valor {
+            font-size: 24pt;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .estado-aprobado {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .estado-desaprobado {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .footer {
+            margin-top: 15px;
+            padding-top: 8px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            font-size: 7pt;
+            color: #666;
+        }
+        
+        .formula {
+            background-color: #fff3cd;
+            padding: 6px 8px;
+            margin: 8px 0;
+            border-left: 3px solid #ffc107;
+            font-size: 8pt;
+        }
+    </style>
+</head>
+<body>
+    <!-- Encabezado -->
+    <div class="header">
+        <h1>Instituto Superior Tecnológico Público Suiza</h1>
+        <h2>Reporte de Calificaciones</h2>
+    </div>
+    
+    <!-- Información del Alumno -->
+    <div class="info-section">
+        <div class="info-row">
+            <span class="info-label">Alumno:</span>
+            <span class="info-value">{{ alumno.nombre }} {{ alumno.apellido }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">DNI:</span>
+            <span class="info-value">{{ alumno.dni }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Curso:</span>
+            <span class="info-value">{{ curso.nombre }}</span>
+        </div>
+        {% if docente %}
+        <div class="info-row">
+            <span class="info-label">Docente:</span>
+            <span class="info-value">{{ docente.nombre }} {{ docente.apellido }}</span>
+        </div>
+        {% endif %}
+        <div class="info-row">
+            <span class="info-label">Fecha de Generación:</span>
+            <span class="info-value">{{ fecha_generacion }}</span>
+        </div>
+    </div>
+    
+    <!-- Fórmula de Cálculo -->
+    <div class="formula">
+        <strong>Fórmula de Cálculo:</strong> Promedio Final = (Actividades × 10%) + (Prácticas × 30%) + (Parciales × 60%)
+    </div>
+    
+    <!-- Actividades -->
+    {% if nota_actividades %}
+    <div class="section-title">Actividades (10%)</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Evaluación</th>
+                <th style="text-align: center; width: 100px;">Nota</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Actividad 1</td>
+                {% if nota_actividades.actividad1 and nota_actividades.actividad1 > 0 %}
+                <td class="nota-valor">{{ "%.2f"|format(nota_actividades.actividad1) }}</td>
+                {% else %}
+                <td class="nota-vacia">-</td>
+                {% endif %}
+            </tr>
+            <tr>
+                <td>Actividad 2</td>
+                {% if nota_actividades.actividad2 and nota_actividades.actividad2 > 0 %}
+                <td class="nota-valor">{{ "%.2f"|format(nota_actividades.actividad2) }}</td>
+                {% else %}
+                <td class="nota-vacia">-</td>
+                {% endif %}
+            </tr>
+            <tr>
+                <td>Actividad 3</td>
+                {% if nota_actividades.actividad3 and nota_actividades.actividad3 > 0 %}
+                <td class="nota-valor">{{ "%.2f"|format(nota_actividades.actividad3) }}</td>
+                {% else %}
+                <td class="nota-vacia">-</td>
+                {% endif %}
+            </tr>
+            <tr>
+                <td>Actividad 4</td>
+                {% if nota_actividades.actividad4 and nota_actividades.actividad4 > 0 %}
+                <td class="nota-valor">{{ "%.2f"|format(nota_actividades.actividad4) }}</td>
+                {% else %}
+                <td class="nota-vacia">-</td>
+                {% endif %}
+            </tr>
+            <tr>
+                <td>Actividad 5</td>
+                {% if nota_actividades.actividad5 and nota_actividades.actividad5 > 0 %}
+                <td class="nota-valor">{{ "%.2f"|format(nota_actividades.actividad5) }}</td>
+                {% else %}
+                <td class="nota-vacia">-</td>
+                {% endif %}
+            </tr>
+            <tr>
+                <td>Actividad 6</td>
+                {% if nota_actividades.actividad6 and nota_actividades.actividad6 > 0 %}
+                <td class="nota-valor">{{ "%.2f"|format(nota_actividades.actividad6) }}</td>
+                {% else %}
+                <td class="nota-vacia">-</td>
+                {% endif %}
+            </tr>
+            <tr>
+                <td>Actividad 7</td>
+                {% if nota_actividades.actividad7 and nota_actividades.actividad7 > 0 %}
+                <td class="nota-valor">{{ "%.2f"|format(nota_actividades.actividad7) }}</td>
+                {% else %}
+                <td class="nota-vacia">-</td>
+                {% endif %}
+            </tr>
+            <tr>
+                <td>Actividad 8</td>
+                {% if nota_actividades.actividad8 and nota_actividades.actividad8 > 0 %}
+                <td class="nota-valor">{{ "%.2f"|format(nota_actividades.actividad8) }}</td>
+                {% else %}
+                <td class="nota-vacia">-</td>
+                {% endif %}
+            </tr>
+            <tr class="promedio-row">
+                <td><strong>Promedio de Actividades</strong></td>
+                <td class="nota-valor">{{ "%.2f"|format(nota.promedio_actividades or 0) }}</td>
+            </tr>
+        </tbody>
+    </table>
+    {% endif %}
+    
+    <!-- Prácticas -->
+    {% if nota_practicas %}
+    <div class="section-title">Prácticas Calificadas (30%)</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Evaluación</th>
+                <th style="text-align: center; width: 100px;">Nota</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Práctica Calificada 1</td>
+                {% if nota_practicas.practica1 and nota_practicas.practica1 > 0 %}
+                <td class="nota-valor">{{ "%.2f"|format(nota_practicas.practica1) }}</td>
+                {% else %}
+                <td class="nota-vacia">-</td>
+                {% endif %}
+            </tr>
+            <tr>
+                <td>Práctica Calificada 2</td>
+                {% if nota_practicas.practica2 and nota_practicas.practica2 > 0 %}
+                <td class="nota-valor">{{ "%.2f"|format(nota_practicas.practica2) }}</td>
+                {% else %}
+                <td class="nota-vacia">-</td>
+                {% endif %}
+            </tr>
+            <tr>
+                <td>Práctica Calificada 3</td>
+                {% if nota_practicas.practica3 and nota_practicas.practica3 > 0 %}
+                <td class="nota-valor">{{ "%.2f"|format(nota_practicas.practica3) }}</td>
+                {% else %}
+                <td class="nota-vacia">-</td>
+                {% endif %}
+            </tr>
+            <tr>
+                <td>Práctica Calificada 4</td>
+                {% if nota_practicas.practica4 and nota_practicas.practica4 > 0 %}
+                <td class="nota-valor">{{ "%.2f"|format(nota_practicas.practica4) }}</td>
+                {% else %}
+                <td class="nota-vacia">-</td>
+                {% endif %}
+            </tr>
+            <tr class="promedio-row">
+                <td><strong>Promedio de Prácticas</strong></td>
+                <td class="nota-valor">{{ "%.2f"|format(nota.promedio_practicas or 0) }}</td>
+            </tr>
+        </tbody>
+    </table>
+    {% endif %}
+    
+    <!-- Parciales -->
+    {% if nota_parcial %}
+    <div class="section-title">Exámenes Parciales (60%)</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Evaluación</th>
+                <th style="text-align: center; width: 100px;">Nota</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Examen Parcial 1</td>
+                {% if nota_parcial.parcial1 and nota_parcial.parcial1 > 0 %}
+                <td class="nota-valor">{{ "%.2f"|format(nota_parcial.parcial1) }}</td>
+                {% else %}
+                <td class="nota-vacia">-</td>
+                {% endif %}
+            </tr>
+            <tr>
+                <td>Examen Parcial 2</td>
+                {% if nota_parcial.parcial2 and nota_parcial.parcial2 > 0 %}
+                <td class="nota-valor">{{ "%.2f"|format(nota_parcial.parcial2) }}</td>
+                {% else %}
+                <td class="nota-vacia">-</td>
+                {% endif %}
+            </tr>
+            <tr class="promedio-row">
+                <td><strong>Promedio de Parciales</strong></td>
+                <td class="nota-valor">{{ "%.2f"|format(nota.promedio_parciales or 0) }}</td>
+            </tr>
+        </tbody>
+    </table>
+    {% endif %}
+    
+    <!-- Resumen Final -->
+    <div class="resumen-final">
+        <h3>Promedio Final del Curso</h3>
+        <div class="promedio-final-valor">{{ "%.2f"|format(nota.promedio_final or 0) }}</div>
+        {% if nota.promedio_final >= 10.5 %}
+        <div style="font-size: 14pt; margin-top: 10px;">
+            <span class="estado-aprobado" style="color: #90EE90;">✓ APROBADO</span>
+        </div>
+        {% else %}
+        <div style="font-size: 14pt; margin-top: 10px;">
+            <span class="estado-desaprobado" style="color: #FFB6C1;">✗ DESAPROBADO</span>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Pie de página -->
+    <div class="footer">
+        <p>Este documento es un reporte oficial de calificaciones.</p>
+        <p>Instituto Superior Tecnológico Público Suiza - Sistema de Gestión de Notas</p>
+        <p>Generado el {{ fecha_generacion }}</p>
+    </div>
+</body>
+</html>

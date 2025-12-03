@@ -7,38 +7,61 @@ Sistema web desarrollado en Flask para la gestión académica del Instituto Supe
 ### Roles del Sistema
 
 #### 👨‍💼 Administrador
-- Registro y gestión de docentes
-- Registro y gestión de cursos
+- Dashboard con estadísticas generales del sistema
+- Gestión completa de docentes (CRUD)
+- Gestión completa de cursos (CRUD)
 - Asignación de cursos a docentes
-- Registro y matrícula de alumnos
-- Supervisión general del sistema
+- Gestión completa de alumnos (CRUD)
+- Matrícula de alumnos en cursos
+- Gestión de ciclos académicos
+- Visualización y supervisión de notas
+- Exportación de reportes (PDF/Excel)
+- **Personalización de estilos del sistema**
+- **Gestión de logo institucional**
+- **Visualización de logs del sistema**
+- **Control del servidor (apagar desde la interfaz)**
 
 #### 👨‍🏫 Docente
-- Subir y editar notas de alumnos
-- Visualizar lista de alumnos por curso
-- Gestión de calificaciones por parciales
-- Comentarios y observaciones
+- Vista de cursos asignados
+- Lista de alumnos por curso
+- Gestión de notas por parciales (Actividades, Prácticas, Parciales)
+- Cálculo automático de promedio final (10% + 30% + 60%)
+- Publicación de notas (borrador/publicada)
+- Exportación de reportes por curso (PDF)
+- Exportación de reportes por alumno (PDF)
+- Importación masiva de notas desde Excel
+- Exportación de plantilla Excel
+- Comentarios y observaciones por alumno
 
 #### 👨‍🎓 Alumno
-- Inicio de sesión con DNI y contraseña
-- Visualización de todas sus notas
-- Consulta de calificaciones por curso
+- Dashboard personalizado con estadísticas
+- Visualización de todas sus notas por curso
+- Consulta de calificaciones detalladas (actividades, prácticas, parciales)
+- Visualización de promedio final
 - Seguimiento del rendimiento académico
+- Solo ve notas publicadas por el docente
+- **Descarga de PDF con notas por curso individual**
+- **Descarga de PDF con resumen de todos los cursos y promedios**
 
 ## 🛠️ Tecnologías Utilizadas
 
-- **Backend**: Flask 3.1.1
-- **Base de Datos**: MySQL con SQLAlchemy
-- **Autenticación**: Flask-Login
+- **Backend**: Flask 2.3.3
+- **Base de Datos**: MySQL con SQLAlchemy 2.0.30
+- **Autenticación**: Flask-Login 0.6.3
 - **Frontend**: Bootstrap 5.3, HTML5, CSS3, JavaScript
-- **ORM**: SQLAlchemy 2.0.30
-- **Templates**: Jinja2
+- **Servidor WSGI**: Waitress 2.1.2
+- **Exportación PDF**: xhtml2pdf 0.2.17, reportlab 4.4.4
+- **Exportación Excel**: openpyxl 3.1.5
+- **Interfaz Gráfica**: tkinter (incluido con Python)
+- **System Tray**: pystray 0.19.5
+- **Procesamiento de Imágenes**: Pillow
 
 ## 📋 Requisitos del Sistema
 
 - Python 3.11 (recomendado)
 - MySQL 5.7+ o MariaDB 10.3+
 - XAMPP (recomendado para desarrollo)
+- Windows 10/11 (para ejecutable)
 
 ## 🔧 Instalación
 
@@ -48,49 +71,30 @@ git clone <url-del-repositorio>
 cd reporte-notas-ubuntu
 ```
 
-### 2. Crear entorno virtual (venv311)
+### 2. Crear entorno virtual
 ```bash
 # Crear el entorno virtual con Python 3.11
 python -m venv venv311
 
-# En Windows
+# Activar en Windows
 venv311\Scripts\activate
 
-# En Linux/Mac
+# Activar en Linux/Mac
 source venv311/bin/activate
 ```
 
-> Nota: el entorno virtual no se sube a GitHub. Cada colaborador crea su propio `venv311` local y ejecuta `pip install -r requirements.txt`. El archivo `.gitignore` ya excluye `venv/`, `venv311/` y `.venv/`.
-
 ### 3. Instalar dependencias
 ```bash
+# Dependencias de la aplicación
 pip install -r requirements.txt
-```
 
-Para construir el ejecutable en desarrollo, instala además las dependencias de build:
-```bash
+# Dependencias de desarrollo (solo si vas a compilar)
 pip install -r requirements-dev.txt
 ```
 
-### 4. Configurar la base de datos
+### 4. Configurar variables de entorno
 
-#### Opción A: Usando XAMPP
-1. Iniciar XAMPP
-2. Activar Apache y MySQL
-3. Abrir phpMyAdmin (http://localhost/phpmyadmin)
-4. Crear una nueva base de datos llamada `sistema_academico`
-5. Importar el archivo `README.md` (contiene el script SQL)
-
-#### Opción B: MySQL directo
-```sql
-CREATE DATABASE sistema_academico;
-USE sistema_academico;
--- Ejecutar el script SQL del README.md
-```
-
-### 5. Configurar la aplicación
-
-Configura tu `.env` a partir de `.env.example` (no se sube a GitHub):
+Crea un archivo `.env` basado en `.env.example`:
 
 ```ini
 SECRET_KEY=tu_clave_secreta_muy_segura_aqui
@@ -101,209 +105,367 @@ DB_NAME=sistema_academico
 FLASK_ENV=development
 ```
 
-La aplicación lee variables desde `.env` usando `config.py`.
+### 5. Configurar MySQL
 
-### 6. Ejecutar la aplicación (desarrollo)
+1. Inicia XAMPP y activa MySQL
+2. La aplicación creará automáticamente la base de datos si no existe
+3. Se crearán usuarios por defecto en el primer inicio
+
+### 6. Ejecutar la aplicación
+
+#### Modo Desarrollo:
 ```bash
-python run_server.py
+python run_server_new.py
+```
+
+#### Modo Ejecutable:
+```bash
+# Compilar
+build_exe.bat
+
+# Ejecutar
+cd dist
+SistemaNotas.exe
 ```
 
 La aplicación estará disponible en: `http://127.0.0.1:5000/`
 
-## 🚀 Distribución como ejecutable en Windows
+## 🎯 Usuarios por Defecto
 
-Sigue estos pasos para crear un ejecutable que arranque el servidor local y abra el navegador automáticamente.
+En el primer inicio, se crean automáticamente:
 
-### 1) Preparar entorno
-- Activa tu entorno virtual y luego instala dependencias:
-  ```powershell
-  venv\Scripts\activate
-  pip install -r requirements.txt
-  pip install pyinstaller
-  ```
-- Configura tu `.env` (puedes copiar desde `.env.example`):
-  ```ini
-  SECRET_KEY=tu_clave_secreta_muy_segura_aqui
-  DB_HOST=localhost
-  DB_USER=root
-  DB_PASSWORD=
-  DB_NAME=sistema_academico
-  FLASK_ENV=development
-  ```
+| Rol | DNI | Contraseña |
+|-----|-----|------------|
+| Administrador | 12345678 | admin123 |
+| Docente | 87654321 | docente123 |
+| Alumno | 11223344 | alumno123 |
 
-### 2) Script de arranque
-- Usa `run_server.py` (incluido) que:
-  - Conecta a MySQL (XAMPP) usando `config.py` y tu `.env`.
-  - Verifica conectividad a MySQL antes de iniciar.
-  - Arranca el servidor WSGI con `waitress` en `http://127.0.0.1:5000/`.
-  - Abre el navegador automáticamente.
+**⚠️ Importante**: Cambia estas contraseñas después del primer inicio.
 
-### 3) Generar el ejecutable
-- Opción A (recomendada): usa el script `build_exe.bat`:
-  ```powershell
-  .\build_exe.bat
-  ```
-- Opción B: comando PyInstaller manual (usa `;` en `--add-data` en Windows):
-  ```powershell
-  pyinstaller --noconfirm --clean ^
-    --add-data "app/templates;app/templates" ^
-    --add-data "app/static;app/static" ^
-    --add-data ".env;." ^
-    --name "SistemaNotas" run_server.py
-  ```
+## 📦 Compilación del Ejecutable
 
-### 4) Primera ejecución y base de datos
-- Enciende XAMPP y activa `MySQL`.
-- Ajusta `.env` con tus credenciales.
-- El `.exe` verifica el servidor MySQL y credenciales; si la base `DB_NAME` no existe, la crea, crea tablas y hace seed inicial.
+### Requisitos:
+- Python 3.11
+- Todas las dependencias instaladas
+- XAMPP con MySQL activo
 
-### 5) Opcional: Instalador MSI/EXE
-- Usa Inno Setup o NSIS para crear un instalador que:
-  - Copie `dist/SistemaNotas/`.
-  - Cree accesos directos.
-  - Incluya `.env` y archivos necesarios.
+### Pasos:
 
-### 6) Notas
-- `waitress` es adecuado para Windows y entorno local.
-- Comprueba firewall/antivirus si hay bloqueos.
+1. **Instalar dependencias de desarrollo**:
+   ```bash
+   pip install -r requirements-dev.txt
+   ```
+
+2. **Compilar**:
+   ```bash
+   build_exe.bat
+   ```
+
+3. **Resultado**:
+   - Ejecutable: `dist/SistemaNotas.exe`
+   - Incluye: Splash screen, System tray, Auto-inicialización de BD
+
+### Características del Ejecutable:
+
+- ✅ **Splash Screen**: Pantalla de carga con progreso
+- ✅ **Botón Reintentar**: Si MySQL no está activo, puedes reintentar sin cerrar
+- ✅ **System Tray Icon**: Ícono en la bandeja del sistema para controlar el servidor
+- ✅ **Auto-inicialización**: Crea la BD y usuarios automáticamente
+- ✅ **Logs**: Guarda logs en `logs/app.log`
+- ✅ **Sin consola**: Interfaz limpia sin ventana de comandos
+
+## 🎮 Control del Servidor
+
+### Opción 1: Ícono en la Bandeja del Sistema (Recomendado)
+
+Cuando ejecutas el `.exe`, aparece un ícono en la bandeja del sistema:
+
+- **Clic derecho** → **"Abrir en Navegador"**: Abre la aplicación
+- **Clic derecho** → **"Salir"**: Cierra el servidor completamente
+
+### Opción 2: Botón en el Panel de Administración
+
+Solo para administradores:
+
+1. Inicia sesión como administrador
+2. En el menú lateral, busca **"Apagar Servidor"** (botón rojo al final)
+3. Confirma y el servidor se cerrará
+
+### Opción 3: Administrador de Tareas
+
+Como último recurso:
+1. Abre el Administrador de Tareas (Ctrl + Shift + Esc)
+2. Busca "SistemaNotas.exe"
+3. Finalizar tarea
 
 ## 📁 Estructura del Proyecto
 
 ```
 reporte-notas-ubuntu/
 ├── app/
-│   ├── __init__.py              # Configuración principal de Flask
-│   ├── models.py                # Modelos de la base de datos
+│   ├── __init__.py              # Configuración de Flask
+│   ├── models.py                # Modelos de BD
 │   ├── routes.py                # Registro de blueprints
 │   ├── modules/
-│   │   ├── auth/                # Autenticación y login
-│   │   ├── admin/               # Gestión administrativa
-│   │   ├── docente/             # Funcionalidades del docente
-│   │   ├── alumno/              # Funcionalidades del alumno
-│   │   └── main/                # Página principal
-│   ├── templates/               # Plantillas HTML
-│   │   ├── global/              # Plantillas base
-│   │   ├── auth/                # Login y registro
+│   │   ├── auth/                # Autenticación
 │   │   ├── admin/               # Panel administrador
+│   │   │   ├── routes.py        # Rutas del admin
+│   │   │   └── log_viewer.py   # Visor de logs
 │   │   ├── docente/             # Panel docente
-│   │   └── alumno/              # Panel alumno
-│   └── static/                  # Archivos estáticos
-│       └── main/
-│           └── styles/          # CSS personalizado
-├── run_server.py                # Punto de entrada recomendado
-├── requirements.txt             # Dependencias de Python
-├── build_exe.bat                # Script para empaquetar con PyInstaller
+│   │   ├── alumno/              # Panel alumno
+│   │   │   └── routes.py        # Rutas y descarga de PDFs
+│   │   ├── main/                # Página principal
+│   │   └── uploads/             # Gestión de archivos
+│   ├── templates/               # Plantillas HTML
+│   │   ├── alumno/
+│   │   │   ├── notas_curso_pdf.html      # PDF notas por curso
+│   │   │   └── resumen_cursos_pdf.html   # PDF resumen general
+│   │   └── ...
+│   └── static/                  # CSS, JS, imágenes
+├── tools/
+│   └── generate_ico.py          # Generador de ícono
+├── config.py                    # Configuración de BD
+├── run_server_new.py            # Punto de entrada principal
+├── splash_screen.py             # Pantalla de carga
+├── system_tray.py               # Ícono de bandeja
+├── init_db.py                   # Inicializador de BD (opcional)
+├── requirements.txt             # Dependencias
+├── requirements-dev.txt         # Dependencias de desarrollo
+├── build_exe.bat                # Script de compilación
 └── README.md                    # Este archivo
-
-## 🧰 Buenas prácticas para subir a GitHub
-
-- No subas: `venv/`, `venv311/`, `.venv/`, `dist/`, `build/`, `logs/`, `.env`.
-- Asegúrate de que `requirements.txt` esté actualizado (`pip freeze > requirements.txt`).
-- Usa `.env.example` para compartir la forma de configurar variables sin exponer credenciales.
-- Documenta versiones recomendadas (Python 3.11) y comandos de setup (crear venv, instalar dependencias).
 ```
 
-## 🗄️ Estructura de la Base de Datos
+## 🗄️ Base de Datos
 
-### Tablas Principales
+### Tablas Principales:
 
 - **usuarios**: Información de usuarios (admin, docentes, alumnos)
-- **cursos**: Catálogo de cursos disponibles
+- **cursos**: Catálogo de cursos
 - **curso_docente**: Asignación de cursos a docentes
-- **curso_alumno**: Matrícula de alumnos en cursos
-- **notas**: Calificaciones de los alumnos
+- **curso_alumno**: Matrícula de alumnos
+- **notas**: Tabla principal de calificaciones
+- **notas_actividades**: Notas de actividades (10%)
+- **notas_practicas**: Notas de prácticas (30%)
+- **notas_parciales**: Notas de parciales (60%)
+- **ciclos_academicos**: Períodos académicos
+- **theme_config**: Configuración de estilos y logo
 
-### Script de Creación
+### Fórmula de Cálculo:
 
-El archivo `README.md` contiene el script SQL completo para crear todas las tablas necesarias.
+```
+Promedio Final = (Actividades × 0.10) + (Prácticas × 0.30) + (Parciales × 0.60)
+```
 
-## 🔐 Configuración de Usuarios
+## 🎯 Funcionalidades Detalladas
 
-### Crear Usuario Administrador
+### Gestión de Notas
 
-1. Acceder a la aplicación
-2. Ir a "Registrarse"
-3. Seleccionar rol "Administrador"
-4. Completar los datos requeridos
+#### Para Docentes:
+1. **Ingreso Manual**: Formulario para ingresar notas individuales
+2. **Importación Excel**: Carga masiva desde plantilla
+3. **Estados**: Borrador (solo docente) o Publicada (visible para alumnos)
+4. **Exportación**: Reportes en PDF por curso o por alumno
 
-### Primer Uso
+#### Para Alumnos:
+- Solo ven notas con estado "Publicada"
+- Vista detallada por curso
+- Promedios calculados automáticamente
+- **Descarga de PDF individual por curso**:
+  - Todas las actividades (8)
+  - Todas las prácticas (4)
+  - Todos los parciales (2)
+  - Promedios por categoría
+  - Promedio final con estado (Aprobado/Desaprobado)
+- **Descarga de PDF con resumen general**:
+  - Lista de todos los cursos matriculados
+  - Promedio final de cada curso
+  - Estadísticas generales (cursos aprobados, desaprobados)
+  - Promedio general de todos los cursos
 
-1. **Administrador**: Crear docentes y cursos
-2. **Asignar cursos**: Vincular docentes con sus cursos
-3. **Registrar alumnos**: Crear cuentas de estudiantes
-4. **Matricular**: Asignar alumnos a cursos específicos
+### Personalización del Sistema
 
-## 🎯 Funcionalidades por Rol
+#### Editar Estilos (Admin):
+- Cambiar colores del tema (oscuro, claro, medio)
+- Subir logo institucional (PNG/JPG/JPEG)
+- Logo se guarda en base64 (no requiere carpeta uploads)
+- Vista previa en tiempo real
 
-### Administrador
-- ✅ Dashboard con estadísticas generales
-- ✅ CRUD completo de docentes
-- ✅ CRUD completo de cursos
-- ✅ CRUD completo de alumnos
-- ✅ Asignación de cursos a docentes
-- ✅ Matrícula de alumnos en cursos
+#### Logs del Sistema (Admin):
+- Visualización de logs en tiempo real
+- Filtrado por nivel (INFO, WARNING, ERROR)
+- Búsqueda por texto
+- Descarga de logs completos
 
-### Docente
-- ✅ Vista de cursos asignados
-- ✅ Lista de alumnos por curso
-- ✅ Gestión de notas (3 parciales)
-- ✅ Cálculo automático de nota final
-- ✅ Comentarios y observaciones
+### Reportes en PDF
 
-### Alumno
-- ✅ Dashboard personalizado
-- ✅ Visualización de todas las notas
-- ✅ Consulta por curso específico
-- ✅ Seguimiento del rendimiento
+#### Para Docentes:
+1. **Reporte por Curso**: Lista completa de alumnos con todas sus notas
+2. **Reporte por Alumno**: Detalle individual de un alumno específico
+
+#### Para Alumnos:
+1. **Reporte por Curso Individual**:
+   - Información del alumno y curso
+   - Todas las actividades (8) con sus notas
+   - Todas las prácticas (4) con sus notas
+   - Todos los parciales (2) con sus notas
+   - Promedios por categoría (10%, 30%, 60%)
+   - Promedio final destacado
+   - Estado: Aprobado (≥10.5) o Desaprobado (<10.5)
+   - Fórmula de cálculo incluida
+
+2. **Resumen General de Cursos**:
+   - Información del alumno
+   - Estadísticas generales:
+     - Total de cursos matriculados
+     - Cursos calificados
+     - Cursos aprobados
+     - Cursos desaprobados
+   - Tabla con todos los cursos y sus promedios
+   - Promedio general de todos los cursos
+   - Diseño compacto y profesional
+
+**Características de los PDFs:**
+- ✅ Diseño profesional con colores institucionales
+- ✅ Formato A4 optimizado para impresión
+- ✅ Tamaño compacto (fuentes 8-9pt)
+- ✅ Descarga automática al hacer clic
+- ✅ Nombres de archivo descriptivos
+- ✅ Fecha de generación incluida
 
 ## 🎨 Interfaz de Usuario
 
-- **Diseño responsive** que se adapta a móviles y tablets
-- **Bootstrap 5** para componentes modernos
-- **Iconos Font Awesome** para mejor UX
-- **Colores semánticos** para estados de notas
-- **Navegación intuitiva** por roles
+- **Diseño responsive**: Se adapta a móviles, tablets y escritorio
+- **Bootstrap 5**: Componentes modernos y accesibles
+- **Font Awesome**: Iconos profesionales
+- **Sidebar colapsable**: Navegación intuitiva
+- **Colores semánticos**: Estados visuales claros
+- **Animaciones suaves**: Transiciones fluidas
 
-## 🔧 Personalización
+## 🔧 Personalización Avanzada
 
-### Cambiar Configuración de Base de Datos
+### Cambiar Puerto del Servidor
 
-Editar `app/__init__.py`:
-
+Editar `run_server_new.py`:
 ```python
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://usuario:contraseña@localhost/nombre_bd'
+serve(app_instance, host='127.0.0.1', port=5000)  # Cambiar 5000 por otro puerto
 ```
 
-### Modificar Estilos
+### Modificar Estilos CSS
 
-Los estilos personalizados están en `app/static/main/styles/sistema.css`
+Archivos principales:
+- `app/static/main/styles/sistema.css` - Estilos generales
+- `app/static/main/styles/admin.css` - Estilos del admin
+- `app/static/main/styles/colores_base.css` - Variables de color
 
-### Agregar Nuevas Funcionalidades
+### Agregar Nuevos Módulos
 
-1. Crear nuevo blueprint en `app/modules/`
-2. Registrar en `app/routes.py`
-3. Crear templates correspondientes
+1. Crear carpeta en `app/modules/nuevo_modulo/`
+2. Crear `__init__.py` con el blueprint
+3. Crear `routes.py` con las rutas
+4. Registrar en `app/routes.py`
+5. Crear templates en `app/templates/nuevo_modulo/`
 
 ## 🐛 Solución de Problemas
 
-### Error de Conexión a Base de Datos
-- Verificar que MySQL esté ejecutándose
-- Comprobar credenciales en `app/__init__.py`
-- Asegurar que la base de datos existe
+### El ejecutable no inicia
 
-### Error de Importación
-- Verificar que todas las dependencias estén instaladas
-- Activar el entorno virtual correctamente
+**Problema**: MySQL no está activo
 
-### Problemas de Permisos
-- Verificar que el usuario tenga permisos en la base de datos
-- Comprobar la configuración de MySQL
+**Solución**:
+1. Abre XAMPP
+2. Inicia MySQL
+3. Presiona "Reintentar" en el splash screen
+
+---
+
+**Problema**: Error de credenciales
+
+**Solución**:
+1. Verifica el archivo `.env`
+2. Asegúrate de que `DB_USER` y `DB_PASSWORD` sean correctos
+3. Presiona "Reintentar"
+
+---
+
+### El ícono no aparece en la bandeja
+
+**Solución**:
+1. Verifica que estés ejecutando el `.exe` (no el script Python)
+2. Busca en "Mostrar iconos ocultos" de la bandeja
+3. Reinstala: `pip install pystray==0.19.5`
+
+---
+
+### Error al importar Excel
+
+**Problema**: Formato incorrecto
+
+**Solución**:
+1. Descarga la plantilla desde el sistema
+2. No modifies las columnas de la plantilla
+3. Asegúrate de que las notas estén en el rango 0-20
+
+---
+
+### El logo no se ve
+
+**Solución**:
+1. Verifica que el archivo sea PNG, JPG o JPEG
+2. Tamaño máximo: 5 MB
+3. Recomendado: 256x256 píxeles o mayor
+
+## 📚 Documentación Adicional
+
+- **Manual de Usuario**: `Manual.txt`
+- **Guía de Compilación**: `README_COMPILACION.md`
+- **Instrucciones de Cierre**: `INSTRUCCIONES_CIERRE_SERVIDOR.md`
+- **Cambios del Ícono**: `RESUMEN_CAMBIOS_ICONO.md`
+
+## 🧪 Scripts de Prueba
+
+- `test_splash_retry.py`: Prueba el botón Reintentar del splash screen
+- `test_system_tray.py`: Prueba el ícono de la bandeja del sistema
+- `init_db.py`: Inicializa la BD manualmente (opcional)
+
+## 📊 Estadísticas del Proyecto
+
+- **Lenguaje**: Python 3.11
+- **Framework**: Flask 2.3.3
+- **Líneas de código**: ~12,000+
+- **Módulos**: 6 (auth, admin, docente, alumno, main, uploads)
+- **Plantillas HTML**: 35+
+- **Rutas**: 85+
+- **Modelos de BD**: 11
+- **Reportes PDF**: 4 tipos (docente por curso, docente por alumno, alumno por curso, alumno resumen general)
+
+## 🔐 Seguridad
+
+- ✅ Autenticación con Flask-Login
+- ✅ Contraseñas hasheadas con Werkzeug
+- ✅ Validación de roles en cada ruta
+- ✅ Protección CSRF en formularios
+- ✅ Validación de datos de entrada
+- ✅ Sesiones seguras con SECRET_KEY
+- ✅ Solo administradores pueden apagar el servidor
+
+## 🚀 Próximas Mejoras
+
+- [ ] Notificaciones por correo electrónico
+- [ ] Recuperación de contraseña
+- [ ] Historial de cambios en notas
+- [ ] Gráficos de rendimiento (charts.js)
+- [ ] Exportación a otros formatos (CSV, JSON)
+- [ ] API REST para integración con otros sistemas
+- [ ] Modo oscuro/claro automático
+- [ ] Firma digital en PDFs
+- [ ] Comparación de rendimiento entre ciclos
 
 ## 📞 Soporte
 
 Para soporte técnico o reportar problemas:
 - Crear un issue en el repositorio
 - Contactar al equipo de desarrollo
+- Revisar los logs en `logs/app.log`
 
 ## 📄 Licencia
 
@@ -312,3 +474,19 @@ Este proyecto está desarrollado para el Instituto Superior Tecnológico Públic
 ---
 
 **Desarrollado con ❤️ para la educación tecnológica**
+
+**Versión**: 2.1  
+**Última actualización**: Diciembre 2024
+
+## 🆕 Novedades de la Versión 2.1
+
+### Nuevas Funcionalidades para Alumnos:
+- ✅ **Descarga de PDF por curso**: Los alumnos pueden descargar un reporte detallado de sus notas en cada curso
+- ✅ **Descarga de PDF resumen general**: Los alumnos pueden descargar un resumen con todos sus cursos y promedios
+- ✅ **Diseño optimizado**: PDFs compactos y profesionales, listos para imprimir
+
+### Mejoras Generales:
+- ✅ **Botón Reintentar funcional**: En el splash screen, si MySQL no está activo
+- ✅ **Ícono en bandeja del sistema**: Control del servidor desde la bandeja de Windows
+- ✅ **Botón Apagar Servidor**: Los administradores pueden apagar el servidor desde la interfaz
+- ✅ **Mejor manejo de errores**: Validaciones mejoradas en todas las rutas

@@ -1,20 +1,39 @@
+# ============================================
+# SISTEMA DE GESTIÓN DE NOTAS - DEPENDENCIAS
+# ============================================
+
+# Framework Web
 Flask==2.3.3
-Flask-Login==0.6.3
-Flask-SQLAlchemy==3.1.1
-Jinja2==3.1.4
-SQLAlchemy==2.0.30
 Werkzeug==2.3.7
-python-dotenv==1.0.0
+Jinja2==3.1.4
+
+# Autenticación y Sesiones
+Flask-Login==0.6.3
+
+# Base de Datos
+Flask-SQLAlchemy==3.1.1
+SQLAlchemy==2.0.30
 mysql-connector-python==8.1.0
+
+# Servidor WSGI (Producción)
 waitress==2.1.2
 
-# Exportación a PDF y Excel
+# Variables de Entorno
+python-dotenv==1.0.0
+
+# Exportación a PDF
 xhtml2pdf==0.2.17
 reportlab==4.4.4
+
+# Exportación a Excel
 openpyxl==3.1.5
 
-# Imágenes (icono y compatibilidad con xhtml2pdf)
+# Procesamiento de Imágenes
+# (Requerido por: xhtml2pdf, pystray, system tray icon)
 Pillow>=8.1.1,<11.0
 
-# System Tray Icon
+# Interfaz Gráfica (Splash Screen)
+# tkinter viene incluido con Python, no requiere instalación
+
+# System Tray Icon (Ícono en bandeja del sistema)
 pystray==0.19.5

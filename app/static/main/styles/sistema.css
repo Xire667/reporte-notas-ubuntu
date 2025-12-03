@@ -697,6 +697,7 @@ th:nth-child(2){
 .welcome-card h2 {
     font-weight: 600;
     margin-bottom: 0.5rem;
+    color: #000
 }
 
 .stats-card {

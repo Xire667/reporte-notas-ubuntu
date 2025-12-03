@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Resumen de Cursos - {{ alumno.nombre }} {{ alumno.apellido }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 9pt;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #00378F;
+            padding-bottom: 10px;
+        }
+        
+        .header h1 {
+            color: #00378F;
+            font-size: 16pt;
+            margin: 0 0 3px 0;
+        }
+        
+        .header h2 {
+            color: #666;
+            font-size: 11pt;
+            margin: 0;
+            font-weight: normal;
+        }
+        
+        .info-section {
+            margin-bottom: 12px;
+            background-color: #f8f9fa;
+            padding: 8px 10px;
+            border-radius: 3px;
+        }
+        
+        .info-row {
+            margin-bottom: 4px;
+            font-size: 8pt;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #00378F;
+            display: inline-block;
+            width: 120px;
+        }
+        
+        .info-value {
+            color: #333;
+        }
+        
+        .estadisticas {
+            display: table;
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .estadistica-item {
+            display: table-cell;
+            width: 25%;
+            text-align: center;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-right: 2px solid white;
+        }
+        
+        .estadistica-item:last-child {
+            border-right: none;
+        }
+        
+        .estadistica-valor {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #00378F;
+            display: block;
+            margin-bottom: 3px;
+        }
+        
+        .estadistica-label {
+            font-size: 7pt;
+            color: #666;
+            display: block;
+        }
+        
+        .section-title {
+            background-color: #00378F;
+            color: white;
+            padding: 6px 8px;
+            margin-top: 12px;
+            margin-bottom: 8px;
+            font-size: 10pt;
+            font-weight: bold;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            font-size: 8pt;
+        }
+        
+        th {
+            background-color: #00378F;
+            color: white;
+            padding: 5px 6px;
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        td {
+            padding: 4px 6px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .nota-valor {
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .nota-aprobado {
+            color: #28a745;
+        }
+        
+        .nota-desaprobado {
+            color: #dc3545;
+        }
+        
+        .nota-pendiente {
+            color: #999;
+            font-style: italic;
+        }
+        
+        .promedio-general {
+            margin-top: 15px;
+            padding: 12px;
+            background-color: #00378F;
+            color: white;
+            text-align: center;
+            border-radius: 3px;
+        }
+        
+        .promedio-general h3 {
+            margin: 0 0 5px 0;
+            font-size: 12pt;
+        }
+        
+        .promedio-general-valor {
+            font-size: 24pt;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .footer {
+            margin-top: 15px;
+            padding-top: 8px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            font-size: 7pt;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <!-- Encabezado -->
+    <div class="header">
+        <h1>Instituto Superior Tecnológico Público Suiza</h1>
+        <h2>Resumen Académico de Cursos</h2>
+    </div>
+    
+    <!-- Información del Alumno -->
+    <div class="info-section">
+        <div class="info-row">
+            <span class="info-label">Alumno:</span>
+            <span class="info-value">{{ alumno.nombre }} {{ alumno.apellido }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">DNI:</span>
+            <span class="info-value">{{ alumno.dni }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Email:</span>
+            <span class="info-value">{{ alumno.email }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Fecha de Generación:</span>
+            <span class="info-value">{{ fecha_generacion }}</span>
+        </div>
+    </div>
+    
+    <!-- Estadísticas -->
+    <div class="estadisticas">
+        <div class="estadistica-item">
+            <span class="estadistica-valor">{{ total_cursos }}</span>
+            <span class="estadistica-label">Total de Cursos</span>
+        </div>
+        <div class="estadistica-item">
+            <span class="estadistica-valor">{{ cursos_con_notas }}</span>
+            <span class="estadistica-label">Cursos Calificados</span>
+        </div>
+        <div class="estadistica-item">
+            <span class="estadistica-valor" style="color: #28a745;">{{ cursos_aprobados }}</span>
+            <span class="estadistica-label">Cursos Aprobados</span>
+        </div>
+        <div class="estadistica-item">
+            <span class="estadistica-valor" style="color: #dc3545;">{{ cursos_desaprobados }}</span>
+            <span class="estadistica-label">Cursos Desaprobados</span>
+        </div>
+    </div>
+    
+    <!-- Tabla de Cursos -->
+    <div class="section-title">Detalle de Cursos y Promedios</div>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 10%;">Código</th>
+                <th style="width: 50%;">Curso</th>
+                <th style="width: 15%; text-align: center;">Créditos</th>
+                <th style="width: 25%; text-align: center;">Promedio Final</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for curso, nota in cursos_notas %}
+            <tr>
+                <td>{{ curso.codigo }}</td>
+                <td>{{ curso.nombre }}</td>
+                <td style="text-align: center;">{{ curso.creditos }}</td>
+                <td class="nota-valor">
+                    {% if nota and nota.promedio_final %}
+                        {% if nota.promedio_final >= 10.5 %}
+                        <span class="nota-aprobado">{{ "%.2f"|format(nota.promedio_final) }}</span>
+                        {% else %}
+                        <span class="nota-desaprobado">{{ "%.2f"|format(nota.promedio_final) }}</span>
+                        {% endif %}
+                    {% else %}
+                    <span class="nota-pendiente">Sin calificar</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <!-- Promedio General -->
+    {% if promedio_general > 0 %}
+    <div class="promedio-general">
+        <h3>Promedio General</h3>
+        <div class="promedio-general-valor">{{ "%.2f"|format(promedio_general) }}</div>
+        {% if promedio_general >= 10.5 %}
+        <div style="font-size: 14pt; margin-top: 10px;">
+            <span style="color: #90EE90;">✓ RENDIMIENTO APROBATORIO</span>
+        </div>
+        {% else %}
+        <div style="font-size: 14pt; margin-top: 10px;">
+            <span style="color: #FFB6C1;">⚠ REQUIERE MEJORAR</span>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <!-- Pie de página -->
+    <div class="footer">
+        <p>Este documento es un reporte oficial del rendimiento académico.</p>
+        <p>Instituto Superior Tecnológico Público Suiza - Sistema de Gestión de Notas</p>
+        <p>Generado el {{ fecha_generacion }}</p>
+    </div>
+</body>
+</html>
